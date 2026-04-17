@@ -175,18 +175,6 @@ export default function ExamManagement() {
         `api/examsetter/?${params.toString()}`
       );
 
-      // Append Filters
-      if (filterClassCategoryId)
-        params.append("class_category", filterClassCategoryId);
-      if (filterSubjectId) params.append("subject", filterSubjectId);
-      if (filterLevelId) params.append("level", filterLevelId);
-      if (filterType) params.append("type", filterType);
-      if (filterStatus) params.append("status", filterStatus);
-
-      const examResp = await apiService.getAll(
-        `api/examsetter/?${params.toString()}`
-      );
-
       const [subjectResp, classResp, levelResp] = await Promise.all([
         getSubjects(),
         getClassCategory(),

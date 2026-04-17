@@ -118,7 +118,7 @@ const QuestionModal = ({
     text: "",
     solution: "",
     options: ["", "", "", ""],
-    correct_option: 0,
+    correct_option: null,
   });
 
   const [hindiQuestion, setHindiQuestion] = useState({
@@ -126,7 +126,7 @@ const QuestionModal = ({
     text: "",
     solution: "",
     options: ["", "", "", ""],
-    correct_option: 0,
+    correct_option: null,
   });
 
   const [isTranslating, setIsTranslating] = useState(false);
@@ -273,7 +273,7 @@ const QuestionModal = ({
                 : ["", "", "", ""],
               correct_option: editingQuestion.correct_option
                 ? parseInt(editingQuestion.correct_option) - 1
-                : 0,
+                : null,
             });
             // Clear secondary question
             setHindiQuestion({
@@ -281,7 +281,7 @@ const QuestionModal = ({
               text: "",
               solution: "",
               options: ["", "", "", ""],
-              correct_option: 0,
+              correct_option: null,
             });
             return;
           }
@@ -296,7 +296,7 @@ const QuestionModal = ({
                 : ["", "", "", ""],
               correct_option: editingQuestion.correct_option
                 ? parseInt(editingQuestion.correct_option) - 1
-                : 0,
+                : null,
             });
             setHindiQuestion({
               language: "Hindi",
@@ -305,7 +305,7 @@ const QuestionModal = ({
               options: ["", "", "", ""],
               correct_option: editingQuestion.correct_option
                 ? parseInt(editingQuestion.correct_option) - 1
-                : 0,
+                : null,
             });
           } else if (editingQuestion.language === "Hindi") {
             setHindiQuestion({
@@ -317,7 +317,7 @@ const QuestionModal = ({
                 : ["", "", "", ""],
               correct_option: editingQuestion.correct_option
                 ? parseInt(editingQuestion.correct_option) - 1
-                : 0,
+                : null,
             });
             setEnglishQuestion({
               language: "English",
@@ -326,7 +326,7 @@ const QuestionModal = ({
               options: ["", "", "", ""],
               correct_option: editingQuestion.correct_option
                 ? parseInt(editingQuestion.correct_option) - 1
-                : 0,
+                : null,
             });
           }
         } catch (error) {}
@@ -349,15 +349,7 @@ const QuestionModal = ({
         text: "",
         solution: "",
         options: ["", "", "", ""],
-        correct_option: 0,
-      });
-
-      setHindiQuestion({
-        language: "Hindi",
-        text: "",
-        solution: "",
-        options: ["", "", "", ""],
-        correct_option: 0,
+        correct_option: null,
       });
     }
   }, [editingQuestion, subjectName]);
@@ -483,22 +475,26 @@ const QuestionModal = ({
       if (editingQuestion.language === "English") {
         return (
           englishQuestion.text.trim() &&
-          englishQuestion.options.every((opt) => opt.trim())
+          englishQuestion.options.every((opt) => opt.trim()) &&
+          englishQuestion.correct_option !== null
         );
       } else {
         return (
           hindiQuestion.text.trim() &&
-          hindiQuestion.options.every((opt) => opt.trim())
+          hindiQuestion.options.every((opt) => opt.trim()) &&
+          hindiQuestion.correct_option !== null
         );
       }
     }
     const isEnglishComplete =
       englishQuestion.text.trim() &&
-      englishQuestion.options.every((opt) => opt.trim());
+      englishQuestion.options.every((opt) => opt.trim()) &&
+      englishQuestion.correct_option !== null;
 
     const isHindiComplete =
       hindiQuestion.text.trim() &&
-      hindiQuestion.options.every((opt) => opt.trim());
+      hindiQuestion.options.every((opt) => opt.trim()) &&
+      hindiQuestion.correct_option !== null;
     return isEnglishComplete && isHindiComplete;
   };
   const validateForm = () => {
@@ -550,12 +546,19 @@ const QuestionModal = ({
       if (errorField.options.some((err) => err)) {
         toast.error(`All options in ${langLabel} are required`);
       }
-      const correctOptionText =
-        questionToValidate.options[questionToValidate.correct_option];
-      if (!correctOptionText || !correctOptionText.trim()) {
-        errorField.options[questionToValidate.correct_option] = true;
-        toast.error(`The selected correct answer for ${langLabel} cannot be empty`);
+      if (questionToValidate.correct_option === null) {
+        toast.error(`Please select a correct option for ${langLabel}`);
         hasError = true;
+      } else {
+        const correctOptionText =
+          questionToValidate.options[questionToValidate.correct_option];
+        if (!correctOptionText || !correctOptionText.trim()) {
+          errorField.options[questionToValidate.correct_option] = true;
+          toast.error(
+            `The selected correct answer for ${langLabel} cannot be empty`,
+          );
+          hasError = true;
+        }
       }
 
       setFieldErrors(newFieldErrors);
@@ -580,7 +583,10 @@ const QuestionModal = ({
       if (newFieldErrors.english.options.some((err) => err)) {
         toast.error("All options in English are required");
       }
-      if (!englishQuestion.options[englishQuestion.correct_option]?.trim()) {
+      if (englishQuestion.correct_option === null) {
+        toast.error("Please select a correct option for English");
+        hasError = true;
+      } else if (!englishQuestion.options[englishQuestion.correct_option]?.trim()) {
         newFieldErrors.english.options[englishQuestion.correct_option] = true;
         toast.error("The selected correct answer for English cannot be empty");
         hasError = true;
@@ -603,7 +609,10 @@ const QuestionModal = ({
       if (newFieldErrors.hindi.options.some((err) => err)) {
         toast.error("All options in Hindi are required");
       }
-      if (!hindiQuestion.options[hindiQuestion.correct_option]?.trim()) {
+      if (hindiQuestion.correct_option === null) {
+        toast.error("Please select a correct option for Hindi");
+        hasError = true;
+      } else if (!hindiQuestion.options[hindiQuestion.correct_option]?.trim()) {
         newFieldErrors.hindi.options[hindiQuestion.correct_option] = true;
         toast.error("The selected correct answer for Hindi cannot be empty");
         hasError = true;

@@ -181,7 +181,7 @@ const ExamDetails = () => {
   const [newQuestion, setNewQuestion] = useState({
     text: "",
     options: ["", "", "", ""],
-    correct_option: 1,
+    correct_option: "",
     solution: "",
     language: "English",
   });
@@ -256,7 +256,7 @@ const ExamDetails = () => {
     setNewQuestion({
       text: "",
       options: ["", "", "", ""],
-      correct_option: 1,
+      correct_option: "",
       solution: "",
       language: selectedLanguage,
     });
@@ -672,7 +672,7 @@ const ExamDetails = () => {
                       onChange={(e) =>
                         setNewQuestion({
                           ...newQuestion,
-                          correct_option: Number(e.target.value),
+                          correct_option: e.target.value === "" ? "" : Number(e.target.value),
                         })
                       }
                       className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm ${
@@ -681,6 +681,7 @@ const ExamDetails = () => {
                           : "border-gray-300"
                       }`}
                     >
+                      <option value="">Select Correct Option</option>
                       {[1, 2, 3, 4].map((num) => (
                         <option key={num} value={num}>
                           Option {num}
