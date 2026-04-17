@@ -253,11 +253,11 @@ const ManageQuestionManager = () => {
           email: userData.email,
           Fname: userData.Fname,
           Lname: userData.Lname,
-          ...(isEditMode ? {} : { password: userData.password }),
+          ...(userData.password ? { password: userData.password } : {}),
         },
         class_category: selectedClassCategories,
         subject: selectedSubjects,
-        status: userData.is_verified, // This maps the switch value to the status field
+        status: userData.is_verified,
       };
 
       let response;
@@ -982,30 +982,28 @@ const ManageQuestionManager = () => {
                   />
                 </Grid>
 
-                {!isEditMode && (
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Password"
-                      name="password"
-                      type="password"
-                      fullWidth
-                      value={userData.password}
-                      onChange={handleInputChange}
-                      required
-                      disabled={loadingAction}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#0d9488',
-                          },
+                <Grid item xs={12}>
+                  <TextField
+                    label={isEditMode ? "Change Password (leave blank to keep current)" : "Password"}
+                    name="password"
+                    type="password"
+                    fullWidth
+                    value={userData.password}
+                    onChange={handleInputChange}
+                    required={!isEditMode}
+                    disabled={loadingAction}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#0d9488',
                         },
-                        '& .MuiInputLabel-root.Mui-focused': {
-                          color: '#0d9488',
-                        },
-                      }}
-                    />
-                  </Grid>
-                )}
+                      },
+                      '& .MuiInputLabel-root.Mui-focused': {
+                        color: '#0d9488',
+                      },
+                    }}
+                  />
+                </Grid>
 
                 <Grid item xs={12}>
                   <FormControl 

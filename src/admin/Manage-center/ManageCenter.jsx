@@ -263,18 +263,32 @@ export default function ManageCenter() {
     try {
       if (selectedCenter) {
         const payload = {
-          user: selectedCenter.user?.id,
-          center_name: form.center_name,
-          pincode: form.pincode,
-          state: form.state,
-          city: form.city,
-          area: form.area,
-          phone: form.phone,
-          alt_phone: form.alt_phone || null,
-          status: form.status,
+          user: {
+            Fname: form.Fname,
+            Lname: form.Lname,
+            email: form.email,
+            ...(form.password ? { password: form.password } : {}),
+          },
+          exam_center: {
+            center_name: form.center_name,
+            pincode: form.pincode,
+            state: form.state,
+            city: form.city,
+            area: form.area,
+            phone: form.phone,
+            alt_phone: form.alt_phone || null,
+            status: form.status,
+          },
         };
         await updateCenterManager(selectedCenter.id, payload);
-        setExamCenters((prev) => prev.map((c) => (c.id === selectedCenter.id ? { ...c, ...payload } : c)));
+        // Refresh local state
+        setExamCenters((prev) => 
+          prev.map((c) => (c.id === selectedCenter.id ? { 
+            ...c, 
+            ...payload.exam_center, 
+            user: { ...c.user, ...payload.user } 
+          } : c))
+        );
         showSnack("Exam center updated", "success");
       } else {
         const payload = {
@@ -615,27 +629,36 @@ export default function ManageCenter() {
         <DialogContent dividers>
           <Box component="form" id="center-form" onSubmit={handleSubmit} noValidate>
             <Grid container spacing={2}>
+              <Grid item xs={12}><Typography variant="subtitle2" color="primary">User Information</Typography></Grid>
               {!selectedCenter && (
-                <>
-                  <Grid item xs={12}><Typography variant="subtitle2" color="primary">User Information</Typography></Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField label="Username" name="username" value={form.username} onChange={handleInput} fullWidth required error={!!formErrors.username} helperText={formErrors.username} disabled={isSubmitting} />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField label="Email" name="email" value={form.email} onChange={handleInput} fullWidth required error={!!formErrors.email} helperText={formErrors.email} disabled={isSubmitting} />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField label="Password" name="password" value={form.password} onChange={handleInput} fullWidth required type="password" error={!!formErrors.password} helperText={formErrors.password || "Required for new center"} disabled={isSubmitting} />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField label="First Name" name="Fname" value={form.Fname} onChange={handleInput} fullWidth required error={!!formErrors.Fname} helperText={formErrors.Fname} disabled={isSubmitting} />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField label="Last Name" name="Lname" value={form.Lname} onChange={handleInput} fullWidth required error={!!formErrors.Lname} helperText={formErrors.Lname} disabled={isSubmitting} />
-                  </Grid>
-                  <Grid item xs={12}><Divider sx={{ my: 1 }} /></Grid>
-                </>
+                <Grid item xs={12} sm={6}>
+                  <TextField label="Username" name="username" value={form.username} onChange={handleInput} fullWidth required error={!!formErrors.username} helperText={formErrors.username} disabled={isSubmitting} />
+                </Grid>
               )}
+              <Grid item xs={12} sm={!selectedCenter ? 6 : 12}>
+                <TextField label="Email" name="email" value={form.email} onChange={handleInput} fullWidth required error={!!formErrors.email} helperText={formErrors.email} disabled={isSubmitting} />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField 
+                  label={selectedCenter ? "Change Password (leave blank to keep current)" : "Password"} 
+                  name="password" 
+                  value={form.password} 
+                  onChange={handleInput} 
+                  fullWidth 
+                  required={!selectedCenter} 
+                  type="password" 
+                  error={!!formErrors.password} 
+                  helperText={formErrors.password || (selectedCenter ? "Optional" : "Required for new center")} 
+                  disabled={isSubmitting} 
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField label="First Name" name="Fname" value={form.Fname} onChange={handleInput} fullWidth required error={!!formErrors.Fname} helperText={formErrors.Fname} disabled={isSubmitting} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField label="Last Name" name="Lname" value={form.Lname} onChange={handleInput} fullWidth required error={!!formErrors.Lname} helperText={formErrors.Lname} disabled={isSubmitting} />
+              </Grid>
+              <Grid item xs={12}><Divider sx={{ my: 1 }} /></Grid>
 
               <Grid item xs={12}><Typography variant="subtitle2" color="primary">Exam Center Information</Typography></Grid>
 
