@@ -23,6 +23,7 @@ const hiLabels = {
   Gender: "लिंग",
   "Marital Status": "वैवाहिक स्थिति",
   Religion: "धर्म",
+  "Date of Birth": "जन्म तिथि",
   "Edit Profile": "प्रोफ़ाइल संपादित करें",
   "Save Changes": "परिवर्तन सहेजें",
   Cancel: "रद्द करें",
@@ -165,6 +166,7 @@ const BasicInformation = () => {
     gender: "",
     marital_status: "",
     religion: "",
+    date_of_birth: "",
   });
 
   const [previewImage, setPreviewImage] = useState(null);
@@ -192,6 +194,7 @@ const BasicInformation = () => {
         gender: basicData.gender || "",
         marital_status: basicData.marital_status || "",
         religion: basicData.religion || "",
+        date_of_birth: basicData.date_of_birth || "",
       });
       setPreviewImage(basicData.profile_picture);
     }
@@ -250,6 +253,7 @@ const BasicInformation = () => {
       data.append("gender", formData.gender);
       data.append("marital_status", formData.marital_status);
       data.append("religion", formData.religion);
+      data.append("date_of_birth", formData.date_of_birth);
 
       await updateBasicProfile(data);
       await dispatch(getBasic());
@@ -280,6 +284,7 @@ const BasicInformation = () => {
       gender: basicData.gender || "",
       marital_status: basicData.marital_status || "",
       religion: basicData.religion || "",
+      date_of_birth: basicData.date_of_birth || "",
     });
     setPreviewImage(basicData.profile_picture);
   };
@@ -487,6 +492,23 @@ const BasicInformation = () => {
                 <option value="Buddhist">Buddhist</option>
                 <option value="Other">{bi("Other")}</option>
               </select>
+            </div>
+            {/* Date of Birth */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                {bi("Date of Birth")}
+              </label>
+              <input
+                type="date"
+                value={formData.date_of_birth}
+                disabled={!isEditing}
+                onChange={(e) => handleInputChange("date_of_birth", e.target.value)}
+                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all ${
+                  isEditing
+                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                }`}
+              />
             </div>
 
             {/* Languages */}
