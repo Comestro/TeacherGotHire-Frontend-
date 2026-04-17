@@ -36,6 +36,8 @@ import { useGetApplyEligibilityQuery, useGetJobsApplyDetailsQuery } from "../../
 import Loader from "../Loader";
 import ErrorMessage from "../ErrorMessage";
 
+import ProfileCompletionWidget from "./components/ProfileCompletionWidget";
+
 function TeacherDashboard() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -49,7 +51,7 @@ function TeacherDashboard() {
   const [isExamCenterModalOpen, setIsExamCenterModalOpen] = useState(false);
   const [isVerifyCard, setIsVerifyCard] = useState(false);
 
-  const { basicData, status: profileStatus } = useSelector((state) => state.personalProfile);
+  const { basicData, completionData, status: profileStatus } = useSelector((state) => state.personalProfile);
   const { attempts, interview: interviewData } = useSelector((state) => state.examQues);
   const teacherprefrence = useSelector((state) => state.jobProfile?.prefrence);
   const jobProfileStatus = useSelector((state) => state.jobProfile?.status);
@@ -82,7 +84,8 @@ function TeacherDashboard() {
           dispatch(getPrefrence()).unwrap(),
           dispatch(getInterview()).unwrap(),
           dispatch(getSubjects()).unwrap(),
-          dispatch(getBasic()).unwrap()
+          dispatch(getBasic()).unwrap(),
+          dispatch(getProfilCompletion()).unwrap()
         ]);
       } catch (err) {
         console.error("Failed to load dashboard data:", err);
@@ -251,6 +254,30 @@ function TeacherDashboard() {
               message={dashboardError}
               onDismiss={() => setDashboardError(null)}
             />
+
+            {(completionData?.profile_completed || 0) < 100 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 p-4 bg-amber-50 border border-amber-100 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center shrink-0">
+                    <FaRocket />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-800 text-sm">Boost your profile visibility!</h4>
+                    <p className="text-xs text-slate-600">Complete your profile to stand out to top recruiters.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate("/teacher/personal-profile")}
+                  className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap"
+                >
+                  Edit Profile
+                </button>
+              </motion.div>
+            )}
             {/* Show preference form if user doesn't have class categories */}
 
             {/* Show preference form if user doesn't have class categories */}
@@ -342,7 +369,8 @@ function TeacherDashboard() {
             )}
           </div>
           {/* Assessment Process column (3/12) */}
-          <div className="w-[300px] md:w-3/12 lg:w-3/12 mt-6 md:mt-0 border-l border-slate-150 pl-6">
+          <div className="w-full md:w-3/12 lg:w-3/12 mt-6 md:mt-0 border-l border-slate-150 pl-6 space-y-6">
+            <ProfileCompletionWidget completionData={completionData} />
             <img src="/help.png" alt="Assessment Process" className="w-full h-auto" />
           </div>
         </div>
