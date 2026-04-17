@@ -16,34 +16,38 @@ const ProfileNextStep = ({ feedback }) => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
-        className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 border-l-4 border-l-amber-400"
+        className="bg-[#F0FDF4] border border-[#DCFCE7] rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm shadow-emerald-100/50"
       >
-        <div className="flex items-start gap-4">
-          <div className="mt-1 p-2 bg-amber-50 text-amber-500 rounded-lg">
-            <FaExclamationCircle size={18} />
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="h-12 w-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0 shadow-inner">
+            <FaExclamationCircle size={20} />
           </div>
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                Recommended Action: {nextStep.step}
-              </p>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="px-2 py-0.5 bg-emerald-100 text-[10px] font-bold text-emerald-700 rounded uppercase tracking-wider">
+                Recommended Action
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:inline">•</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                {nextStep.step}
+              </span>
             </div>
-            <p className="text-sm font-semibold text-slate-700 mb-4 leading-relaxed">
+            <h4 className="font-bold text-slate-800 text-sm sm:text-base leading-tight">
               {nextStep.label}
-            </p>
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => navigate(nextStep.link)}
-                className="inline-flex items-center gap-2 text-xs font-bold text-white bg-teal-600 hover:bg-teal-700 transition-all px-5 py-2.5 rounded-lg shadow-md hover:shadow-lg active:scale-95"
-              >
-                Complete Profile <FaArrowRight size={12} />
-              </button>
-              
-              <p className="text-[10px] text-slate-400 font-medium italic">
-                Increases selection chances by 20%
-              </p>
-            </div>
+            </h4>
           </div>
+        </div>
+        
+        <div className="flex flex-col sm:items-end gap-2 w-full sm:w-auto">
+          <button
+            onClick={() => navigate(nextStep.link)}
+            className="w-full sm:w-auto px-6 py-2.5 bg-teal-600 text-white text-xs font-bold rounded-lg hover:bg-teal-700 transition-all shadow-md shadow-teal-600/20 active:scale-95 flex items-center justify-center gap-2"
+          >
+            Complete Profile <FaArrowRight size={12} />
+          </button>
+          <p className="text-[10px] text-slate-400 font-medium italic sm:text-right">
+             Get hired 5x faster
+          </p>
         </div>
       </motion.div>
     </AnimatePresence>
