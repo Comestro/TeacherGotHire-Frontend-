@@ -52,6 +52,10 @@ const handleApiError = async (err) => {
     if (status === 401 && !err.config.url.includes('/api/login/') && !err.config.url.includes('/api/logout/')) {
       localStorage.removeItem("access_token");
       localStorage.removeItem("role");
+      toast.error("Session expired. Please log in again.", {
+        position: "top-center",
+        autoClose: 5000,
+      });
       await persistor.purge();
       await persistor.flush();
     }

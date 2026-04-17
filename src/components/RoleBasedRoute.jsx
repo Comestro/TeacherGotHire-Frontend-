@@ -1,46 +1,36 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import axios from "axios";
-import { getApiUrl } from "../store/configue";
-
-const secureApiClient = axios.create({
-  baseURL: getApiUrl(),
-  headers: { "Content-Type": "application/json" },
-  withCredentials: true, 
-});
-secureApiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
-  if (token) {
-    config.headers.Authorization = `Token ${token}`;
-  }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
+import { fetchUserData } from "../services/authServices";
 
 const RoleBasedRoute = ({ element, allowedRoles }) => {
   const token = localStorage.getItem("access_token");
-  const [userRole, setUserRole] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const storedRole = localStorage.getItem("role"); // Quick check
+  const [userRole, setUserRole] = useState(storedRole); 
+  const [loading, setLoading] = useState(!storedRole); // Skip loading if we have a stored role
 
   useEffect(() => {
     if (!token) {
       setLoading(false);
       return;
     }
-    secureApiClient
-      .get("/api/self/customuser/")
-      .then((response) => {
-        setUserRole(response.data.role);
+
+    // Always background-verify even if we have a stored role
+    fetchUserData()
+      .then((data) => {
+        setUserRole(data.role);
+        // Sync storage if it changed
+        if (data.role !== storedRole) {
+          localStorage.setItem("role", data.role);
+        }
       })
       .catch((error) => {
-        
-        setUserRole(null);
+        // If it was a 401, the interceptor in authServices will have cleared the token.
+         setUserRole(null);
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [token]);
+  }, [token, storedRole]);
 
   if (loading) return (
     <div className="min-h-screen bg-gray-50">
