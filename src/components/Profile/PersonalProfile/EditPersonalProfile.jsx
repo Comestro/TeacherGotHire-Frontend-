@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import BasicInformation from "./BasicInformation";
 import AddressProfileCard from "./AddressProfileCard";
 import PrefrenceProfile from "../JobProfile/PrefrenceProfile";
@@ -15,7 +16,9 @@ import {
 } from "react-icons/hi";
 
 const EditPersonalProfile = () => {
-  const [activeTab, setActiveTab] = useState("basic");
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "basic");
   const mobileTabsRef = useRef(null);
   const tabRefs = useRef({});
 
@@ -63,6 +66,12 @@ const EditPersonalProfile = () => {
       description: "Your expertise"
     },
   ];
+  useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
   useEffect(() => {
     if (mobileTabsRef.current && tabRefs.current[activeTab]) {
       const container = mobileTabsRef.current;
