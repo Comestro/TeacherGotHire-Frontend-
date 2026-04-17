@@ -17,7 +17,7 @@ import {
 } from "react-icons/fi";
 import Layout from "../Admin/Layout";
 import Loader from "../../components/Loader";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   getExam,
   deleteExam,
@@ -80,19 +80,36 @@ export default function ExamManagement() {
   const [subjects, setSubjects] = useState([]);
   const [levels, setLevels] = useState([]);
   const [classCategories, setClassCategories] = useState([]);
-  const [viewMode, setViewMode] = useState("table"); // Default to table for compact view
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [page, setPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [viewMode, setViewMode] = useState("table"); 
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [showFilters, setShowFilters] = useState(
+    searchParams.has("class_category") || 
+    searchParams.has("subject") || 
+    searchParams.has("level") || 
+    searchParams.has("type") || 
+    searchParams.has("status")
+  );
 
-  // Filters
-  const [filterClassCategoryId, setFilterClassCategoryId] = useState("");
-  const [filterSubjectId, setFilterSubjectId] = useState("");
-  const [filterLevelId, setFilterLevelId] = useState("");
-  const [filterType, setFilterType] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
-  const [filterAddedBy, setFilterAddedBy] = useState("");
+  const page = parseInt(searchParams.get("page") || "1");
+  const itemsPerPage = parseInt(searchParams.get("page_size") || "10");
+
+  // Filters from URL
+  const filterClassCategoryId = searchParams.get("class_category") || "";
+  const filterSubjectId = searchParams.get("subject") || "";
+  const filterLevelId = searchParams.get("level") || "";
+  const filterType = searchParams.get("type") || "";
+  const filterStatus = searchParams.get("status") || "";
+  const filterAddedBy = searchParams.get("added_by") || "";
+
+  const updateFilter = (key, value) => {
+    setSearchParams(prev => {
+      if (value) prev.set(key, value);
+      else prev.delete(key);
+      prev.set("page", "1");
+      return prev;
+    });
+  };
 
   // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -124,65 +141,39 @@ export default function ExamManagement() {
   const [isSearchMode, setIsSearchMode] = useState(false);
 
   useEffect(() => {
-    // Only load if not searching (search handled by debounce effect)
-    if (!searchQuery) {
-      loadAll({ page, itemsPerPage });
-    }
-  }, [
-    page,
-    itemsPerPage,
-    // Add filters here to trigger reload in pagination mode
-    filterClassCategoryId,
-    filterSubjectId,
-    filterLevelId,
-    filterType,
-    filterStatus,
-  ]);
+    loadAll();
+  }, [searchParams]);
 
   // Search Debounce
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchQuery) {
-        loadAll({ search: searchQuery });
-      } else {
-        // Handled by the other effect when searchQuery becomes empty
-        if (isSearchMode) {
-          setPage(1);
-          setIsSearchMode(false);
-          loadAll({ page: 1, itemsPerPage });
-        }
+      // Only update if the query actually changed from what's in the URL
+      if (searchQuery !== (searchParams.get("search") || "")) {
+        setSearchParams(prev => {
+          if (searchQuery) prev.set("search", searchQuery);
+          else prev.delete("search");
+          prev.set("page", "1");
+          return prev;
+        }, { replace: true }); // Use replace to avoid polluting history
       }
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [
-    searchQuery,
-    // Add filters here to trigger reload in search mode
-    filterClassCategoryId,
-    filterSubjectId,
-    filterLevelId,
-    filterType,
-    filterStatus,
-  ]);
+  }, [searchQuery, searchParams, setSearchParams]);
 
-  const loadAll = async ({
-    page: currentPage = 1,
-    itemsPerPage: currentRowsPerPage = 10,
-    search = "",
-  }) => {
+  const loadAll = async () => {
     setLoading(true);
     try {
-      // Build Params
-      const params = new URLSearchParams();
+      const params = new URLSearchParams(searchParams);
+      if (!params.has("page_size")) params.set("page_size", itemsPerPage.toString());
+      if (!params.has("page")) params.set("page", page.toString());
+      
+      const isSearchModeActive = !!params.get("search");
+      setIsSearchMode(isSearchModeActive);
 
-      if (search) {
-        params.append("search", search);
-        setIsSearchMode(true);
-      } else {
-        params.append("page", currentPage);
-        params.append("page_size", currentRowsPerPage);
-        setIsSearchMode(false);
-      }
+      const examResp = await apiService.getAll(
+        `api/examsetter/?${params.toString()}`
+      );
 
       // Append Filters
       if (filterClassCategoryId)
@@ -378,12 +369,7 @@ export default function ExamManagement() {
   };
 
   const clearAllFilters = () => {
-    setFilterClassCategoryId("");
-    setFilterSubjectId("");
-    setFilterLevelId("");
-    setFilterType("");
-    setFilterStatus("");
-    setFilterAddedBy("");
+    setSearchParams({});
     setSearchQuery("");
   };
 
@@ -457,10 +443,7 @@ export default function ExamManagement() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 pt-2 border-t border-gray-100">
               <select
                 value={filterClassCategoryId}
-                onChange={(e) => {
-                  setFilterClassCategoryId(e.target.value);
-                  setPage(1);
-                }}
+                onChange={(e) => updateFilter("class_category", e.target.value)}
                 className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-teal-500"
               >
                 <option value="">All Classes</option>
@@ -473,10 +456,7 @@ export default function ExamManagement() {
 
               <select
                 value={filterSubjectId}
-                onChange={(e) => {
-                  setFilterSubjectId(e.target.value);
-                  setPage(1);
-                }}
+                onChange={(e) => updateFilter("subject", e.target.value)}
                 className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-teal-500"
               >
                 <option value="">All Subjects</option>
@@ -495,10 +475,7 @@ export default function ExamManagement() {
 
               <select
                 value={filterLevelId}
-                onChange={(e) => {
-                  setFilterLevelId(e.target.value);
-                  setPage(1);
-                }}
+                onChange={(e) => updateFilter("level", e.target.value)}
                 className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-teal-500"
               >
                 <option value="">All Levels</option>
@@ -511,10 +488,7 @@ export default function ExamManagement() {
 
               <select
                 value={filterType}
-                onChange={(e) => {
-                  setFilterType(e.target.value);
-                  setPage(1);
-                }}
+                onChange={(e) => updateFilter("type", e.target.value)}
                 className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-teal-500"
               >
                 <option value="">All Types</option>
@@ -524,10 +498,7 @@ export default function ExamManagement() {
 
               <select
                 value={filterStatus}
-                onChange={(e) => {
-                  setFilterStatus(e.target.value);
-                  setPage(1);
-                }}
+                onChange={(e) => updateFilter("status", e.target.value)}
                 className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-teal-500"
               >
                 <option value="">All Status</option>
@@ -537,7 +508,7 @@ export default function ExamManagement() {
 
               <select
                 value={filterAddedBy}
-                onChange={(e) => setFilterAddedBy(e.target.value)}
+                onChange={(e) => updateFilter("added_by", e.target.value)}
                 className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs focus:ring-teal-500"
               >
                 <option value="">All Creators</option>
@@ -712,7 +683,7 @@ export default function ExamManagement() {
               </span>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  onClick={() => setSearchParams(prev => { prev.set("page", Math.max(1, page - 1).toString()); return prev; })}
                   disabled={page === 1}
                   className="px-2 py-1 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white transition-colors"
                 >
@@ -720,7 +691,7 @@ export default function ExamManagement() {
                 </button>
                 <span className="font-medium text-gray-700">Page {page}</span>
                 <button
-                  onClick={() => setPage((p) => p + 1)} // Simple next logic, assumes totalCount logic handled elsewhere or API returns empty
+                  onClick={() => setSearchParams(prev => { prev.set("page", (page + 1).toString()); return prev; })} // Simple next logic
                   disabled={exams.length < itemsPerPage}
                   className="px-2 py-1 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white transition-colors"
                 >
