@@ -205,7 +205,7 @@ const QuestionForm = () => {
     text: "",
     solution: "",
     options: ["", "", "", ""],
-    correct_option: 0,
+    correct_option: null,
   });
 
   const [hindiQuestion, setHindiQuestion] = useState({
@@ -213,7 +213,7 @@ const QuestionForm = () => {
     text: "",
     solution: "",
     options: ["", "", "", ""],
-    correct_option: 0,
+    correct_option: null,
   });
 
   const [isTranslating, setIsTranslating] = useState(false);
@@ -693,6 +693,12 @@ const QuestionForm = () => {
           hasError = true;
         }
       });
+
+      if (englishQuestion.correct_option === null) {
+        toast.error("Please select a correct option for English.");
+        hasError = true;
+      }
+
       const englishOptions = englishQuestion.options.map((o) =>
         o.trim().toLowerCase(),
       );
@@ -715,6 +721,12 @@ const QuestionForm = () => {
           hasError = true;
         }
       });
+
+      if (hindiQuestion.correct_option === null) {
+        toast.error("Please select a correct option for Hindi.");
+        hasError = true;
+      }
+
       const hindiOptions = hindiQuestion.options.map((o) =>
         o.trim().toLowerCase(),
       );

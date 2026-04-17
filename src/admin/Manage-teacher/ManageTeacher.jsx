@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Layout from "../Admin/Layout";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchAdminTeachers,
@@ -36,38 +36,55 @@ const INDIAN_STATES = [
   "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan", 
   "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
 ];
-
 const ManageTeacher = () => {
   const dispatch = useDispatch();
   const { data: teacherData, status, error } = useSelector((s) => s.teachers);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [teachers, setTeachers] = useState([]);
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState(searchParams.get("search") || "");
   const [viewMode, setViewMode] = useState(
     window.innerWidth < 768 ? "card" : "list"
   );
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(Number(searchParams.get("page")) || 1);
+  const [itemsPerPage, setItemsPerPage] = useState(Number(searchParams.get("page_size")) || 10);
   const [qualifications, setQualifications] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [classCategories, setClassCategories] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedQualifications, setSelectedQualifications] = useState([]);
-  const [selectedSubjects, setSelectedSubjects] = useState([]);
-  const [selectedClassCategories, setSelectedClassCategories] = useState([]);
+
+  // Initialize filters from searchParams
+  const [selectedQualifications, setSelectedQualifications] = useState(
+    searchParams.get("qualifications")?.split(",").filter(Boolean) || []
+  );
+  const [selectedSubjects, setSelectedSubjects] = useState(
+    searchParams.get("subjects")?.split(",").map(Number).filter(Boolean) || []
+  );
+  const [selectedClassCategories, setSelectedClassCategories] = useState(
+    searchParams.get("class_categories")?.split(",").filter(Boolean) || []
+  );
+
   const [locationFilters, setLocationFilters] = useState({
-    state: [],
-    district: [],
-    pincode: [],
+    state: searchParams.get("states")?.split(",").filter(Boolean) || [],
+    district: searchParams.get("districts")?.split(",").filter(Boolean) || [],
+    pincode: searchParams.get("pincodes")?.split(",").filter(Boolean) || [],
   });
   const [locationInputs, setLocationInputs] = useState({
     state: "",
     district: "",
     pincode: "",
   });
-  const [selectedStatuses, setSelectedStatuses] = useState([]);
-  const [selectedGenders, setSelectedGenders] = useState([]);
-  const [experienceRange, setExperienceRange] = useState({ min: "", max: "" });
+  const [selectedStatuses, setSelectedStatuses] = useState(
+    searchParams.get("statuses")?.split(",").filter(Boolean) || []
+  );
+  const [selectedGenders, setSelectedGenders] = useState(
+    searchParams.get("genders")?.split(",").filter(Boolean) || []
+  );
+  const [experienceRange, setExperienceRange] = useState({ 
+    min: searchParams.get("exp_min") || "", 
+    max: searchParams.get("exp_max") || "" 
+  });
   const [expandedSections, setExpandedSections] = useState({
     location: false,
     qualification: false,
@@ -116,21 +133,61 @@ const ManageTeacher = () => {
     const normalized = rawList.map(item => item.teacher ? { ...item.teacher, ...item, teacher: undefined } : item);
     setTeachers(normalized);
   }, [teacherData]);
+
+  // Sync state to URL (Debounced)
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchValue.trim()) dispatch(fetchAdminTeachers({ search: searchValue }));
-      else dispatch(fetchAdminTeachers({}));
-      setCurrentPage(1);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchValue, dispatch]);
-  useEffect(() => {
-    const onResize = () =>
-      setViewMode(window.innerWidth < 768 ? "card" : "list");
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
+      const params = new URLSearchParams();
+      if (searchValue) params.set("search", searchValue);
+      if (currentPage > 1) params.set("page", currentPage.toString());
+      if (itemsPerPage !== 10) params.set("page_size", itemsPerPage.toString());
+      if (selectedQualifications.length) params.set("qualifications", selectedQualifications.join(","));
+      if (selectedSubjects.length) params.set("subjects", selectedSubjects.join(","));
+      if (selectedClassCategories.length) params.set("class_categories", selectedClassCategories.join(","));
+      if (selectedStatuses.length) params.set("statuses", selectedStatuses.join(","));
+      if (selectedGenders.length) params.set("genders", selectedGenders.join(","));
+      if (locationFilters.state.length) params.set("states", locationFilters.state.join(","));
+      if (locationFilters.district.length) params.set("districts", locationFilters.district.join(","));
+      if (locationFilters.pincode.length) params.set("pincodes", locationFilters.pincode.join(","));
+      if (experienceRange.min) params.set("exp_min", experienceRange.min);
+      if (experienceRange.max) params.set("exp_max", experienceRange.max);
 
+      setSearchParams(params, { replace: true });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [
+    searchValue,
+    currentPage,
+    itemsPerPage,
+    selectedQualifications,
+    selectedSubjects,
+    selectedClassCategories,
+    selectedStatuses,
+    selectedGenders,
+    locationFilters,
+    experienceRange,
+    setSearchParams
+  ]);
+
+  // Handle data fetching
+  useEffect(() => {
+    const query = searchParams.get("search");
+    dispatch(fetchAdminTeachers({ search: query || "" }));
+  }, [dispatch, searchParams.get("search")]); // Only re-fetch if Search Query changes in URL
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchValue,
+    selectedQualifications,
+    selectedSubjects,
+    selectedClassCategories,
+    selectedStatuses,
+    selectedGenders,
+    locationFilters,
+    experienceRange,
+  ]);
   const availableDistricts = useMemo(() => {
     const districts = new Set();
     teachers.forEach((t) => {
@@ -273,6 +330,7 @@ const ManageTeacher = () => {
   };
 
   const handleClearFilters = () => {
+    setSearchParams({}, { replace: true });
     setSelectedQualifications([]);
     setSelectedSubjects([]);
     setSelectedClassCategories([]);
@@ -281,6 +339,8 @@ const ManageTeacher = () => {
     setLocationFilters({ state: [], district: [], pincode: [] });
     setLocationInputs({ state: "", district: "", pincode: "" });
     setExperienceRange({ min: "", max: "" });
+    setSearchValue("");
+    setCurrentPage(1);
   };
 
   const toggleSection = (section) => {

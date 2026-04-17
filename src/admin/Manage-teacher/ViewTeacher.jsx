@@ -348,7 +348,7 @@ const ViewTeacherAdmin = () => {
   };
 
   const handleBackClick = () => {
-    navigate("/admin/manage/teacher");
+    navigate(-1);
   };
 
   return (
