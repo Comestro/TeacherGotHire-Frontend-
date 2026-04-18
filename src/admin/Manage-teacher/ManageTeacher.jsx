@@ -619,11 +619,11 @@ const ManageTeacher = () => {
                 const subjects = subNames.filter(Boolean).join(", ") || "—";
                 const categories = catNames.filter(Boolean).join(", ") || "—";
                 const qualifications =
-                  (t.teacherqualifications || [])
-                    .map((q) => q?.qualification?.name)
+                  (Array.isArray(t.qualifications) ? t.qualifications : [])
+                    .concat((t.teacherqualifications || []).map(q => q?.qualification?.name))
                     .filter(Boolean)
-                    .join(", ") ||
-                  "—";
+                    .filter((v, i, a) => a.indexOf(v) === i)
+                    .join(", ") || "—";
 
                 return (
                   <div
@@ -765,12 +765,11 @@ const ManageTeacher = () => {
                       const subjects = subNames.filter(Boolean).join(", ") || "—";
                       const categories = catNames.filter(Boolean).join(", ") || "—";
                       const qualifications =
-                        (t.teacherqualifications || [])
-                           .map((q) => q?.qualification?.name)
-                           .filter(Boolean)
-                           .join(", ") ||
-                        latestEducation?.qualification?.name ||
-                        "—";
+                        (Array.isArray(t.qualifications) ? t.qualifications : [])
+                          .concat((t.teacherqualifications || []).map(q => q?.qualification?.name))
+                          .filter(Boolean)
+                          .filter((v, i, a) => a.indexOf(v) === i)
+                          .join(", ") || "—";
                       
                       const joinDate = t.date ? new Date(t.date).toLocaleDateString('en-IN', {
                         day: '2-digit',
