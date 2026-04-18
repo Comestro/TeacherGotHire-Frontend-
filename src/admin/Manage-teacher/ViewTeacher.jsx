@@ -32,7 +32,6 @@ const ViewTeacherAdmin = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [teacherData, setTeacherData] = useState(null);
   const [attempts, setAttempts] = useState([]);
-  const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
@@ -343,593 +342,498 @@ const ViewTeacherAdmin = () => {
     setOpenSnackbar(true);
   };
 
-  const handleTabChange = (newValue) => {
-    setTabValue(newValue);
-  };
-
   const handleBackClick = () => {
     navigate(-1);
   };
 
+  // Helper to group attempts for the analytical table
+  const getAnalyticalRows = () => {
+    if (!attempts || attempts.length === 0) return [];
+
+    const groupedData = [];
+
+    attempts.forEach((attempt) => {
+      const exam = attempt.exam || {};
+      const classCat = exam.class_category?.name || "Unknown";
+      const subject = exam.subject?.subject_name || exam.subject_name || "Unknown";
+      const medium = exam.language || "Unknown";
+      const level = exam.level?.name || "Unknown";
+
+      let classGroup = groupedData.find((g) => g.name === classCat);
+      if (!classGroup) {
+        classGroup = { name: classCat, subjects: [], rowCount: 0 };
+        groupedData.push(classGroup);
+      }
+
+      let subGroup = classGroup.subjects.find((s) => s.name === subject && s.medium === medium);
+      if (!subGroup) {
+        subGroup = { name: subject, medium: medium, levels: [], rowCount: 0 };
+        classGroup.subjects.push(subGroup);
+      }
+
+      let levelGroup = subGroup.levels.find((l) => l.name === level);
+      if (!levelGroup) {
+        levelGroup = { name: level, attempts: [], rowCount: 0 };
+        subGroup.levels.push(levelGroup);
+      }
+
+      levelGroup.attempts.push(attempt);
+      levelGroup.rowCount++;
+      subGroup.rowCount++;
+      classGroup.rowCount++;
+    });
+
+    const rows = [];
+    groupedData.forEach((classGroup, cIdx) => {
+      classGroup.subjects.forEach((subGroup, sIdx) => {
+        subGroup.levels.forEach((levelGroup, lIdx) => {
+          levelGroup.attempts.forEach((attempt, aIdx) => {
+            const interviews = (attempt.interviews || []).filter(iv => 
+              String(iv.status || "").toLowerCase() === "fulfilled"
+            );
+            
+            // If there are multiple interviews, we might need more rows, 
+            // but the image shows interview as part of the attempt row.
+            // Let's take the first interview or just map them.
+            const primaryInterview = interviews[0] || {};
+
+            rows.push({
+              classCat: classGroup.name,
+              subject: subGroup.name,
+              medium: subGroup.medium,
+              level: levelGroup.name,
+              attemptNumber: attempt.attempt || (aIdx + 1),
+              examResult: attempt.percentage !== null ? `${attempt.percentage}%` : (attempt.correct_answer !== undefined ? `${Math.round((attempt.correct_answer / (attempt.total_questions || 1)) * 100)}%` : "-"),
+              examDate: attempt.created_at ? formatDate(attempt.created_at, { dateOnly: true }) : "-",
+              interviewAttempt: primaryInterview.attempt || "-",
+              interviewResult: primaryInterview.grade !== undefined ? `${Math.round((primaryInterview.grade / (primaryInterview.total || 10)) * 100)}%` : "-",
+              interviewDate: primaryInterview.created_at ? formatDate(primaryInterview.created_at, { dateOnly: true }) : "-",
+              
+              // Spans
+              classSpan: (sIdx === 0 && lIdx === 0 && aIdx === 0) ? classGroup.rowCount : 0,
+              subSpan: (lIdx === 0 && aIdx === 0) ? subGroup.rowCount : 0,
+              levelSpan: (aIdx === 0) ? levelGroup.rowCount : 0,
+              
+              // Total Span for Teacher ID/Name
+              totalSpan: rows.length === 0 ? attempts.length : 0
+            });
+          });
+        });
+      });
+    });
+
+    return rows;
+  };
+
+  const analyticalRows = getAnalyticalRows();
+
   return (
     <Layout>
-      <div className="p-4 md:p-6 bg-gray-50 min-h-[calc(100vh-64px)]">
-        {/* Breadcrumbs / Header */}
-        <div className="mb-4">
-          <div className="flex items-center gap-3 mb-3">
-            <button
-              onClick={handleBackClick}
-              className="px-3 py-2 rounded border bg-white text-sm"
-            >
-              ← Back to Teacher List
-            </button>
-            <nav className="text-sm text-gray-600">
-              <Link to="/admin/dashboard" className="hover:underline">
-                Dashboard
-              </Link>
-              <span className="mx-2">›</span>
-              <Link to="/admin/manage/teacher" className="hover:underline">
-                Manage Teachers
-              </Link>
-              <span className="mx-2">›</span>
-              <span className="text-gray-900 font-medium">
-                {loading
-                  ? "Loading..."
-                  : teacherData?.Fname || teacherData?.firstName
-                    ? `${teacherData?.Fname || teacherData?.firstName} ${teacherData?.Lname || teacherData?.lastName}`
-                    : "Teacher Profile"}
-              </span>
-            </nav>
-          </div>
-
-          {/* Filters */}
-          {/* FilterPanel not included here - keep if available in project */}
-        </div>
-
-        {/* Main card */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="p-4 md:p-6 border-b bg-gradient-to-r from-gray-100 to-white flex flex-col md:flex-row items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold">Teacher Information</h1>
-              {teacherData && (
-                <div className="mt-2 text-sm text-gray-700">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">
-                      {teacherData?.Fname || teacherData?.firstName}{" "}
-                      {teacherData?.Lname || teacherData?.lastName}
-                    </span>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full ${teacherData?.isActive || teacherData?.is_verified ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
-                    >
-                      {teacherData?.isActive || teacherData?.is_verified
-                        ? "ACTIVE"
-                        : "INACTIVE"}
-                    </span>
-                  </div>
-                  <div className="mt-2 text-sm text-gray-500">
-                    Email: {teacherData?.email || "-"} · Phone:{" "}
-                    {teacherData?.profiles?.phone_number || "-"}
-                  </div>
-                </div>
-              )}
+      <div className="p-4 md:p-8 bg-[#f8fafc] min-h-screen">
+        {/* Header Section */}
+        <div className="max-w-7xl mx-auto space-y-8">
+          {/* Top Actions & Breadcrumbs */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col gap-2">
+              <nav className="flex items-center gap-2 text-sm font-medium text-slate-500">
+                <Link to="/admin/dashboard" className="hover:text-teal-600 transition-colors">Dashboard</Link>
+                <span>/</span>
+                <Link to="/admin/manage/teacher" className="hover:text-teal-600 transition-colors">Teachers</Link>
+                <span>/</span>
+                <span className="text-slate-900 font-bold">Profile Details</span>
+              </nav>
+              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+                Teacher Profile
+              </h1>
             </div>
-
-            <div className="flex gap-2">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleBackClick}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
+              >
+                <FiArrowLeft /> Back
+              </button>
               <button
                 onClick={() => setOpenDeactivateModal(true)}
                 disabled={loading || !teacherData}
-                className="px-3 py-2 rounded bg-red-600 text-white text-sm"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-rose-100 disabled:opacity-50"
               >
-                Deactivate Account
+                Deactivate
               </button>
             </div>
           </div>
 
-          <div className="p-4 md:p-6">
-            {loading ? (
-              <DataLoader
-                message="Compiling teacher dossier..."
-                minHeight="400px"
-              />
-            ) : error ? (
-              <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded">
-                {error}
+          {loading ? (
+            <div className="bg-white rounded-3xl p-20 shadow-xl shadow-slate-200/50 flex flex-col items-center justify-center border border-slate-100">
+              <DataLoader message="Fetching comprehensive teacher profile..." />
+            </div>
+          ) : error ? (
+            <div className="bg-rose-50 border border-rose-100 text-rose-800 p-6 rounded-2xl flex items-center gap-4">
+              <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center text-rose-600 shrink-0">
+                <FiActivity size={24} />
               </div>
-            ) : !teacherData ? (
-              <div className="bg-blue-50 border border-blue-200 text-blue-700 p-4 rounded">
-                No teacher data available.
+              <div>
+                <h4 className="font-bold">Error Loaded</h4>
+                <p className="text-sm opacity-90">{error}</p>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Left column */}
-                <div className="space-y-4">
-                  <div className="bg-white p-4 rounded shadow-sm">
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={teacherData?.profiles?.profile_picture}
-                        alt="avatar"
-                        className="w-20 h-20 rounded-full object-cover bg-gray-100"
-                      />
-                      <div>
-                        <div className="text-lg font-semibold">
-                          {teacherData?.Fname} {teacherData?.Lname}
+            </div>
+          ) : !teacherData ? (
+            <div className="bg-amber-50 border border-amber-100 text-amber-800 p-8 rounded-2xl text-center">
+              No data found for this teacher.
+            </div>
+          ) : (
+            <>
+              {/* Primary Information Card */}
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-teal-500/20 to-indigo-500/20 rounded-3xl blur opacity-25 transition duration-1000 group-hover:opacity-40"></div>
+                <div className="relative bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
+                  <div className="px-8 py-10">
+                    <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
+                      <div className="relative shrink-0">
+                        <div className="absolute inset-0 bg-teal-500/10 rounded-full animate-pulse"></div>
+                        <img
+                          src={teacherData?.profiles?.profile_picture || "https://via.placeholder.com/150"}
+                          alt="Teacher"
+                          className="relative w-40 h-40 rounded-full object-cover border-4 border-white shadow-2xl"
+                        />
+                        <div className={`absolute bottom-2 right-2 w-6 h-6 rounded-full border-4 border-white ${teacherData?.is_active || teacherData?.is_verified ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
+                      </div>
+                      
+                      <div className="flex-1 text-center md:text-left space-y-4">
+                        <div className="flex flex-col md:flex-row md:items-end gap-3 justify-center md:justify-start">
+                          <h2 className="text-4xl font-black text-slate-900 tracking-tight">
+                            {teacherData?.Fname} {teacherData?.Lname}
+                          </h2>
+                          <div className="px-3 py-1 bg-teal-50 text-teal-700 text-sm font-bold rounded-full border border-teal-100 uppercase tracking-wider">
+                            ID: {teacherData?.user_code || id}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {teacherData?.profiles?.language || "-"}
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+                          <div className="flex items-center gap-3 text-slate-600">
+                            <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-500 shrink-0 border border-slate-100">
+                              <FiUser size={18} />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Status</p>
+                              <p className="font-semibold text-slate-700">
+                                {teacherData?.is_active || teacherData?.is_verified ? "ACTIVE ACCOUNT" : "INACTIVE ACCOUNT"}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-3 text-slate-600">
+                            <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-500 shrink-0 border border-slate-100">
+                              <FiActivity size={18} />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Email Address</p>
+                              <p className="font-semibold text-slate-700 truncate max-w-[200px]">{teacherData?.email || "—"}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-3 text-slate-600">
+                            <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-500 shrink-0 border border-slate-100">
+                              <FiActivity size={18} />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Mobile Number</p>
+                              <p className="font-semibold text-slate-700">{teacherData?.profiles?.phone_number || teacherData?.phone_number || "—"}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 pt-2 justify-center md:justify-start">
+                          {teacherData?.teacherclasscategory?.map((c, i) => (
+                            <span key={i} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold border border-slate-200">
+                              {c.class_category?.name || c.name}
+                            </span>
+                          ))}
                         </div>
                       </div>
                     </div>
-                    <div className="mt-4 text-sm text-gray-600">
-                      <div>
-                        <strong>Contact</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Analytical & Exam Attempts Section (As per design) */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-1.5 h-8 bg-teal-600 rounded-full"></div>
+                  <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">Analytical Level & Exam Attempts</h3>
+                </div>
+                
+                <div className="bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-sm">
+                      <thead>
+                        <tr className="bg-slate-50">
+                          <th className="border-b border-r border-slate-200 p-4 font-black text-slate-600 text-left whitespace-nowrap">Teacher ID</th>
+                          <th className="border-b border-r border-slate-200 p-4 font-black text-slate-600 text-left whitespace-nowrap">Name or Bio-data</th>
+                          <th className="border-b border-r border-slate-200 p-4 font-black text-slate-600 text-left whitespace-nowrap">Class Category</th>
+                          <th className="border-b border-r border-slate-200 p-4 font-black text-slate-600 text-left whitespace-nowrap">Subject</th>
+                          <th className="border-b border-r border-slate-200 p-4 font-black text-slate-600 text-left whitespace-nowrap">Medium of Subject</th>
+                          <th className="border-b border-r border-slate-200 p-4 font-black text-slate-600 text-left whitespace-nowrap">Level</th>
+                          <th className="border-b border-r border-slate-200 p-4 font-black text-slate-600 text-left whitespace-nowrap">Exam Attempt</th>
+                          <th className="border-b border-r border-slate-200 p-4 font-black text-slate-600 text-left whitespace-nowrap">Exam Result</th>
+                          <th className="border-b border-r border-slate-200 p-4 font-black text-slate-600 text-left whitespace-nowrap">Exam Date</th>
+                          <th className="border-b border-r border-slate-200 p-4 font-black text-slate-600 text-left whitespace-nowrap">Interview Attempt</th>
+                          <th className="border-b border-r border-slate-200 p-4 font-black text-slate-600 text-left whitespace-nowrap">Interview Result</th>
+                          <th className="border-b border-slate-200 p-4 font-black text-slate-600 text-left whitespace-nowrap">Interview Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {analyticalRows.length > 0 ? (
+                          analyticalRows.map((row, idx) => (
+                            <tr key={idx} className="hover:bg-teal-50/30 transition-colors">
+                              {idx === 0 && (
+                                <td rowSpan={analyticalRows.length} className="border-b border-r border-slate-200 p-4 font-bold text-slate-600 align-top bg-slate-50/40">
+                                  {teacherData?.user_code || id}
+                                </td>
+                              )}
+                              {idx === 0 && (
+                                <td rowSpan={analyticalRows.length} className="border-b border-r border-slate-200 p-4 font-bold text-slate-600 align-top bg-slate-50/40">
+                                  {teacherData?.Fname} {teacherData?.Lname}
+                                </td>
+                              )}
+                              {row.classSpan > 0 && (
+                                <td rowSpan={row.classSpan} className="border-b border-r border-slate-200 p-4 font-bold text-slate-800 align-top">
+                                  {row.classCat}
+                                </td>
+                              )}
+                              {row.subSpan > 0 && (
+                                <td rowSpan={row.subSpan} className="border-b border-r border-slate-200 p-4 font-semibold text-teal-700 align-top">
+                                  {row.subject}
+                                </td>
+                              )}
+                              {row.subSpan > 0 && (
+                                <td rowSpan={row.subSpan} className="border-b border-r border-slate-200 p-4 text-slate-600 align-top">
+                                  {row.medium}
+                                </td>
+                              )}
+                              {row.levelSpan > 0 && (
+                                <td rowSpan={row.levelSpan} className="border-b border-r border-slate-200 p-4 font-medium text-slate-700 align-top">
+                                  {row.level}
+                                </td>
+                              )}
+                              <td className="border-b border-r border-slate-200 p-4 text-slate-600 font-medium">
+                                {row.attemptNumber}
+                              </td>
+                              <td className="border-b border-r border-slate-200 p-4">
+                                <span className={`font-bold ${parseFloat(row.examResult) >= 60 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                  {row.examResult}
+                                </span>
+                              </td>
+                              <td className="border-b border-r border-slate-200 p-4 text-slate-500 whitespace-nowrap font-medium italic">
+                                {row.examDate}
+                              </td>
+                              <td className="border-b border-r border-slate-200 p-4 text-slate-600 text-center font-medium">
+                                {row.interviewAttempt}
+                              </td>
+                              <td className="border-b border-r border-slate-200 p-4 font-bold text-slate-800 text-center">
+                                {row.interviewResult}
+                              </td>
+                              <td className="border-b border-slate-200 p-4 text-slate-500 whitespace-nowrap text-center font-medium italic">
+                                {row.interviewDate}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={12} className="p-10 text-center text-slate-400 italic font-medium">
+                              No analytical data available for this teacher
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              {/* Other Sections (Replacement for Tabs) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Personal Information */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-8 bg-indigo-600 rounded-full"></div>
+                    <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">Basic Information</h3>
+                  </div>
+                  <div className="bg-white rounded-3xl border border-slate-100 shadow-xl p-8 space-y-6">
+                    <div className="grid grid-cols-2 gap-8">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Full Name</p>
+                        <p className="font-bold text-slate-800">{teacherData?.Fname} {teacherData?.Lname}</p>
                       </div>
-                      <div>Email: {teacherData?.email || "-"}</div>
-                      <div>
-                        Phone: {teacherData?.profiles?.phone_number || "-"}
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gender</p>
+                        <p className="font-bold text-slate-800 capitalize">{teacherData?.profiles?.gender || "—"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Marital Status</p>
+                        <p className="font-bold text-slate-800 capitalize">{teacherData?.profiles?.marital_status || "—"}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Religion</p>
+                        <p className="font-bold text-slate-800 capitalize">{teacherData?.profiles?.religion || "—"}</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Right column - Tabs and content */}
-                <div className="md:col-span-2">
-                  <div className="bg-white p-4 rounded  shadow-sm border border-gray-100">
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {[
-                        "Overview",
-                        "Specializations",
-                        "Qualifications",
-                        "Experience",
-                        "Attempts",
-                        "Job Locations",
-                        "Skills",
-                        "Addresses",
-                      ].map((label, idx) => (
-                        <button
-                          key={label}
-                          onClick={() => handleTabChange(idx)}
-                          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 uppercase tracking-wider ${tabValue === idx ? "bg-teal-600 text-white shadow-md ring-2 ring-teal-100" : "bg-gray-50 text-gray-500 hover:bg-gray-100 border border-gray-200"}`}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div>
-                      {/* Overview */}
-                      {tabValue === 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="p-3 border rounded">
-                            <div className="text-sm text-gray-500">Basic</div>
-                            <div className="mt-2 text-sm">
-                              Name: {teacherData?.Fname} {teacherData?.Lname}
-                            </div>
-                            <div className="text-sm">
-                              Email: {teacherData?.email}
-                            </div>
-                            <div className="text-sm">
-                              Phone:{" "}
-                              {teacherData?.profiles?.phone_number ?? "—"}
-                            </div>
-                            <div className="text-sm">
-                              Gender: {teacherData?.profiles?.gender ?? "—"}
+                {/* Skills & Experience Summary */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-8 bg-amber-500 rounded-full"></div>
+                    <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">Professional Skills</h3>
+                  </div>
+                  <div className="bg-white rounded-3xl border border-slate-100 shadow-xl p-8 space-y-6">
+                    <div className="flex flex-wrap gap-3">
+                      {teacherData?.teacherskill?.length > 0 ? (
+                        teacherData.teacherskill.map((s, i) => (
+                          <div key={i} className="group relative">
+                            <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-400 to-orange-400 rounded-xl blur opacity-25 group-hover:opacity-100 transition duration-300"></div>
+                            <div className="relative px-4 py-2 bg-white border border-amber-100 text-amber-900 rounded-xl text-xs font-black shadow-sm tracking-wide">
+                              {s.skill?.name || s.name}
                             </div>
                           </div>
-                          <div className="p-3 border rounded">
-                            <div className="text-sm text-gray-500">Profile</div>
-                            <div className="mt-2 text-sm">
-                              Religion: {teacherData?.profiles?.religion ?? "—"}
-                            </div>
-                            <div className="text-sm">
-                              Language: {teacherData?.profiles?.language ?? "—"}
-                            </div>
-                            <div className="text-sm">
-                              Marital status:{" "}
-                              {teacherData?.profiles?.marital_status ?? "—"}
-                            </div>
-                          </div>
-                        </div>
+                        ))
+                      ) : (
+                        <p className="text-slate-400 italic">No skills listed</p>
                       )}
+                    </div>
+                  </div>
+                </div>
 
-                      {/* Specializations */}
-                      {tabValue === 1 && (
-                        <div className="space-y-6">
+                {/* Qualifications Section */}
+                <div className="space-y-6 lg:col-span-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-8 bg-blue-600 rounded-full"></div>
+                    <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">Educational Qualifications</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {teacherData?.teacherqualifications?.length > 0 ? (
+                      teacherData.teacherqualifications.map((q, i) => (
+                        <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-lg hover:shadow-xl transition-shadow space-y-4">
+                          <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 border border-blue-100">
+                             <FiAward size={24} />
+                          </div>
                           <div>
-                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                              <FiStar className="text-teal-500" /> Class
-                              Categories
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                              {teacherData?.teacherclasscategory?.length > 0 ? (
-                                teacherData.teacherclasscategory.map((c, i) => (
-                                  <div
-                                    key={i}
-                                    className="px-4 py-2 bg-teal-50 border border-teal-100 text-teal-700 rounded-xl text-sm font-semibold shadow-sm"
-                                  >
-                                    {c.class_category?.name || c.name}
-                                  </div>
-                                ))
-                              ) : (
-                                <span className="text-gray-400 italic text-sm">
-                                  No class categories assigned
-                                </span>
-                              )}
-                            </div>
+                            <h4 className="text-lg font-black text-slate-900 leading-tight">{q.qualification?.name}</h4>
+                            <p className="text-slate-500 font-medium text-sm mt-1">{q.institution}</p>
                           </div>
-
-                          <div className="pt-2">
-                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                              <FiBook className="text-teal-500" /> Teaching
-                              Subjects
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                              {teacherData?.teachersubjects?.length > 0 ? (
-                                teacherData.teachersubjects.map((s, i) => (
-                                  <div
-                                    key={i}
-                                    className="px-4 py-2 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-xl text-sm font-semibold shadow-sm"
-                                  >
-                                    {s.subject_name || s}
-                                  </div>
-                                ))
-                              ) : (
-                                <span className="text-gray-400 italic text-sm">
-                                  No subjects specified
-                                </span>
-                              )}
-                            </div>
+                          <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{q.year_of_passing}</span>
+                            <span className="px-3 py-1 bg-teal-50 text-teal-700 rounded-lg text-xs font-bold border border-teal-100">
+                              {q.grade_or_percentage || "N/A"}
+                            </span>
                           </div>
                         </div>
-                      )}
+                      ))
+                    ) : (
+                      <div className="col-span-full bg-white p-10 rounded-3xl border border-slate-100 shadow flex items-center justify-center text-slate-400 italic">
+                        No qualifications found
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-                      {/* Qualifications */}
-                      {tabValue === 2 && (
-                        <div className="space-y-3">
-                          {teacherData?.teacherqualifications?.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              {teacherData.teacherqualifications.map((q, i) => (
-                                <div key={i} className="p-3 border rounded">
-                                  <div className="font-semibold">
-                                    {q.qualification?.name}
-                                  </div>
-                                  <div className="text-sm text-gray-500">
-                                    {q.institution}
-                                  </div>
-                                  <div className="text-xs text-gray-400">
-                                    {q.year_of_passing}
-                                  </div>
-                                </div>
-                              ))}
+                {/* Experience Section */}
+                <div className="space-y-6 lg:col-span-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-8 bg-purple-600 rounded-full"></div>
+                    <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">Teaching Experience</h3>
+                  </div>
+                  <div className="space-y-4">
+                    {teacherData?.teacherexperiences?.length > 0 ? (
+                      teacherData.teacherexperiences.map((exp, idx) => (
+                        <div key={idx} className="bg-white p-8 rounded-3xl border border-slate-100 shadow-lg flex flex-col md:flex-row gap-8">
+                          <div className="shrink-0">
+                            <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 border border-purple-100">
+                              <FiBriefcase size={32} />
                             </div>
-                          ) : (
-                            <div className="text-sm text-gray-500">
-                              No qualification information available
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Experience */}
-                      {tabValue === 3 && (
-                        <div className="space-y-3">
-                          {teacherData?.teacherexperiences?.length > 0 ? (
-                            teacherData.teacherexperiences.map((exp, idx) => (
-                              <div key={idx} className="p-3 border rounded">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <div className="font-semibold">
-                                      {exp.institution}
-                                    </div>
-                                    <div className="text-sm text-gray-500">
-                                      Role: {exp.role?.jobrole_name}
-                                    </div>
-                                  </div>
-                                  <div className="text-sm text-gray-500">
-                                    {exp.start_date
-                                      ? formatDate(exp.start_date, {
-                                          dateOnly: true,
-                                        })
-                                      : ""}{" "}
-                                    -{" "}
-                                    {exp.end_date
-                                      ? formatDate(exp.end_date, {
-                                          dateOnly: true,
-                                        })
-                                      : "Present"}
-                                  </div>
-                                </div>
-                                {exp.achievements && (
-                                  <div className="mt-2 text-sm text-gray-600">
-                                    {exp.achievements}
-                                  </div>
-                                )}
+                          </div>
+                          <div className="flex-1 space-y-4">
+                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-2">
+                              <div>
+                                <h4 className="text-xl font-black text-slate-900">{exp.institution}</h4>
+                                <p className="text-purple-700 font-bold text-sm">{exp.role?.jobrole_name}</p>
                               </div>
-                            ))
-                          ) : (
-                            <div className="text-sm text-gray-500">
-                              No experience available
+                              <div className="px-4 py-2 bg-slate-50 rounded-xl text-slate-500 text-xs font-bold border border-slate-100 whitespace-nowrap">
+                                {exp.start_date ? formatDate(exp.start_date, { dateOnly: true }) : ""} - {exp.end_date ? formatDate(exp.end_date, { dateOnly: true }) : "Present"}
+                              </div>
                             </div>
-                          )}
+                            {exp.achievements && (
+                              <p className="text-slate-600 text-sm leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                {exp.achievements}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      )}
+                      ))
+                    ) : (
+                      <div className="bg-white p-10 rounded-3xl border border-slate-100 shadow flex items-center justify-center text-slate-400 italic">
+                        No experience details found
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-                      {/* Attempts */}
-                      {tabValue === 4 && (
-                        <div className="space-y-3">
-                          {attempts?.length > 0 ? (
-                            attempts.map((a, idx) => {
-                              const correct =
-                                a.correct_answer ?? a.score ?? null;
-                              const total =
-                                a.total_question ??
-                                a.total_questions ??
-                                a.total ??
-                                null;
-                              const pct =
-                                typeof correct === "number" &&
-                                typeof total === "number" &&
-                                total > 0
-                                  ? Math.round((correct / total) * 100)
-                                  : (a.calculate_percentage ??
-                                    a.percentage ??
-                                    null);
-                              const passed = pct !== null ? pct >= 60 : null;
-                              return (
-                                <div key={idx} className="p-3 border rounded">
-                                  <div className="flex justify-between">
-                                    <div>
-                                      <div className="font-semibold">
-                                        {a.exam?.name || a.exam_name || "Exam"}
-                                      </div>
-                                      <div className="text-sm text-gray-500">
-                                        Score: {correct ?? "—"}/{total ?? "—"}
-                                      </div>
-                                    </div>
-                                    <div className="text-right">
-                                      <div className="text-xs text-gray-500">
-                                        {a.created_at
-                                          ? formatDate(a.created_at)
-                                          : ""}
-                                      </div>
-                                      {pct !== null && (
-                                        <div
-                                          className={`mt-1 inline-block px-2 py-0.5 text-xs rounded ${passed ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
-                                        >
-                                          {passed
-                                            ? `Pass (${pct}%)`
-                                            : `Fail (${pct}%)`}
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {a.interviews && a.interviews.length > 0 && (
-                                    <div className="mt-3">
-                                      <div className="font-medium">
-                                        Interviews
-                                      </div>
-                                      <div className="space-y-2 mt-2">
-                                        {a.interviews
-                                          .filter(
-                                            (iv) =>
-                                              String(
-                                                iv.status || "",
-                                              ).toLowerCase() === "fulfilled",
-                                          )
-                                          .map((iv) => {
-                                            const score =
-                                              iv.grade ?? iv.score ?? null;
-                                            const tot = iv.total ?? 10;
-                                            const percentage =
-                                              typeof score === "number" &&
-                                              typeof tot === "number" &&
-                                              tot > 0
-                                                ? Math.round(
-                                                    (score / tot) * 100,
-                                                  )
-                                                : null;
-                                            const passedIv =
-                                              percentage !== null
-                                                ? percentage >= 60
-                                                : null;
-                                            return (
-                                              <div
-                                                key={iv.id}
-                                                className="p-2 bg-gray-50 rounded"
-                                              >
-                                                <div className="flex justify-between">
-                                                  <div>
-                                                    <div className="text-sm">
-                                                      Status:{" "}
-                                                      <strong>
-                                                        {iv.status}
-                                                      </strong>
-                                                    </div>
-                                                    <div className="text-xs text-gray-500">
-                                                      Attempt: {iv.attempt}
-                                                    </div>
-                                                  </div>
-                                                  <div>
-                                                    {percentage !== null && (
-                                                      <div
-                                                        className={`text-xs px-2 py-0.5 rounded ${passedIv ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
-                                                      >
-                                                        {passedIv
-                                                          ? `Pass (${percentage}%)`
-                                                          : `Fail (${percentage}%)`}
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            );
-                                          })}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })
-                          ) : (
-                            <div className="text-sm text-gray-500">
-                              No exam attempts found
+                {/* Job Locations & Addresses */}
+                <div className="space-y-6">
+                   <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-8 bg-rose-500 rounded-full"></div>
+                    <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">Preferred Job Locations</h3>
+                  </div>
+                  <div className="bg-white rounded-3xl border border-slate-100 shadow-xl p-8 space-y-4">
+                     {jobLocations.length > 0 ? (
+                        <div className="flex flex-wrap gap-4">
+                          {jobLocations.map((loc, i) => (
+                            <div key={i} className="flex flex-col gap-1 p-4 bg-rose-50 rounded-2xl border border-rose-100 min-w-[200px]">
+                              <FiMapPin className="text-rose-500 mb-2" size={20} />
+                              <p className="text-xs font-black text-rose-400 uppercase tracking-widest">Target Location</p>
+                              <p className="font-bold text-slate-800">{typeof loc === 'string' ? loc : `${loc.area || ''} ${loc.city || loc.district || ''}`}</p>
+                              <p className="text-xs text-slate-500 font-bold">{loc.state}</p>
                             </div>
-                          )}
+                          ))}
                         </div>
-                      )}
+                     ) : (
+                        <p className="text-slate-400 italic">No preferred locations listed</p>
+                     )}
+                  </div>
+                </div>
 
-                      {/* Job Locations */}
-                      {tabValue === 5 && (
-                        <div>
-                          {jobLocations && jobLocations.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              {jobLocations.map((loc, i) => (
-                                <div key={i} className="p-3 border rounded">
-                                  {typeof loc === "string" ? (
-                                    <div>{loc}</div>
-                                  ) : (
-                                    <div>
-                                      {loc.address_type && (
-                                        <div className="font-semibold capitalize">
-                                          {loc.address_type} location
-                                        </div>
-                                      )}
-                                      <div className="mt-1 text-sm text-gray-600">
-                                        {loc.area && (
-                                          <div>
-                                            <strong>Area:</strong> {loc.area}
-                                          </div>
-                                        )}
-                                        {loc.city && (
-                                          <div>
-                                            <strong>City:</strong> {loc.city}
-                                          </div>
-                                        )}
-                                        {loc.district && (
-                                          <div>
-                                            <strong>District:</strong>{" "}
-                                            {loc.district}
-                                          </div>
-                                        )}
-                                        {loc.state && (
-                                          <div>
-                                            <strong>State:</strong> {loc.state}
-                                          </div>
-                                        )}
-                                        {loc.pincode && (
-                                          <div>
-                                            <strong>Pincode:</strong>{" "}
-                                            {loc.pincode}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-sm text-gray-500">
-                              No preferred job locations found
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Skills */}
-                      {tabValue === 6 && (
-                        <div>
-                          {teacherData?.teacherskill?.length > 0 ? (
-                            <div className="flex flex-wrap gap-2">
-                              {teacherData.teacherskill.map((s) => (
-                                <div
-                                  key={s.skill?.id || s.id}
-                                  className="px-2 py-1 border rounded text-sm"
-                                >
-                                  {s.skill?.name || s.name}
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-sm text-gray-500">
-                              No skills listed
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Preferences */}
-                      {tabValue === 6 && (
-                        <div>
-                          {teacherData?.preferences?.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              {teacherData.preferences.map((pref, pidx) => (
-                                <div key={pidx} className="p-3 border rounded">
-                                  <div className="font-semibold">Job Roles</div>
-                                  <div className="flex flex-wrap gap-2 mt-2">
-                                    {(pref.job_role || []).map((r) => (
-                                      <div
-                                        key={r.id}
-                                        className="px-2 py-1 border rounded text-sm"
-                                      >
-                                        {r.jobrole_name}
-                                      </div>
-                                    ))}
-                                  </div>
-                                  <div className="mt-3 font-semibold">
-                                    Class Categories
-                                  </div>
-                                  <div className="flex flex-wrap gap-2 mt-2">
-                                    {(pref.class_category || []).map((c) => (
-                                      <div
-                                        key={c.id}
-                                        className="px-2 py-1 border rounded text-sm"
-                                      >
-                                        {c.name}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-sm text-gray-500">
-                              No preferences provided
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Addresses */}
-                      {tabValue === 7 && (
-                        <div>
-                          {teacherData?.teachersaddress?.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              {teacherData.teachersaddress.map((addr, i) => (
-                                <div key={i} className="p-3 border rounded">
-                                  <div className="font-semibold capitalize">
-                                    {addr.address_type} address
-                                  </div>
-                                  <div className="text-sm text-gray-600">
-                                    {addr.area}, {addr.district}, {addr.state} -{" "}
-                                    {addr.pincode}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-sm text-gray-500">
-                              No addresses found
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                <div className="space-y-6">
+                   <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-8 bg-slate-700 rounded-full"></div>
+                    <h3 className="text-xl font-black text-slate-800 tracking-tight uppercase">Residency Addresses</h3>
+                  </div>
+                  <div className="bg-white rounded-3xl border border-slate-100 shadow-xl p-8 space-y-4">
+                    {teacherData?.teachersaddress?.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-4">
+                         {teacherData.teachersaddress.map((addr, i) => (
+                           <div key={i} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 flex items-start gap-4">
+                              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-slate-200 shrink-0">
+                                 <FiMapPin className="text-slate-400" />
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{addr.address_type} Address</p>
+                                <p className="font-bold text-slate-800">{addr.area}</p>
+                                <p className="text-sm text-slate-500 font-medium">
+                                  {addr.district}, {addr.state} - <span className="text-teal-600 font-bold">{addr.pincode}</span>
+                                </p>
+                              </div>
+                           </div>
+                         ))}
+                      </div>
+                    ) : (
+                      <p className="text-slate-400 italic text-center p-4">No residency addresses provided</p>
+                    )}
                   </div>
                 </div>
               </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
 
         {/* Deactivate Modal */}
