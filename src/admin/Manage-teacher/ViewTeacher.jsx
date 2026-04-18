@@ -210,110 +210,15 @@ const ViewTeacherAdmin = () => {
   const jobLocations = (() => {
     const teacher = teacherData || {};
     if (!teacher) return [];
-
-    if (teacher.jobpreferencelocation) {
-      if (
-        Array.isArray(teacher.jobpreferencelocation) &&
-        teacher.jobpreferencelocation.length
-      ) {
-        return teacher.jobpreferencelocation.filter(
-          (loc) =>
-            !(
-              loc &&
-              loc.address_type &&
-              ["current", "permanent"].includes(
-                String(loc.address_type).toLowerCase(),
-              )
-            ),
-        );
-      }
-      return [teacher.jobpreferencelocation];
+    
+    // Check for jobpreferencelocation array
+    if (Array.isArray(teacher.jobpreferencelocation) && teacher.jobpreferencelocation.length > 0) {
+      return teacher.jobpreferencelocation;
     }
-
-    const prefLocations = (teacher.preferences || [])
-      .flatMap((p) => {
-        const candidates = [];
-        if (
-          p.preferred_job_locations &&
-          Array.isArray(p.preferred_job_locations)
-        )
-          candidates.push(...p.preferred_job_locations);
-        if (p.job_pref_locations && Array.isArray(p.job_pref_locations))
-          candidates.push(...p.job_pref_locations);
-        if (p.job_pref_location)
-          candidates.push(
-            ...(Array.isArray(p.job_pref_location)
-              ? p.job_pref_location
-              : [p.job_pref_location]),
-          );
-        if (p.job_locations && Array.isArray(p.job_locations))
-          candidates.push(...p.job_locations);
-        if (p.job_location)
-          candidates.push(
-            ...(Array.isArray(p.job_location)
-              ? p.job_location
-              : [p.job_location]),
-          );
-        if (p.preferred_locations && Array.isArray(p.preferred_locations))
-          candidates.push(...p.preferred_locations);
-        if (p.job_preferences && Array.isArray(p.job_preferences))
-          candidates.push(...p.job_preferences);
-        return candidates;
-      })
-      .filter(Boolean)
-      .filter(
-        (loc) =>
-          !(
-            loc &&
-            loc.address_type &&
-            ["current", "permanent"].includes(
-              String(loc.address_type).toLowerCase(),
-            )
-          ),
-      );
-
-    if (prefLocations.length) return prefLocations;
-
-    if (Array.isArray(teacher.job_locations) && teacher.job_locations.length) {
-      return teacher.job_locations.filter(
-        (loc) =>
-          !(
-            loc &&
-            loc.address_type &&
-            ["current", "permanent"].includes(
-              String(loc.address_type).toLowerCase(),
-            )
-          ),
-      );
-    }
-    if (Array.isArray(teacher.joblocations) && teacher.joblocations.length) {
-      return teacher.joblocations.filter(
-        (loc) =>
-          !(
-            loc &&
-            loc.address_type &&
-            ["current", "permanent"].includes(
-              String(loc.address_type).toLowerCase(),
-            )
-          ),
-      );
-    }
-
-    if (
-      Array.isArray(teacher.teachersaddress) &&
-      teacher.teachersaddress.length
-    ) {
-      const others = teacher.teachersaddress.filter(
-        (addr) =>
-          !(
-            addr &&
-            addr.address_type &&
-            ["current", "permanent"].includes(
-              String(addr.address_type).toLowerCase(),
-            )
-          ),
-      );
-      return others;
+    
+    // Fallback to preferences if exists
+    if (Array.isArray(teacher.preferences) && teacher.preferences.length > 0) {
+      return teacher.preferences;
     }
 
     return [];
@@ -352,12 +257,14 @@ const ViewTeacherAdmin = () => {
 
     const groupedData = [];
 
+    // The API provides nested exam details in the attempt object
     attempts.forEach((attempt) => {
       const exam = attempt.exam || {};
-      const classCat = exam.class_category?.name || "Unknown";
-      const subject = exam.subject?.subject_name || exam.subject_name || "Unknown";
-      const medium = exam.language || "Unknown";
-      const level = exam.level?.name || "Unknown";
+      // Use the specific fields from the serializer output
+      const classCat = exam.class_category_name || "Unknown";
+      const subject = exam.subject_name || "Unknown";
+      const medium = attempt.language || exam.language || "Unknown";
+      const level = exam.level_name || "Unknown";
 
       let classGroup = groupedData.find((g) => g.name === classCat);
       if (!classGroup) {
@@ -389,13 +296,14 @@ const ViewTeacherAdmin = () => {
         subGroup.levels.forEach((levelGroup, lIdx) => {
           levelGroup.attempts.forEach((attempt, aIdx) => {
             const interviews = (attempt.interviews || []).filter(iv => 
-              String(iv.status || "").toLowerCase() === "fulfilled"
+              String(iv.status || "").toLowerCase() === "fulfilled" || iv.grade !== "N/A"
             );
             
-            // If there are multiple interviews, we might need more rows, 
-            // but the image shows interview as part of the attempt row.
-            // Let's take the first interview or just map them.
             const primaryInterview = interviews[0] || {};
+            
+            // Percentage comes from calculate_percentage in serializer
+            const resultVal = attempt.calculate_percentage;
+            const resultDisplay = (resultVal !== null && resultVal !== undefined) ? `${resultVal}%` : "-";
 
             rows.push({
               classCat: classGroup.name,
@@ -403,10 +311,10 @@ const ViewTeacherAdmin = () => {
               medium: subGroup.medium,
               level: levelGroup.name,
               attemptNumber: attempt.attempt || (aIdx + 1),
-              examResult: attempt.percentage !== null ? `${attempt.percentage}%` : (attempt.correct_answer !== undefined ? `${Math.round((attempt.correct_answer / (attempt.total_questions || 1)) * 100)}%` : "-"),
+              examResult: resultDisplay,
               examDate: attempt.created_at ? formatDate(attempt.created_at, { dateOnly: true }) : "-",
               interviewAttempt: primaryInterview.attempt || "-",
-              interviewResult: primaryInterview.grade !== undefined ? `${Math.round((primaryInterview.grade / (primaryInterview.total || 10)) * 100)}%` : "-",
+              interviewResult: (primaryInterview.grade !== "N/A" && primaryInterview.grade !== undefined) ? `${primaryInterview.grade}` : "-",
               interviewDate: primaryInterview.created_at ? formatDate(primaryInterview.created_at, { dateOnly: true }) : "-",
               
               // Spans
@@ -576,7 +484,7 @@ const ViewTeacherAdmin = () => {
                       { l: "Gender", v: teacherData?.profiles?.gender },
                       { l: "Marital Status", v: teacherData?.profiles?.marital_status },
                       { l: "Religion", v: teacherData?.profiles?.religion },
-                      { l: "Birth Date", v: teacherData?.profiles?.dob ? formatDate(teacherData.profiles.dob, { dateOnly: true }) : "—" }
+                      { l: "Birth Date", v: teacherData?.profiles?.date_of_birth ? formatDate(teacherData.profiles.date_of_birth, { dateOnly: true }) : "—" }
                     ].map((item, i) => (
                       <div key={i} className="space-y-0.5">
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{item.l}</p>
@@ -686,18 +594,27 @@ const ViewTeacherAdmin = () => {
                     <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Residency</h3>
                   </div>
                   <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
-                    {teacherData?.teachersaddress?.length > 0 ? teacherData.teachersaddress.map((addr, i) => (
-                      <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded border border-gray-200">
-                        <div className="w-7 h-7 bg-white rounded-full border border-gray-200 flex items-center justify-center shrink-0">
-                          <FiMapPin className="text-gray-400" size={12} />
+                    {(() => {
+                      const addrObj = teacherData?.teachersaddress;
+                      const addresses = [];
+                      if (addrObj?.current_address) addresses.push(addrObj.current_address);
+                      if (addrObj?.permanent_address) addresses.push(addrObj.permanent_address);
+                      
+                      if (addresses.length === 0) return <p className="text-xs text-gray-400 italic text-center">No address records.</p>;
+                      
+                      return addresses.map((addr, i) => (
+                        <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded border border-gray-200">
+                          <div className="w-7 h-7 bg-white rounded-full border border-gray-200 flex items-center justify-center shrink-0">
+                            <FiMapPin className="text-gray-400" size={12} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[9px] font-bold text-gray-400 uppercase leading-none mb-1">{addr.address_type} Address</p>
+                            <p className="text-xs font-bold text-gray-800 truncate">{addr.area || addr.village || 'N/A'}</p>
+                            <p className="text-[11px] text-gray-500 truncate">{addr.district || addr.city}, {addr.state} {addr.pincode}</p>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-[9px] font-bold text-gray-400 uppercase leading-none mb-1">{addr.address_type} Address</p>
-                          <p className="text-xs font-bold text-gray-800 truncate">{addr.area}</p>
-                          <p className="text-[11px] text-gray-500 truncate">{addr.district}, {addr.state} {addr.pincode}</p>
-                        </div>
-                      </div>
-                    )) : <p className="text-xs text-gray-400 italic text-center">No address records.</p>}
+                      ));
+                    })()}
                   </div>
                 </div>
               </div>
