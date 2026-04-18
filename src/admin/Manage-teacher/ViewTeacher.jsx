@@ -511,7 +511,34 @@ const ViewTeacherAdmin = () => {
                   </div>
                 </div>
 
-                {/* Qualifications */}
+                {/* Subject Preferences */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-5 bg-teal-500 rounded-full" />
+                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Academic Preferences</h3>
+                  </div>
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
+                    {teacherData?.preferences?.length > 0 ? teacherData.preferences.map((pref, i) => (
+                      <div key={i} className="space-y-3">
+                        {pref.class_category?.map((cat, ci) => (
+                          <div key={ci} className="p-3 bg-teal-50/30 rounded-lg border border-teal-100/50">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[10px] font-bold text-teal-600 uppercase tracking-widest bg-teal-100/50 px-2 py-0.5 rounded">Category</span>
+                              <h4 className="text-sm font-bold text-teal-900">{cat.name}</h4>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {cat.subjects?.length > 0 ? cat.subjects.map((sub, si) => (
+                                <span key={si} className="px-2 py-0.5 bg-white border border-teal-200 text-teal-700 text-[11px] font-semibold rounded-full shadow-sm">
+                                  {sub.subject_name || sub.name}
+                                </span>
+                              )) : <p className="text-[10px] text-teal-400 italic">No subjects selected for this category.</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )) : <p className="text-xs text-gray-400 italic p-2 text-center">No academic preferences saved.</p>}
+                  </div>
+                </div>
                 <div className="space-y-3 lg:col-span-2">
                   <div className="flex items-center gap-2">
                     <div className="w-1 h-5 bg-blue-600 rounded-full" />
