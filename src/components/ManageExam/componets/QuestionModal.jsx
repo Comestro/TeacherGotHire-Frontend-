@@ -255,6 +255,7 @@ const QuestionModal = ({
     originalLatexInfo: null, // {match, inner, wrapperStart, wrapperEnd, index, length}
   });
   useEffect(() => {
+    if (editingQuestion) {
       const findCorrespondingQuestion = () => {
         if (!editingQuestion) return null;
         
