@@ -136,6 +136,7 @@ const QuestionModal = ({
     hindi: false,
   });
   const [hindiSectionEmpty, setHindiSectionEmpty] = useState(false);
+  const [allQuestions, setAllQuestions] = useState([]);
   // Language mode: "english" | "hindi" | "both"
   const [languageMode, setLanguageMode] = useState("both");
   const [fieldErrors, setFieldErrors] = useState({
@@ -159,23 +160,28 @@ const QuestionModal = ({
         const { getExamById } =
           await import("../../../services/adminManageExam");
         const response = await getExamById(examId);
-        if (response && response.subject && response.subject.subject_name) {
-          const name = response.subject.subject_name;
-          setSubjectName(name);
-          // Set default language mode based on subject
-          const lowerName = name.toLowerCase();
-          const langList = ["english","hindi","urdu","sanskrit","bengali","marathi","telugu","tamil","gujarati","kannada","malayalam","punjabi","odia","assamese","maithili","santali","kashmiri","nepali","konkani","sindhi","dogri","manipuri","bodo","japanese","french","german","spanish"];
-          const isLang = langList.some((l) => lowerName.includes(l));
-          if (isLang) {
-            if (lowerName.includes("hindi")) setLanguageMode("hindi");
-            else setLanguageMode("english");
-          } else {
-            setLanguageMode("both");
+          if (response) {
+            if (response.subject && response.subject.subject_name) {
+              const name = response.subject.subject_name;
+              setSubjectName(name);
+              // Set default language mode based on subject
+              const lowerName = name.toLowerCase();
+              const langList = ["english","hindi","urdu","sanskrit","bengali","marathi","telugu","tamil","gujarati","kannada","malayalam","punjabi","odia","assamese","maithili","santali","kashmiri","nepali","konkani","sindhi","dogri","manipuri","bodo","japanese","french","german","spanish"];
+              const isLang = langList.some((l) => lowerName.includes(l));
+              if (isLang) {
+                if (lowerName.includes("hindi")) setLanguageMode("hindi");
+                else setLanguageMode("english");
+              } else {
+                setLanguageMode("both");
+              }
+            }
+            if (response.questions) {
+              setAllQuestions(response.questions);
+            }
           }
+        } catch (error) {
+          console.error("Failed to fetch exam details:", error);
         }
-      } catch (error) {
-        console.error("Failed to fetch exam details:", error);
-      }
     };
     if (examId) {
       fetchExamDetails();
@@ -249,90 +255,87 @@ const QuestionModal = ({
     originalLatexInfo: null, // {match, inner, wrapperStart, wrapperEnd, index, length}
   });
   useEffect(() => {
-    if (editingQuestion) {
-      // Auto-set toggle to match the question being edited
-      if (editingQuestion.language === "Hindi") {
-        setLanguageMode("hindi");
-      } else if (editingQuestion.language === "English") {
-        setLanguageMode("english");
-      } else {
-        setLanguageMode("english"); // fallback
-      }
-
-      const findCorrespondingHindiQuestion = async () => {
-        try {
-          // If it's a language subject, we don't need to look for a "Hindi" version pair in the traditional sense
-          // We just load the question as is into the primary slot.
-          if (isLanguageSubject()) {
-            setEnglishQuestion({
-              language: editingQuestion.language || getPrimaryLanguage(),
-              text: editingQuestion.text || "",
-              solution: editingQuestion.solution || "",
-              options: editingQuestion.options?.length
-                ? [...editingQuestion.options]
-                : ["", "", "", ""],
-              correct_option: editingQuestion.correct_option
-                ? parseInt(editingQuestion.correct_option) - 1
-                : null,
-            });
-            // Clear secondary question
-            setHindiQuestion({
-              language: "Hindi",
-              text: "",
-              solution: "",
-              options: ["", "", "", ""],
-              correct_option: null,
-            });
-            return;
-          }
-
-          if (editingQuestion.language === "English") {
-            setEnglishQuestion({
-              language: "English",
-              text: editingQuestion.text || "",
-              solution: editingQuestion.solution || "",
-              options: editingQuestion.options?.length
-                ? [...editingQuestion.options]
-                : ["", "", "", ""],
-              correct_option: editingQuestion.correct_option
-                ? parseInt(editingQuestion.correct_option) - 1
-                : null,
-            });
-            setHindiQuestion({
-              language: "Hindi",
-              text: "",
-              solution: "",
-              options: ["", "", "", ""],
-              correct_option: editingQuestion.correct_option
-                ? parseInt(editingQuestion.correct_option) - 1
-                : null,
-            });
-          } else if (editingQuestion.language === "Hindi") {
-            setHindiQuestion({
-              language: "Hindi",
-              text: editingQuestion.text || "",
-              solution: editingQuestion.solution || "",
-              options: editingQuestion.options?.length
-                ? [...editingQuestion.options]
-                : ["", "", "", ""],
-              correct_option: editingQuestion.correct_option
-                ? parseInt(editingQuestion.correct_option) - 1
-                : null,
-            });
-            setEnglishQuestion({
-              language: "English",
-              text: "",
-              solution: "",
-              options: ["", "", "", ""],
-              correct_option: editingQuestion.correct_option
-                ? parseInt(editingQuestion.correct_option) - 1
-                : null,
-            });
-          }
-        } catch (error) {}
+      const findCorrespondingQuestion = () => {
+        if (!editingQuestion) return null;
+        
+        const order = editingQuestion.order;
+        const otherLang = editingQuestion.language === "Hindi" ? "English" : "Hindi";
+        
+        // Find by related_question link if it exists
+        let pair = allQuestions.find(q => 
+          (q.related_question === editingQuestion.id || editingQuestion.id === q.related_question) &&
+          q.language === otherLang
+        );
+        
+        // Fallback to order
+        if (!pair && (order !== undefined && order !== null)) {
+          pair = allQuestions.find(q => q.order === order && q.language === otherLang && q.id !== editingQuestion.id);
+        }
+        
+        return pair;
       };
 
-      findCorrespondingHindiQuestion();
+      const populateStates = () => {
+        if (!editingQuestion) return;
+
+        const pairedQuestion = findCorrespondingQuestion();
+        
+        // If we have a pair, or it's not a language subject, we should allow "Both" mode
+        if (pairedQuestion || !isLanguageSubject()) {
+          setLanguageMode("both");
+        } else {
+          setLanguageMode(editingQuestion.language === "Hindi" ? "hindi" : "english");
+        }
+
+        const englishPart = editingQuestion.language === "English" ? editingQuestion : pairedQuestion;
+        const hindiPart = editingQuestion.language === "Hindi" ? editingQuestion : pairedQuestion;
+
+        if (englishPart) {
+          setEnglishQuestion({
+            language: "English",
+            text: englishPart.text || "",
+            solution: englishPart.solution || "",
+            options: englishPart.options?.length
+              ? [...englishPart.options]
+              : ["", "", "", ""],
+            correct_option: englishPart.correct_option
+              ? parseInt(englishPart.correct_option) - 1
+              : null,
+          });
+        } else {
+          setEnglishQuestion({
+            language: "English",
+            text: "",
+            solution: "",
+            options: ["", "", "", ""],
+            correct_option: null,
+          });
+        }
+
+        if (hindiPart) {
+          setHindiQuestion({
+            language: "Hindi",
+            text: hindiPart.text || "",
+            solution: hindiPart.solution || "",
+            options: hindiPart.options?.length
+              ? [...hindiPart.options]
+              : ["", "", "", ""],
+            correct_option: hindiPart.correct_option
+              ? parseInt(hindiPart.correct_option) - 1
+              : null,
+          });
+        } else {
+          setHindiQuestion({
+            language: "Hindi",
+            text: "",
+            solution: "",
+            options: ["", "", "", ""],
+            correct_option: null,
+          });
+        }
+      };
+
+      populateStates();
     } else {
       // Reset to default based on subject type when creating new
       const lowerName = (subjectName || "").toLowerCase();
