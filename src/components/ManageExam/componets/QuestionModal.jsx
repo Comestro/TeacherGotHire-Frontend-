@@ -65,12 +65,15 @@ const QuestionModal = ({
   onSubmit,
   examId,
   editingQuestion,
+  isLanguageSubjectProp,
+  subjectNameProp,
 }) => {
-  const [subjectName, setSubjectName] = useState("");
+  const [subjectName, setSubjectName] = useState(subjectNameProp || "");
 
   const getPrimaryLanguage = () => {
-    if (!subjectName) return "English";
-    const lowerName = subjectName.toLowerCase();
+    const sName = subjectNameProp || subjectName;
+    if (!sName) return "English";
+    const lowerName = sName.toLowerCase();
 
     // Map subject names to their language
     if (lowerName.includes("hindi")) return "Hindi";
@@ -100,8 +103,10 @@ const QuestionModal = ({
   };
 
   const isLanguageSubject = () => {
-    if (!subjectName) return false;
-    const lowerName = subjectName.toLowerCase();
+    if (isLanguageSubjectProp !== undefined) return isLanguageSubjectProp;
+    const sName = subjectNameProp || subjectName;
+    if (!sName) return false;
+    const lowerName = sName.toLowerCase();
     const languages = [
       "english", "hindi", "urdu", "sanskrit", "bengali", 
       "marathi", "telugu", "tamil", "gujarati", "kannada", 
@@ -156,6 +161,17 @@ const QuestionModal = ({
 
   useEffect(() => {
     const fetchExamDetails = async () => {
+        if (subjectNameProp && isLanguageSubjectProp !== undefined) {
+          // Already have props, just set defaults if creating new
+          if (!editingQuestion) {
+             const lowerName = subjectNameProp.toLowerCase();
+             if (lowerName.includes("hindi")) setLanguageMode("hindi");
+             else if (lowerName.includes("english")) setLanguageMode("english");
+             else setLanguageMode("both");
+          }
+          return; 
+        }
+
       try {
         const { getExamById } =
           await import("../../../services/adminManageExam");
@@ -198,20 +214,20 @@ const QuestionModal = ({
       if (!editingQuestion || editingQuestion.language === "English") {
         const englishOptions = englishQuestion.options
           .map((o) => o.trim().toLowerCase())
-          .filter((o) => o);
+          .filter((o) => o && o.length > 3); // Only check uniqueness for longer strings
         const uniqueEnglishOptions = new Set(englishOptions);
         if (uniqueEnglishOptions.size !== englishOptions.length) {
-          setDuplicateError("English options must be unique.");
+          setDuplicateError("Common English options must be unique.");
           return;
         }
       }
       if (!editingQuestion || editingQuestion.language === "Hindi") {
         const hindiOptions = hindiQuestion.options
           .map((o) => o.trim().toLowerCase())
-          .filter((o) => o);
+          .filter((o) => o && o.length > 3); // Only check uniqueness for longer strings
         const uniqueHindiOptions = new Set(hindiOptions);
         if (uniqueHindiOptions.size !== hindiOptions.length) {
-          setDuplicateError("Hindi options must be unique.");
+          setDuplicateError("Common Hindi options must be unique.");
           return;
         }
       }

@@ -103,31 +103,33 @@ const ManageQuestion = () => {
     fetchExamData();
   }, [location.state, routeExamId, navigate]);
   const organizeQuestionsByOrder = () => {
-    const maxOrder = Math.max(...questions.map((q) => q.order || 0), 0);
-    const englishByOrder = Array(maxOrder + 1)
-      .fill(null)
-      .map(() => []);
-    const hindiByOrder = Array(maxOrder + 1)
-      .fill(null)
-      .map(() => []);
-    questions.forEach((question) => {
-      const orderNum = question.order || 0;
-      if (question.language === "English") {
-        englishByOrder[orderNum].push(question);
-      } else if (question.language === "Hindi") {
-        hindiByOrder[orderNum].push(question);
-      }
+    // Get all unique order values and sort them
+    const uniqueOrders = [...new Set(questions.map((q) => q.order || 0))].sort((a, b) => a - b);
+    
+    const englishByOrder = uniqueOrders.map(() => []);
+    const hindiByOrder = uniqueOrders.map(() => []);
+    
+    // Map the actual order value to its index in our compressed list
+    const orderToIndexMap = {};
+    uniqueOrders.forEach((val, idx) => {
+      orderToIndexMap[val] = idx;
     });
 
-    if (englishByOrder[0].length === 0 && hindiByOrder[0].length === 0) {
-      englishByOrder.shift();
-      hindiByOrder.shift();
-    }
+    questions.forEach((question) => {
+      const orderValue = question.order || 0;
+      const index = orderToIndexMap[orderValue];
+      
+      if (question.language === "English") {
+        englishByOrder[index].push(question);
+      } else if (question.language === "Hindi") {
+        hindiByOrder[index].push(question);
+      }
+    });
 
     return {
       englishByOrder,
       hindiByOrder,
-      maxOrder,
+      maxOrder: uniqueOrders.length - 1,
     };
   };
 
@@ -531,18 +533,55 @@ const ManageQuestion = () => {
     }
   };
   const handleDelete = async (questionId) => {
-    if (window.confirm("Are you sure you want to delete this question?")) {
-      try {
+    const question = questions.find(q => q.id === questionId);
+    if (!question) return;
+
+    // Look for a pair
+    const otherLang = question.language === "English" ? "Hindi" : "English";
+    const pair = questions.find(q => 
+      (q.order === question.order && q.language === otherLang && q.id !== question.id) ||
+      (q.related_question === question.id || question.related_question === q.id)
+    );
+
+    let deleteMode = 'single';
+    if (pair) {
+      const confirmMsg = `This is a ${question.language} question paired with a ${otherLang} version.\n\n` +
+                        `Choose deletion mode:\n` +
+                        `Click OK to delete BOTH questions (Highly Recommended).\n` +
+                        `Click Cancel to delete ONLY this ${question.language} question.`;
+      
+      if (window.confirm(confirmMsg)) {
+        deleteMode = 'both';
+      } else {
+        if (!window.confirm(`Are you sure you want to delete ONLY the ${question.language} question? This will leave an orphan.`)) {
+          return;
+        }
+        deleteMode = 'single';
+      }
+    } else {
+      if (!window.confirm("Are you sure you want to delete this question?")) return;
+    }
+
+    try {
+      if (deleteMode === 'both' && pair) {
+        await Promise.all([
+          deleteQuestion(questionId),
+          deleteQuestion(pair.id)
+        ]);
+        setQuestions((prevQuestions) =>
+          prevQuestions.filter((q) => q.id !== questionId && q.id !== pair.id),
+        );
+        toast.success("Both questions deleted successfully");
+      } else {
         await deleteQuestion(questionId);
         setQuestions((prevQuestions) =>
           prevQuestions.filter((q) => q.id !== questionId),
         );
-
         toast.success("Question deleted successfully");
-        await refreshExamData();
-      } catch (error) {
-        toast.error(error.response?.data?.error || "Failed to delete question");
       }
+      await refreshExamData();
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to delete question");
     }
   };
   const getFilterOptions = () => {
@@ -597,23 +636,36 @@ const ManageQuestion = () => {
                 </span>
               </h1>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setIsBulkModalOpen(true)}
-                className="bg-teal-600 text-white hover:bg-teal-500 px-3 py-1.5 rounded-lg flex items-center text-xs font-bold uppercase tracking-wider shadow-sm transition-all border border-teal-500"
-              >
-                <FiFileText className="w-4 h-4 mr-1.5" /> Bulk Upload
-              </button>
-              <button
-                onClick={() =>
-                  navigate(`/manage-exam/questions/${exam.id}/add`)
-                }
-                className="bg-white text-teal-700 hover:bg-teal-50 px-3 py-1.5 rounded-lg flex items-center text-xs font-bold uppercase tracking-wider shadow-sm transition-all"
-              >
-                <FiPlus className="w-4 h-4 mr-1.5" /> Add Question
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setIsBulkModalOpen(true)}
+                  className="bg-teal-600 text-white hover:bg-teal-500 px-3 py-1.5 rounded-lg flex items-center text-xs font-bold uppercase tracking-wider shadow-sm transition-all border border-teal-500"
+                >
+                  <FiFileText className="w-4 h-4 mr-1.5" /> Bulk Upload
+                </button>
+                <button
+                  onClick={() =>
+                    navigate(`/manage-exam/questions/${exam.id}/add`)
+                  }
+                  className="bg-white text-teal-700 hover:bg-teal-50 px-3 py-1.5 rounded-lg flex items-center text-xs font-bold uppercase tracking-wider shadow-sm transition-all"
+                >
+                  <FiPlus className="w-4 h-4 mr-1.5" /> Add Question
+                </button>
+              </div>
             </div>
-          </div>
+
+            <QuestionModal
+              isOpen={isModalOpen}
+              onClose={() => {
+                setIsModalOpen(false);
+                setEditingQuestion(null);
+              }}
+              onSubmit={handleSubmitQuestion}
+              examId={examId}
+              editingQuestion={editingQuestion}
+              isLanguageSubjectProp={isLanguageSubject()}
+              subjectNameProp={getSubjectName()}
+            />
 
           <div className="p-3 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center gap-3">
             {/* Stats - Compact pills */}
