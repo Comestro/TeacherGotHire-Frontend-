@@ -1504,10 +1504,12 @@ const QuestionModal = ({
           <div
             className={`mt-8 grid grid-cols-1 ${languageMode === "both" ? "lg:grid-cols-2" : ""} gap-8`}
           >
-            <QuestionPreview
-              question={englishQuestion}
-              activeLanguage={englishQuestion.language || getPrimaryLanguage()}
-            />
+            {(languageMode === "english" || languageMode === "both") && (
+              <QuestionPreview
+                question={englishQuestion}
+                activeLanguage={englishQuestion.language || getPrimaryLanguage()}
+              />
+            )}
             {(languageMode === "hindi" || languageMode === "both") && (
               <QuestionPreview
                 question={hindiQuestion}
