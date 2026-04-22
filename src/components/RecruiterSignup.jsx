@@ -464,6 +464,17 @@ const RecruiterSignUpPage = () => {
               "Create Recruiter Account"
             )}
           </Button>
+          
+          <div className="pt-4 pb-2">
+            <button
+              type="button"
+              onClick={() => navigate("/get-preferred-teacher")}
+              className="w-full bg-slate-50 hover:bg-slate-100 text-teal-700 border border-teal-100 py-3 rounded-lg font-bold transition-colors flex items-center justify-center space-x-2"
+            >
+              <HiOutlineUserGroup className="w-5 h-5" />
+              <span>Find Teacher without registration</span>
+            </button>
+          </div>
         </form>
 
         <div className="mt-8 space-y-4">
