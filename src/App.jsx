@@ -170,21 +170,11 @@ function AppContent() {
         <Route path="recruiter" element={<RecruiterLayout />}>
           <Route
             index
-            element={
-              <RoleBasedRoute
-                element={<TeacherRecruiter />}
-                allowedRoles={["recruiter"]}
-              />
-            }
+            element={<TeacherRecruiter />}
           />
           <Route
             path="teacher/:id"
-            element={
-              <RoleBasedRoute
-                element={<TeacherViewPage />}
-                allowedRoles={["recruiter"]}
-              />
-            }
+            element={<TeacherViewPage />}
           />
         </Route>
 
