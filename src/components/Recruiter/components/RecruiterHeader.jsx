@@ -37,7 +37,9 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
   }, []);
 
   useEffect(() => {
-    dispatch(getUserData());
+    if (localStorage.getItem("access_token")) {
+      dispatch(getUserData());
+    }
     dispatch(getClassCategory());
     dispatch(getTeacherjobType());
   }, [dispatch]);

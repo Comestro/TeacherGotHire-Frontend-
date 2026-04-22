@@ -160,10 +160,11 @@ const TeacherFilter = () => {
       dispatch(searchTeachers(searchValue));
     }
   };
+  const safeTeachers = Array.isArray(teachers) ? teachers : [];
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentTeachers = teachers.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(teachers.length / itemsPerPage);
+  const currentTeachers = safeTeachers.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(safeTeachers.length / itemsPerPage);
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   const nextPage = () =>
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
