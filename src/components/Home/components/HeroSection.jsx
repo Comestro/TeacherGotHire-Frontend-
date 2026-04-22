@@ -164,7 +164,7 @@ const HeroSection = () => {
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
                 <Link
-                  to="/recruiter"
+                  to="signup/recruiter"
                   className="w-full sm:w-auto px-8 py-4 bg-teal-600 text-white rounded-xl shadow-sm flex items-center justify-center gap-2 font-bold"
                 >
                   <IoSearchOutline className="w-5 h-5" />

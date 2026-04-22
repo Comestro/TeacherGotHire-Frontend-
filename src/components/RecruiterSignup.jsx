@@ -485,7 +485,7 @@ const RecruiterSignUpPage = () => {
             >
               <div className="flex flex-col items-center">
                 <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
-                  Teacher
+                  Register as Teacher
                 </span>
               </div>
             </button>
