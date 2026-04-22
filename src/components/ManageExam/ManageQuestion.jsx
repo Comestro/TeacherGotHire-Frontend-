@@ -37,6 +37,7 @@ import {
 import QuestionCard from "./componets/QuestionCard";
 import QuestionModal from "./componets/QuestionModal";
 import BulkUploadModal from "./componets/BulkUploadModal";
+import DeleteConfirmationModal from "./componets/DeleteConfirmationModal";
 
 import {
   createQuestion,
@@ -66,6 +67,10 @@ const ManageQuestion = () => {
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [showOrphans, setShowOrphans] = useState(false);
+  
+  // Custom Delete Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteContext, setDeleteContext] = useState({ question: null, pair: null });
 
   // Use location.state first, fall back to URL param for direct navigation
   const examId = location.state?.exam?.id || routeExamId;
@@ -532,7 +537,7 @@ const ManageQuestion = () => {
       }
     }
   };
-  const handleDelete = async (questionId) => {
+  const handleDelete = (questionId) => {
     const question = questions.find(q => q.id === questionId);
     if (!question) return;
 
@@ -543,47 +548,54 @@ const ManageQuestion = () => {
       (q.related_question === question.id || question.related_question === q.id)
     );
 
-    let deleteMode = 'single';
     if (pair) {
-      const confirmMsg = `This is a ${question.language} question paired with a ${otherLang} version.\n\n` +
-                        `Choose deletion mode:\n` +
-                        `Click OK to delete BOTH questions (Highly Recommended).\n` +
-                        `Click Cancel to delete ONLY this ${question.language} question.`;
-      
-      if (window.confirm(confirmMsg)) {
-        deleteMode = 'both';
-      } else {
-        if (!window.confirm(`Are you sure you want to delete ONLY the ${question.language} question? This will leave an orphan.`)) {
-          return;
-        }
-        deleteMode = 'single';
-      }
+      setDeleteContext({ question, pair });
+      setIsDeleteModalOpen(true);
     } else {
-      if (!window.confirm("Are you sure you want to delete this question?")) return;
+      if (window.confirm("Are you sure you want to delete this question?")) {
+        executeDeletion('single', question, null);
+      }
     }
+  };
 
+  const executeDeletion = async (mode, question, pair) => {
     try {
-      if (deleteMode === 'both' && pair) {
+      if (mode === 'both' && pair) {
         await Promise.all([
-          deleteQuestion(questionId),
+          deleteQuestion(question.id),
           deleteQuestion(pair.id)
         ]);
         setQuestions((prevQuestions) =>
-          prevQuestions.filter((q) => q.id !== questionId && q.id !== pair.id),
+          prevQuestions.filter((q) => q.id !== question.id && q.id !== pair.id),
         );
         toast.success("Both questions deleted successfully");
+      } else if (mode === 'single_english' || (mode === 'single' && question.language === 'English')) {
+        const targetId = mode === 'single_english' ? (question.language === 'English' ? question.id : pair?.id) : question.id;
+        if (!targetId) return;
+        await deleteQuestion(targetId);
+        setQuestions((prevQuestions) => prevQuestions.filter((q) => q.id !== targetId));
+        toast.success("English version deleted successfully");
+      } else if (mode === 'single_hindi' || (mode === 'single' && question.language === 'Hindi')) {
+        const targetId = mode === 'single_hindi' ? (question.language === 'Hindi' ? question.id : pair?.id) : question.id;
+        if (!targetId) return;
+        await deleteQuestion(targetId);
+        setQuestions((prevQuestions) => prevQuestions.filter((q) => q.id !== targetId));
+        toast.success("Hindi version deleted successfully");
       } else {
-        await deleteQuestion(questionId);
-        setQuestions((prevQuestions) =>
-          prevQuestions.filter((q) => q.id !== questionId),
-        );
+        // Fallback for generic 'single' if mode was set differently
+        await deleteQuestion(question.id);
+        setQuestions((prevQuestions) => prevQuestions.filter((q) => q.id !== question.id));
         toast.success("Question deleted successfully");
       }
+      
+      setIsDeleteModalOpen(false);
+      setDeleteContext({ question: null, pair: null });
       await refreshExamData();
     } catch (error) {
       toast.error(error.response?.data?.error || "Failed to delete question");
     }
   };
+
   const getFilterOptions = () => {
     const classCategories = [
       ...new Set(questions.map((q) => q.class_category).filter(Boolean)),
@@ -665,6 +677,14 @@ const ManageQuestion = () => {
               editingQuestion={editingQuestion}
               isLanguageSubjectProp={isLanguageSubject()}
               subjectNameProp={getSubjectName()}
+            />
+
+            <DeleteConfirmationModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onDelete={(mode) => executeDeletion(mode, deleteContext.question, deleteContext.pair)}
+              question={deleteContext.question}
+              pair={deleteContext.pair}
             />
 
           <div className="p-3 border-b border-gray-100 bg-gray-50/50 flex flex-wrap items-center gap-3">
