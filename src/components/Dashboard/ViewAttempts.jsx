@@ -68,6 +68,35 @@ function ViewAttempts() {
     setSubjects(subjectNames);
   }, [selectedCategory, apiOutput2]);
 
+  const formatAvgTime = (seconds) => {
+    if (!seconds) return "N/A";
+    const m = Math.floor(seconds / 60);
+    const s = Math.round(seconds % 60);
+    return `${m}m ${s}s`;
+  };
+
+  const avgTimePerLevel = React.useMemo(() => {
+    const levelStats = {};
+    if (apiOutput2 && Array.isArray(apiOutput2)) {
+      apiOutput2.forEach((attempt) => {
+        const level = attempt?.exam?.level_name;
+        const time = attempt?.time_taken_seconds;
+        if (level && typeof time === "number" && time > 0) {
+          if (!levelStats[level]) levelStats[level] = { total: 0, count: 0 };
+          levelStats[level].total += time;
+          levelStats[level].count += 1;
+        }
+      });
+    }
+
+    return Object.fromEntries(
+      Object.entries(levelStats).map(([level, data]) => [
+        level,
+        formatAvgTime(data.total / data.count),
+      ]),
+    );
+  }, [apiOutput2]);
+
   return (
     <div className="w-full mx-auto">
       <div className="space-y-6">
@@ -84,7 +113,17 @@ function ViewAttempts() {
               Exam Attempts
               <span className="text-slate-400 text-lg font-normal">/ परीक्षा प्रयास</span>
             </h1>
-            <p className="text-sm text-slate-500 ml-14">View all your exam attempts and interview records</p>
+            <p className="text-sm text-slate-500 ml-14 mb-3">View all your exam attempts and interview records</p>
+            {Object.keys(avgTimePerLevel).length > 0 && (
+              <div className="flex flex-wrap gap-2 items-center lg:ml-14">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest hidden sm:block">Avg Time:</span>
+                {Object.entries(avgTimePerLevel).map(([lvl, time]) => (
+                  <span key={lvl} className="px-2 py-0.5 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-bold rounded shadow-sm">
+                    {lvl}: {time}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="w-full lg:w-72">

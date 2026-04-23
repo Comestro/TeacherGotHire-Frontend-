@@ -22,6 +22,7 @@ const ExamPortal = () => {
   const [securityViolation, setSecurityViolation] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const hasSubmitted = useRef(false);
+  const examStartTime = useRef(Date.now());
 
   const toggleModal = () => {
     setIsOpen(true);
@@ -168,6 +169,8 @@ const ExamPortal = () => {
       document.msExitFullscreen();
     }
 
+    const time_taken_seconds = Math.floor((Date.now() - examStartTime.current) / 1000);
+
     dispatch(
       postResult({
         exam,
@@ -175,6 +178,7 @@ const ExamPortal = () => {
         incorrect_answer,
         is_unanswered,
         language,
+        time_taken_seconds,
       }),
     );
     dispatch(attemptsExam());

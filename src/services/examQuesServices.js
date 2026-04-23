@@ -106,6 +106,7 @@ export const addResult = async ({
   incorrect_answer,
   is_unanswered,
   language,
+  time_taken_seconds,
 }) => {
   try {
 
@@ -114,7 +115,8 @@ export const addResult = async ({
       correct_answer,
       incorrect_answer,
       is_unanswered,
-      language
+      language,
+      time_taken_seconds
     })
 
     return response.data;

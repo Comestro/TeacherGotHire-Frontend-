@@ -134,7 +134,7 @@ export const getExamSet = createAsyncThunk(
 export const postResult = createAsyncThunk(
   "postResult",
   async (
-    { exam, correct_answer, incorrect_answer, is_unanswered, language },
+    { exam, correct_answer, incorrect_answer, is_unanswered, language, time_taken_seconds },
     { rejectWithValue }
   ) => {
     
@@ -145,7 +145,9 @@ export const postResult = createAsyncThunk(
         incorrect_answer,
         is_unanswered,
         language,
+        time_taken_seconds,
       });
+
       return data;
     } catch (error) {
       return rejectWithValue({

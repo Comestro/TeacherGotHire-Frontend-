@@ -207,6 +207,34 @@ const ViewTeacherAdmin = () => {
       return String(value);
     }
   };
+
+  const formatAvgTime = (seconds) => {
+    if (!seconds) return "N/A";
+    const m = Math.floor(seconds / 60);
+    const s = Math.round(seconds % 60);
+    return `${m}m ${s}s`;
+  };
+
+  const avgTimePerLevel = React.useMemo(() => {
+    const levelStats = {};
+    attempts.forEach((attempt) => {
+      const level = attempt?.exam?.level_name;
+      const time = attempt?.time_taken_seconds;
+      if (level && typeof time === "number" && time > 0) {
+        if (!levelStats[level]) levelStats[level] = { total: 0, count: 0 };
+        levelStats[level].total += time;
+        levelStats[level].count += 1;
+      }
+    });
+
+    return Object.fromEntries(
+      Object.entries(levelStats).map(([level, data]) => [
+        level,
+        formatAvgTime(data.total / data.count),
+      ]),
+    );
+  }, [attempts]);
+
   const jobLocations = (() => {
     const teacher = teacherData || {};
     if (!teacher) return [];
@@ -430,9 +458,21 @@ const ViewTeacherAdmin = () => {
 
               {/* Analytical Table */}
               <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-1 h-5 bg-teal-600 rounded-full" />
-                  <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Analytical Level & Exam Attempts</h3>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-5 bg-teal-600 rounded-full" />
+                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Analytical Level & Exam Attempts</h3>
+                  </div>
+                  {Object.keys(avgTimePerLevel).length > 0 && (
+                    <div className="flex flex-wrap gap-2 items-center">
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-widest hidden sm:block">Avg Time:</span>
+                      {Object.entries(avgTimePerLevel).map(([lvl, time]) => (
+                        <span key={lvl} className="px-2 py-0.5 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-bold rounded shadow-sm">
+                          {lvl}: {time}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
                   <div className="overflow-x-auto">
