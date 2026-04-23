@@ -332,6 +332,8 @@ const ViewTeacherAdmin = () => {
             // Percentage comes from calculate_percentage in serializer
             const resultVal = attempt.calculate_percentage;
             const resultDisplay = (resultVal !== null && resultVal !== undefined) ? `${resultVal}%` : "-";
+            const timeVal = attempt.time_taken_seconds;
+            const timeDisplay = (timeVal !== null && timeVal !== undefined && timeVal > 0) ? formatAvgTime(timeVal) : "-";
 
             rows.push({
               classCat: classGroup.name,
@@ -340,6 +342,7 @@ const ViewTeacherAdmin = () => {
               level: levelGroup.name,
               attemptNumber: attempt.attempt || (aIdx + 1),
               examResult: resultDisplay,
+              examDuration: timeDisplay,
               examDate: attempt.created_at ? formatDate(attempt.created_at, { dateOnly: true }) : "-",
               interviewAttempt: primaryInterview.attempt || "-",
               interviewResult: (primaryInterview.grade !== "N/A" && primaryInterview.grade !== undefined) ? `${primaryInterview.grade}` : "-",
@@ -431,9 +434,9 @@ const ViewTeacherAdmin = () => {
                         </span>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <FiUser className="text-gray-400" />
-                          <span className="text-sm font-medium truncate">{teacherData?.email || "No Email"}</span>
+                        <div className="flex items-center gap-2 text-gray-600 break-all leading-tight">
+                          <FiUser className="shrink-0 text-gray-400" />
+                          <span className="text-sm font-medium">{teacherData?.email || "No Email"}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <FiActivity className="text-gray-400" />
@@ -479,7 +482,7 @@ const ViewTeacherAdmin = () => {
                     <table className="w-full border-collapse text-xs">
                       <thead>
                         <tr className="bg-gray-50 border-b border-gray-200">
-                          {["Teacher ID", "Name", "Category", "Subject", "Medium", "Level", "Exam Attempt", "Exam Result", "Exam Date", "Interview Atpt", "Interview Result", "Interview Date"].map((h) => (
+                          {["Teacher ID", "Category", "Subject", "Medium", "Level", "Exam Attempt", "Exam Result", "Exam Duration", "Exam Date", "Interview Atpt", "Interview Result", "Interview Date"].map((h) => (
                             <th key={h} className="p-3 text-left font-bold text-gray-600 whitespace-nowrap border-r border-gray-200 last:border-r-0">{h}</th>
                           ))}
                         </tr>
@@ -488,7 +491,6 @@ const ViewTeacherAdmin = () => {
                         {analyticalRows.length > 0 ? analyticalRows.map((row, idx) => (
                           <tr key={idx} className="hover:bg-gray-50 transition-colors">
                             {idx === 0 && <td rowSpan={analyticalRows.length} className="p-3 font-bold text-gray-600 border-r border-gray-200 align-top bg-gray-50/50">{teacherData?.user_code || id}</td>}
-                            {idx === 0 && <td rowSpan={analyticalRows.length} className="p-3 font-bold text-gray-600 border-r border-gray-200 align-top bg-gray-50/50">{teacherData?.Fname} {teacherData?.Lname}</td>}
                             {row.classSpan > 0 && <td rowSpan={row.classSpan} className="p-3 font-bold text-gray-800 border-r border-gray-200 align-top">{row.classCat}</td>}
                             {row.subSpan > 0 && <td rowSpan={row.subSpan} className="p-3 font-semibold text-teal-700 border-r border-gray-200 align-top">{row.subject}</td>}
                             {row.subSpan > 0 && <td rowSpan={row.subSpan} className="p-3 text-gray-600 border-r border-gray-200 align-top">{row.medium}</td>}
@@ -497,6 +499,7 @@ const ViewTeacherAdmin = () => {
                             <td className="p-3 border-r border-gray-200">
                               <span className={`font-bold ${parseFloat(row.examResult) >= 60 ? 'text-green-600' : 'text-rose-600'}`}>{row.examResult}</span>
                             </td>
+                            <td className="p-3 text-gray-600 border-r border-gray-200 whitespace-nowrap">{row.examDuration}</td>
                             <td className="p-3 text-gray-500 whitespace-nowrap italic border-r border-gray-200">{row.examDate}</td>
                             <td className="p-3 text-gray-600 text-center border-r border-gray-200">{row.interviewAttempt}</td>
                             <td className="p-3 font-bold text-gray-800 text-center border-r border-gray-200">{row.interviewResult}</td>
@@ -531,6 +534,24 @@ const ViewTeacherAdmin = () => {
                         <p className="text-sm font-bold text-gray-800 capitalize transition-all">{item.v || "—"}</p>
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* Contact Info */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-5 bg-pink-600 rounded-full" />
+                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Contact Information</h3>
+                  </div>
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-0.5">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Email Address</p>
+                      <p className="text-sm font-bold text-gray-800 break-all">{teacherData?.email || "—"}</p>
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Phone Number</p>
+                      <p className="text-sm font-bold text-gray-800">{teacherData?.profiles?.phone_number || "—"}</p>
+                    </div>
                   </div>
                 </div>
 
