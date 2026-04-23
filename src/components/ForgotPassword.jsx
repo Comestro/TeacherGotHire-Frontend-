@@ -159,16 +159,7 @@ const ForgotPassword = () => {
                     </p>
 
                     <div className="space-y-3">
-                      <Button
-                        onClick={() =>
-                          window.open("https://gmail.com", "_blank")
-                        }
-                        className="w-full bg-teal-600 text-white py-3 rounded-xl hover:bg-teal-700 transition-colors font-medium"
-                      >
-                        Open Email App
-                      </Button>
-
-                      <button
+                     <button
                         type="button"
                         onClick={() => {
                           setEmail(sentEmail);
