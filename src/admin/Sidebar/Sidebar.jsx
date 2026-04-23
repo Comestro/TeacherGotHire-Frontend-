@@ -181,7 +181,7 @@ export default function Sidebar({ isOpen, onToggle }) {
     return (
       <Link
         to={item.link}
-        className={`flex items-center px-3 py-2 mx-2 my-0.5 rounded-md transition-all duration-200 group ${
+        className={`flex items-center px-2 py-1.5 mx-2 my-0 rounded-md transition-all duration-200 group ${
           active
             ? "bg-teal-600 text-white shadow-sm mx-3"
             : "text-gray-600 hover:bg-gray-100 hover:text-teal-600"
@@ -202,7 +202,7 @@ export default function Sidebar({ isOpen, onToggle }) {
   };
 
   const SectionHeader = ({ title }) => (
-    <div className="px-5 py-1.5 mt-3 mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+    <div className="px-4 py-1 mt-1.5 mb-0.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
       {title}
     </div>
   );
@@ -264,10 +264,10 @@ export default function Sidebar({ isOpen, onToggle }) {
             <div className="my-2 border-t border-gray-100" />
 
             {/* Settings Collapse */}
-            <div className="mx-2 my-0.5">
+            <div className="mx-2 my-0">
               <button
                 onClick={handleCollapseToggle}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition-all duration-200 group ${
+                className={`w-full flex items-center justify-between px-2 py-1.5 rounded-md transition-all duration-200 group ${
                   collapseOpen
                     ? "bg-gray-100 text-teal-700"
                     : "text-gray-600 hover:bg-gray-100"
@@ -309,10 +309,10 @@ export default function Sidebar({ isOpen, onToggle }) {
         </div>
 
         {/* Footer / Logout */}
-        <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+        <div className="p-3 border-t border-gray-200 bg-gray-50 flex-shrink-0">
           <button
             onClick={() => handleLogout(dispatch, navigate)}
-            className="w-full flex items-center justify-center px-4 py-2 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-300 transition-all font-medium text-sm shadow-sm group"
+            className="w-full flex items-center justify-center px-4 py-1.5 bg-white border border-red-200 text-red-600 rounded-lg hover:bg-red-50 hover:border-red-300 transition-all font-medium text-sm shadow-sm group"
           >
             <FiLogOut className="mr-2 group-hover:scale-110 transition-transform" />
             Logout
