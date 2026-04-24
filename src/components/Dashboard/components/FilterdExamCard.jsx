@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { motion } from "framer-motion";
 import { fetchLevel } from "../../../services/examQuesServices";
 import { examCard } from "../../../features/examSlice";
 import { useNavigate } from "react-router-dom";
@@ -683,8 +684,8 @@ const FilterdExamCard = forwardRef(
             >
               <div className="text-text">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg sm:text-xl font-bold flex items-center">
-                    <FaLayerGroup className="mr-2 sm:mr-3" aria-hidden="true" />
+                  <h2 className="text-lg font-bold flex items-center">
+                    <FaLayerGroup className="mr-2" aria-hidden="true" />
                     Assessment Journey
                   </h2>
                   <button
@@ -735,42 +736,44 @@ const FilterdExamCard = forwardRef(
                       return (
                         <div
                           key={level.id}
-                          className={`relative rounded  border transition-all duration-300 overflow-hidden group ${
+                          className={`relative rounded-xl border ${
                             isQualified
-                              ? "bg-white border-teal-200 shadow-sm hover:shadow-md"
-                              : "bg-white border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-300"
+                              ? "bg-white border-teal-200"
+                              : "bg-white border-slate-200"
                           }`}
                         >
                           <div className="p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center gap-5 sm:gap-6">
                             {/* Content Section */}
                             <div className="flex-1 text-left flex gap-3">
                               <div
-                                className={`w-14 h-14 sm:w-16 sm:h-16 rounded  flex items-center justify-center shrink-0 shadow-inner transition-colors ${
+                                className={`w-10 h-10 sm:w-16 sm:h-16 rounded-full  flex items-center justify-center shrink-0 ${
                                   isQualified
                                     ? "bg-teal-50 text-teal-600"
-                                    : "bg-blue-50 text-blue-600 group-hover:bg-blue-100 group-hover:scale-105 transition-transform duration-300"
+                                    : "bg-blue-50 text-blue-600"
                                 }`}
                               >
                                 {isQualified ? (
-                                  <FaCheckCircle className="text-2xl sm:text-3xl" />
+                                  <FaCheckCircle className="text-xl sm:text-3xl" />
                                 ) : (
-                                  <span className="text-2xl sm:text-3xl font-bold font-mono">
+                                  <span className="text-xl sm:text-3xl font-bold font-mono">
                                     01
                                   </span>
                                 )}
                               </div>
                               <div className="flex flex-col">
-                                <div className="flex items-center justify-start gap-2 mb-1">
-                                  <h3 className="font-bold text-lg sm:text-xl text-slate-800">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3
+                                    className={`font-bold text-sm md:text-lg ${isQualified ? "text-teal-900" : "text-slate-800"}`}
+                                  >
                                     Level 1: (from home)
                                   </h3>
                                   {isQualified && (
-                                    <span className="px-2 py-0.5 bg-teal-100 text-teal-700 text-[10px] font-bold uppercase tracking-wider rounded-full">
+                                    <span className="px-2 py-0.5 bg-teal-100 text-teal-700 text-[10px] md:font-bold uppercase tracking-wider rounded-full">
                                       Passed
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-sm text-slate-500 leading-relaxed max-w-lg">
+                                <p className="text-sm text-slate-500 leading-relaxed">
                                   Fundamental concepts check.
                                 </p>
                               </div>
@@ -783,7 +786,7 @@ const FilterdExamCard = forwardRef(
                                   {!isFullyQualified && (
                                     <button
                                       onClick={() => handleLevelSelect(level)}
-                                      className="flex-1 md:flex-none px-4 py-2.5 bg-teal-600 border border-slate-200 text-white rounded-xl hover:bg-teal-700 font-medium text-sm transition-colors"
+                                      className="flex-1 md:flex-none px-4 py-2.5 bg-teal-600 border border-slate-200 text-white rounded-xl font-medium text-sm"
                                     >
                                       Reattempt
                                     </button>
@@ -800,10 +803,10 @@ const FilterdExamCard = forwardRef(
                               ) : (
                                 <button
                                   onClick={() => handleLevelSelect(level)}
-                                  className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 group-hover:ring-2 group-hover:ring-blue-200 group-hover:ring-offset-1"
+                                  className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
                                 >
                                   <span>Start Exam</span>
-                                  <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                                  <FaArrowRight />
                                 </button>
                               )}
                             </div>
@@ -815,7 +818,6 @@ const FilterdExamCard = forwardRef(
                   {/* Connector */}
                   <div className="hidden lg:block h-6 w-0.5 bg-gray-300 mx-auto" />
 
-                  {/* Level 2 Card */}
                   {/* Level 2 Card */}
                   {levels
                     .filter((l) => l.level_code === 2.0)
@@ -834,17 +836,17 @@ const FilterdExamCard = forwardRef(
                       return (
                         <div
                           key={level.id}
-                          className={`relative rounded  border transition-all duration-300 overflow-hidden group ${
+                          className={`relative rounded-xl border ${
                             isLocked
-                              ? "bg-slate-50 border-slate-200 opacity-80"
+                              ? "bg-slate-50 border-slate-200"
                               : isQualified
-                                ? "bg-white border-teal-200 shadow-sm hover:shadow-md"
-                                : "bg-white border-slate-200 shadow-sm hover:shadow-lg hover:border-indigo-300"
+                                ? "bg-white border-teal-200"
+                                : "bg-white border-slate-200"
                           }`}
                         >
                           {isLocked && (
-                            <div className="absolute inset-0 bg-slate-100/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
-                              <div className="bg-white/90 px-4 py-2 rounded-full shadow-sm border border-slate-200 flex items-center gap-2 text-slate-500 font-medium text-sm">
+                            <div className="absolute inset-0 bg-slate-100/50 z-10 flex items-center justify-center">
+                              <div className="bg-white px-4 py-2 rounded-full border border-slate-200 flex items-center gap-2 text-slate-500 font-medium text-sm">
                                 <FaLock className="text-slate-400" />
                                 <span>Complete Level 1 to Unlock</span>
                               </div>
@@ -852,48 +854,41 @@ const FilterdExamCard = forwardRef(
                           )}
 
                           <div className="p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center gap-5 sm:gap-6">
-                            {/* Icon Section */}
-
                             {/* Content Section */}
                             <div className="flex-1 text-left flex gap-3">
                               <div
-                                className={`w-14 h-14 sm:w-16 sm:h-16 rounded  flex items-center justify-center shrink-0 shadow-inner transition-colors ${
+                                className={`w-10 h-10 sm:w-16 sm:h-16 rounded-full  flex items-center justify-center shrink-0 ${
                                   isLocked
                                     ? "bg-slate-200 text-slate-400"
                                     : isQualified
                                       ? "bg-teal-50 text-teal-600"
-                                      : "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 group-hover:scale-105 transition-transform duration-300"
+                                      : "bg-indigo-50 text-indigo-600"
                                 }`}
                               >
                                 {isLocked ? (
-                                  <FaLock className="text-2xl" />
+                                  <FaLock className="text-xl" />
                                 ) : isQualified ? (
-                                  <FaCheckCircle className="text-2xl sm:text-3xl" />
+                                  <FaCheckCircle className="text-xl sm:text-3xl" />
                                 ) : (
-                                  <span className="text-2xl sm:text-3xl font-bold font-mono">
+                                  <span className="text-xl sm:text-3xl font-bold font-mono">
                                     02
                                   </span>
                                 )}
                               </div>
                               <div className="flex flex-col">
-                                <div className="flex items-center justify-start gap-2 mb-1">
+                                <div className="flex items-center gap-2 mb-1">
                                   <h3
-                                    className={`font-bold text-lg sm:text-xl ${isLocked ? "text-slate-500" : "text-slate-800"}`}
+                                    className={`font-bold text-sm md:text-lg ${isLocked ? "text-slate-500" : "text-slate-800"}`}
                                   >
                                     Level 2: (from home)
                                   </h3>
-                                  {isQualified && (
-                                    <span className="px-2 py-0.5 bg-teal-100 text-teal-700 text-[10px] font-bold uppercase tracking-wider rounded-full">
-                                      Passed
-                                    </span>
-                                  )}
                                   {!isLocked && !isQualified && (
-                                    <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase tracking-wider rounded-full">
+                                    <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] md:font-bold uppercase rounded-full">
                                       From Home
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-sm text-slate-500 leading-relaxed max-w-lg">
+                                <p className="text-sm text-slate-500 leading-relaxed">
                                   In-depth subject knowledge test.
                                 </p>
                               </div>
@@ -907,7 +902,7 @@ const FilterdExamCard = forwardRef(
                                     <div className="flex gap-2 w-full md:w-auto">
                                       <button
                                         onClick={() => handleLevelSelect(level)}
-                                        className="flex-1 md:flex-none px-4 py-2.5 bg-teal-600 border border-slate-200 text-white rounded-xl hover:bg-teal-700 font-medium text-sm transition-colors"
+                                        className="flex-1 md:flex-none px-4 py-2.5 bg-teal-600 border border-slate-200 text-white rounded-xl font-medium text-sm"
                                       >
                                         Reattempt
                                       </button>
@@ -921,10 +916,10 @@ const FilterdExamCard = forwardRef(
                                   ) : (
                                     <button
                                       onClick={() => handleLevelSelect(level)}
-                                      className="w-full md:w-auto px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-semibold text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 group-hover:ring-2 group-hover:ring-indigo-200 group-hover:ring-offset-1"
+                                      className="w-full md:w-auto px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
                                     >
                                       <span>Start Exam</span>
-                                      <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                                      <FaArrowRight />
                                     </button>
                                   )}
                                 </>
@@ -965,12 +960,12 @@ const FilterdExamCard = forwardRef(
                         return (
                           <div
                             key={level.id}
-                            className={`relative py-1 px-2 rounded-xl border-2 transition-all bg-white overflow-hidden ${
+                            className={`relative py-1 px-2 rounded-xl border-2 bg-white ${
                               isLocked
-                                ? "border-gray-200 opacity-75"
+                                ? "border-gray-200"
                                 : isQualified
                                   ? "border-green-200"
-                                  : "border-purple-200 shadow-sm"
+                                  : "border-purple-200"
                             }`}
                           >
                             {isLocked && (
@@ -1024,10 +1019,10 @@ const FilterdExamCard = forwardRef(
                                   ) : (
                                     <button
                                       onClick={() => handleLevelSelect(level)}
-                                      className={`w-full px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                                      className={`w-full px-4 py-2 rounded-lg font-medium text-sm ${
                                         passkeyStatus?.status === "requested"
-                                          ? "bg-teal-600 hover:bg-teal-700 text-white"
-                                          : "bg-purple-600 hover:bg-purple-700 text-white"
+                                          ? "bg-teal-600 text-white"
+                                          : "bg-purple-600 text-white"
                                       }`}
                                     >
                                       {passkeyStatus?.status === "requested"
@@ -1044,10 +1039,10 @@ const FilterdExamCard = forwardRef(
 
                     {/* Interview Card */}
                     <div
-                      className={`relative py-1 px-2 rounded-xl border-2 transition-all bg-white overflow-hidden ${
+                      className={`relative py-1 px-2 rounded-xl border-2 bg-white ${
                         !hasLevel2Qualified
-                          ? "border-gray-200 opacity-75"
-                          : "border-cyan-200 shadow-sm"
+                          ? "border-gray-200"
+                          : "border-cyan-200"
                       }`}
                     >
                       {!hasLevel2Qualified && (
@@ -1146,7 +1141,7 @@ const FilterdExamCard = forwardRef(
                                 </span>
                                 <button
                                   onClick={handleInterviewSelect}
-                                  className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm flex items-center justify-center gap-2"
+                                  className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2"
                                 >
                                   View Details →
                                 </button>
@@ -1172,14 +1167,14 @@ const FilterdExamCard = forwardRef(
                       <div
                         animate={{ opacity: 1, y: 0 }}
                         initial={{ opacity: 0, y: 20 }}
-                        className="relative rounded  border border-green-200 bg-green-50/30 shadow-sm hover:shadow-md transition-all p-5 sm:p-6 overflow-hidden"
+                        className="relative rounded-2xl border border-green-200 bg-green-50/30 p-5 sm:p-6 overflow-hidden"
                       >
                         <div className="absolute top-0 right-0 p-4 opacity-10">
                           <FaUserTie size={100} className="text-green-600" />
                         </div>
 
                         <div className="relative flex flex-col md:flex-row items-center gap-6">
-                          <div className="w-16 h-16 rounded  bg-green-100 text-green-600 flex items-center justify-center text-3xl shrink-0 shadow-sm">
+                          <div className="w-16 h-16 rounded-full  bg-green-100 text-green-600 flex items-center justify-center text-3xl shrink-0">
                             <FaCheckCircle />
                           </div>
 
@@ -1199,7 +1194,7 @@ const FilterdExamCard = forwardRef(
 
                           <button
                             onClick={() => navigate("/teacher/job-apply")}
-                            className="shrink-0 px-8 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 font-bold text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2"
+                            className="shrink-0 px-8 py-3 bg-green-600 text-white rounded-xl font-bold text-sm flex items-center gap-2"
                           >
                             Apply Now
                             <FaArrowRight />
@@ -1211,9 +1206,9 @@ const FilterdExamCard = forwardRef(
                     /* Locked Guide Card */
                     <>
                       <div className="hidden lg:block h-6 w-0.5 bg-gray-200 mx-auto opacity-50" />
-                      <div className="relative rounded  border border-dashed border-gray-300 bg-gray-50/50 p-5 sm:p-6 text-center md:text-left transition-all hover:bg-gray-50 group cursor-default">
-                        <div className="flex flex-col md:flex-row items-center gap-6 opacity-60 group-hover:opacity-80 transition-opacity">
-                          <div className="w-14 h-14 rounded  bg-gray-100 text-gray-400 flex items-center justify-center text-2xl shrink-0 shadow-inner">
+                      <div className="relative rounded-2xl border border-dashed border-gray-300 bg-gray-50/50 p-5 sm:p-6 text-center md:text-left transition-all group cursor-default">
+                        <div className="flex flex-col md:flex-row items-center gap-6 transition-opacity">
+                          <div className="w-14 h-14 rounded-full  bg-gray-100 text-gray-400 flex items-center justify-center text-2xl shrink-0">
                             <FaLock />
                           </div>
 
@@ -1321,10 +1316,10 @@ const FilterdExamCard = forwardRef(
             !error &&
             !showInterviewPanel &&
             !isExamCenterModalOpen && (
-              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
+              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-0 sm:p-4">
+                <div className="bg-white sm:rounded-xl max-w-md w-full h-full sm:h-auto overflow-hidden flex flex-col">
                   {/* Modal Header */}
-                  <div className="px-6 py-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-slate-200">
+                  <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
                         <FaCheckCircle className="text-indigo-600" size={20} />
@@ -1341,7 +1336,7 @@ const FilterdExamCard = forwardRef(
                   </div>
 
                   {/* Modal Body */}
-                  <div className="p-6">
+                  <div className="p-6 flex-1 overflow-y-auto">
                     {/* Exam Details */}
                     <div className="space-y-3 mb-6">
                       <div className="flex items-center justify-between py-2 border-b border-slate-100">
@@ -1506,7 +1501,7 @@ const FilterdExamCard = forwardRef(
                       <button
                         type="button"
                         onClick={handleExam}
-                        className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
                       >
                         {selectedLevel?.level_code === 2.5
                           ? "Select Center"
@@ -1525,26 +1520,36 @@ const FilterdExamCard = forwardRef(
             !selectedLevel &&
             !error &&
             !examReady && (
-              <div className="bg-white rounded-lg  border border-slate-100 overflow-hidden mb-6 sm:mb-8">
-                <div className="bg-background p-6 sm:p-8 text-center">
-                  <div className="w-full mx-auto">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-300 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden mb-6 sm:mb-8">
+                <div className="bg-slate-50/50 p-8 sm:p-12 text-center">
+                  <div className="max-w-md mx-auto">
+                    <div 
+                      className="w-20 h-20 sm:w-24 sm:h-24 bg-white border border-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 relative"
+                    >
                       <FaGraduationCap
-                        className="text-slate-500 text-2xl sm:text-3xl"
+                        className="text-teal-600 text-3xl sm:text-4xl"
                         aria-hidden="true"
                       />
+                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center">
+                        <FaArrowRight className="text-white text-[10px]" />
+                      </div>
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-gray-400 mb-2 sm:mb-3">
-                      Start Your Assessment / परीक्षा शुरू करें
-                    </h3>{" "}
-                    {/* Adjust text size/margin */}
-                    <p className="text-sm sm:text-base text-gray-400">
-                      {" "}
-                      {/* Adjust text size */}
-                      Follow the steps above: select category, subject, and
-                      level to begin. <br /> ऊपर दिए गए चरणों का पालन करें: शुरू
-                      करने के लिए श्रेणी, विषय और स्तर चुनें।
+                    <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-4 leading-tight">
+                      Start Your Professional Journey
+                    </h3>
+                    <p className="text-slate-500 text-sm sm:text-base mb-8 leading-relaxed">
+                      Select your class category and subject above to begin your assessment and unlock teaching opportunities.
                     </p>
+                    <div className="grid grid-cols-2 gap-4 text-left">
+                       <div className="p-3 bg-white rounded-xl border border-slate-100">
+                          <div className="text-teal-600 font-bold mb-1">Step 1</div>
+                          <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Choose Subject</div>
+                       </div>
+                       <div className="p-3 bg-white rounded-xl border border-slate-100">
+                          <div className="text-indigo-600 font-bold mb-1">Step 2</div>
+                          <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Clear Levels</div>
+                       </div>
+                    </div>
                   </div>
                 </div>
               </div>

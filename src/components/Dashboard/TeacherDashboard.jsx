@@ -255,6 +255,11 @@ function TeacherDashboard() {
               message={dashboardError}
               onDismiss={() => setDashboardError(null)}
             />
+₹
+            {/* Mobile Profile Strength - Show on top in mobile */}
+            <div className="block md:hidden mb-6">
+              <ProfileStrength percentage={completionData?.profile_completed || 0} />
+            </div>
 
             {(completionData?.profile_completed || 0) < 100 && (
               <div className="space-y-4 mb-8">
@@ -274,7 +279,7 @@ function TeacherDashboard() {
                   </div>
                   <button
                     onClick={() => navigate("/teacher/personal-profile")}
-                    className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap"
+                    className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg whitespace-nowrap"
                   >
                     Edit Profile
                   </button>
@@ -336,7 +341,7 @@ function TeacherDashboard() {
                               <div className="flex h-8 w-8 items-center justify-center rounded bg-slate-50 text-teal-600">
                                 <FaPhoneAlt size={14} />
                               </div>
-                              <a href={`tel:${passkeyStatus.center.phone}`} className="text-sm font-bold text-slate-700 hover:text-teal-600 transition-colors">
+                              <a href={`tel:${passkeyStatus.center.phone}`} className="text-sm font-bold text-slate-700">
                                 {passkeyStatus.center.phone}
                               </a>
                             </div>
@@ -346,7 +351,7 @@ function TeacherDashboard() {
                                 <div className="flex h-8 w-8 items-center justify-center rounded bg-slate-50 text-slate-600">
                                   <FaPhoneAlt size={14} />
                                 </div>
-                                <a href={`tel:${passkeyStatus.center.alt_phone}`} className="text-sm font-bold text-slate-700 hover:text-teal-600 transition-colors">
+                                <a href={`tel:${passkeyStatus.center.alt_phone}`} className="text-sm font-bold text-slate-700">
                                   {passkeyStatus.center.alt_phone}
                                 </a>
                               </div>
@@ -375,7 +380,7 @@ function TeacherDashboard() {
             )}
           </div>
           {/* Assessment Process column (3/12) */}
-          <div className="w-full md:w-3/12 lg:w-3/12 mt-6 md:mt-0 border-l border-slate-150 pl-6 space-y-6">
+          <div className="w-full md:w-3/12 lg:w-3/12 mt-6 md:mt-0 border-l border-slate-150 pl-6 space-y-6 hidden md:block">
             <ProfileStrength percentage={completionData?.profile_completed || 0} />
             <img src="/help.png" alt="Assessment Process" className="w-full h-auto" />
           </div>
