@@ -621,15 +621,15 @@ const ExamPortal = () => {
                 ))}
               </div>
 
-              {/* Navigation Buttons - Fixed at bottom for mobile */}
-              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 md:absolute md:bottom-5 md:right-4 md:left-auto md:bg-transparent md:border-0 md:p-0 flex justify-between md:justify-end gap-3 z-20">
+              {/* Navigation Buttons */}
+              <div className="mt-8 flex flex-col sm:flex-row justify-between sm:justify-end gap-3 border-t border-gray-100 pt-6">
                 <button
                   onClick={handlePrevious}
                   disabled={currentQuestionIndex === 0}
-                  className={`flex-1 md:flex-none flex items-center justify-center gap-1 px-4 py-3 md:py-2.5 rounded-xl font-semibold transition-all shadow-md ${
+                  className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-6 py-2.5 rounded-xl font-semibold transition-all ${
                     currentQuestionIndex === 0
-                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                      : "bg-gray-600 text-white hover:bg-gray-700 hover:shadow-lg"
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-slate-700 text-white"
                   }`}
                 >
                   <BsArrowLeftShort className="size-5" />
@@ -638,8 +638,8 @@ const ExamPortal = () => {
                 {currentQuestionIndex < questions.length - 1 ? (
                   <button
                     onClick={handleNext}
-                    className={`flex-1 md:flex-none flex items-center justify-center gap-1 px-4 py-3 md:py-2.5 rounded-xl bg-green-600 text-white hover:bg-emerald-700 font-semibold shadow-md hover:shadow-lg transition-all ${
-                      isNavigating ? "ring-2 ring-offset-2 ring-green-500" : ""
+                    className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-8 py-3 bg-teal-600 text-white rounded-xl font-semibold transition-all ${
+                      isNavigating ? "ring-2 ring-offset-2 ring-teal-500" : ""
                     }`}
                   >
                     Next
@@ -649,10 +649,10 @@ const ExamPortal = () => {
                   <button
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className={`flex-1 md:flex-none px-6 py-3 md:py-2.5 rounded-xl font-semibold shadow-md transition-all ${
+                    className={`flex-1 sm:flex-none px-8 py-3 rounded-xl font-semibold transition-all ${
                       isSubmitting
-                        ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                        : "bg-red-600 text-white hover:bg-red-700 hover:shadow-lg"
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-indigo-600 text-white"
                     }`}
                   >
                     {isSubmitting ? "Submitting..." : "Submit Exam"}

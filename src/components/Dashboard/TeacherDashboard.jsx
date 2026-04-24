@@ -255,7 +255,7 @@ function TeacherDashboard() {
               message={dashboardError}
               onDismiss={() => setDashboardError(null)}
             />
-₹
+
             {/* Mobile Profile Strength - Show on top in mobile */}
             <div className="block md:hidden mb-6">
               <ProfileStrength percentage={completionData?.profile_completed || 0} />
