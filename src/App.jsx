@@ -147,7 +147,6 @@ function AppContent() {
         <Route path="exam" element={<ExamLayout />}>
           <Route index element={<MCQGuidelinePage />} />
           <Route path="portal" element={<ExamPortal />} />
-          <Route path="result" element={<ResultPage />} />
         </Route>
         {/* <Route path="subject-expert" element={<QuestionManagementPortal />} /> */}
 
@@ -433,6 +432,15 @@ function AppContent() {
             element={
               <RoleBasedRoute
                 element={<SettingsPage />}
+                allowedRoles={["teacher"]}
+              />
+            }
+          />
+          <Route
+            path="result"
+            element={
+              <RoleBasedRoute
+                element={<ResultPage />}
                 allowedRoles={["teacher"]}
               />
             }

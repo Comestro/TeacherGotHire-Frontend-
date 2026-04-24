@@ -182,7 +182,7 @@ const ExamPortal = () => {
       }),
     );
     dispatch(attemptsExam());
-    navigate("/exam/result", {
+    navigate("/teacher/result", {
       state: {
         exam,
         correct_answer,

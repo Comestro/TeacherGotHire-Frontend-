@@ -13,12 +13,20 @@ import { HiTrophy, HiFaceFrown } from "react-icons/hi2";
 
 const ResultPage = () => {
   const location = useLocation();
-  const { correct_answer, incorrect_answer, is_unanswered } =
-    location.state || {
+  const [resultData, setResultData] = useState(() => {
+    if (location.state) {
+      localStorage.setItem("last_exam_result", JSON.stringify(location.state));
+      return location.state;
+    }
+    const saved = localStorage.getItem("last_exam_result");
+    return saved ? JSON.parse(saved) : {
       correct_answer: 0,
       incorrect_answer: 0,
       is_unanswered: 0,
     };
+  });
+
+  const { correct_answer, incorrect_answer, is_unanswered } = resultData;
 
   const totalQuestion = correct_answer + incorrect_answer + is_unanswered;
   const percentage =
@@ -71,133 +79,120 @@ const ResultPage = () => {
   }, [isQualified]);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-2 sm:p-4 font-sans">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-2xl bg-white rounded  shadow-sm border border-slate-200 overflow-hidden"
-      >
-        {/* Header Section */}
-        <div
-          className={`relative px-4 py-8 sm:px-8 sm:py-12 text-center ${
-            isQualified ? "bg-teal-600" : "bg-slate-700"
-          }`}
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white/10 backdrop-blur-sm rounded-full mb-4 sm:mb-6"
+    <div className="bg-white sm:bg-transparent font-sans">
+      <div className="max-w-4xl mx-auto p-0 sm:p-4">
+        <div className="flex flex-col gap-3 sm:gap-4">
+          
+          {/* Status Section - Bento Box 1 */}
+          <div 
+            className={`p-6 sm:p-8 text-center sm:rounded-2xl border-b sm:border border-slate-200 ${
+              isQualified ? "bg-teal-50/50" : "bg-slate-100/50"
+            }`}
           >
-            {isQualified ? (
-              <HiTrophy className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-            ) : (
-              <HiFaceFrown className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-            )}
-          </motion.div>
+            <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full mb-4 ${
+              isQualified ? "bg-teal-100 text-teal-600" : "bg-slate-200 text-slate-600"
+            }`}>
+              {isQualified ? <HiTrophy className="w-6 h-6" /> : <HiFaceFrown className="w-6 h-6" />}
+            </div>
+            <h1 className={`text-2xl sm:text-3xl font-black mb-2 ${
+              isQualified ? "text-teal-900" : "text-slate-900"
+            }`}>
+              {isQualified ? "PASSED!" : "FAILED"}
+            </h1>
+            <p className="text-slate-600 text-sm sm:text-base max-w-lg mx-auto">
+              {isQualified
+                ? "Excellent! You've successfully met the qualification criteria."
+                : "Your score was below the threshold. Keep practicing and try again."}
+            </p>
+          </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-            {isQualified ? "Passed!" : "Failed"}
-          </h1>
-          <p className="text-white/80 text-sm sm:text-lg max-w-md mx-auto">
-            {isQualified
-              ? "Congratulations on demonstrating your proficiency. You are now eligible for the next stage."
-              : "Unfortunately, you did not meet the passing criteria this time. Keep practicing and try again."}
-          </p>
-        </div>
-
-        {/* Score Section */}
-        <div className="px-4 py-6 sm:px-8 sm:py-8">
-          <div className="flex flex-col items-center -mt-12 sm:-mt-16 mb-6 sm:mb-8">
-            <div className="relative bg-white rounded  shadow-lg p-4 sm:p-6 w-full max-w-sm border border-slate-100 text-center">
-              <p className="text-xs sm:text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                Total Score
-              </p>
-              <div className="flex items-baseline justify-center gap-1">
-                <span
-                  className={`text-4xl sm:text-5xl font-bold ${isQualified ? "text-teal-600" : "text-slate-700"}`}
-                >
-                  {percentage}%
-                </span>
-                <span className="text-slate-400 font-medium text-sm sm:text-base">
-                  / 100%
-                </span>
+          {/* Metrics Section - Bento Box 2 & 3 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+            
+            {/* Score Metric */}
+            <div className="md:col-span-2 bg-white p-6 sm:rounded-2xl border-y sm:border border-slate-200 flex items-center gap-6">
+              <div className="relative shrink-0">
+                <svg className="w-20 h-20 transform -rotate-90">
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="36"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="transparent"
+                    className="text-slate-100"
+                  />
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="36"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    fill="transparent"
+                    strokeDasharray={226.2}
+                    strokeDashoffset={226.2 - (226.2 * percentage) / 100}
+                    className={`${isQualified ? "text-teal-500" : "text-slate-500"}`}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-sm font-black text-slate-900">{Math.round(percentage)}%</span>
+                </div>
               </div>
-              <div className="mt-4 w-full bg-slate-100 rounded-full h-2 sm:h-2.5 overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${percentage}%` }}
-                  transition={{ duration: 1, delay: 0.5 }}
-                  className={`h-full rounded-full ${isQualified ? "bg-teal-500" : "bg-slate-500"}`}
-                />
+              <div>
+                <h4 className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Performance Index</h4>
+                <h3 className="text-lg font-bold text-slate-900">Total Score Analysis</h3>
+              </div>
+            </div>
+
+            {/* Breakdown Metric */}
+            <div className="bg-white p-6 sm:rounded-2xl border-y sm:border border-slate-200 flex flex-col justify-center">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 text-xs font-medium">Correct</span>
+                  <span className="text-teal-600 text-xs font-bold">{correct_answer}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 text-xs font-medium">Incorrect</span>
+                  <span className="text-rose-600 text-xs font-bold">{incorrect_answer}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 text-xs font-medium">Skipped</span>
+                  <span className="text-slate-600 text-xs font-bold">{is_unanswered}</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
-            <div className="p-2 sm:p-4 rounded-xl bg-teal-50 border border-teal-100 text-center">
-              <HiCheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 mx-auto mb-1 sm:mb-2" />
-              <p className="text-xl sm:text-2xl font-bold text-teal-700">
-                {correct_answer}
-              </p>
-              <p className="text-[10px] sm:text-xs font-semibold text-teal-600 uppercase tracking-wide">
-                Correct
-              </p>
-            </div>
-
-            <div className="p-2 sm:p-4 rounded-xl bg-rose-50 border border-rose-100 text-center">
-              <HiXCircle className="w-5 h-5 sm:w-6 sm:h-6 text-rose-500 mx-auto mb-1 sm:mb-2" />
-              <p className="text-xl sm:text-2xl font-bold text-rose-600">
-                {incorrect_answer}
-              </p>
-              <p className="text-[10px] sm:text-xs font-semibold text-rose-500 uppercase tracking-wide">
-                Incorrect
-              </p>
-            </div>
-
-            <div className="p-2 sm:p-4 rounded-xl bg-slate-50 border border-slate-200 text-center">
-              <HiMinusCircle className="w-5 h-5 sm:w-6 sm:h-6 text-slate-500 mx-auto mb-1 sm:mb-2" />
-              <p className="text-xl sm:text-2xl font-bold text-slate-600">
-                {is_unanswered}
-              </p>
-              <p className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                Skipped
-              </p>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-            <Link
-              to="/teacher"
-              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-lg border border-slate-300 text-slate-700 text-sm sm:text-base font-medium hover:bg-slate-50 transition-colors"
-            >
-              <HiHome className="w-4 h-4 sm:w-5 sm:h-5" />
-              Dashboard
-            </Link>
-
-            {isQualified ? (
-              <Link
-                to="/teacher/view-attempts"
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-lg bg-teal-600 text-white text-sm sm:text-base font-medium hover:bg-teal-700 shadow-sm hover:shadow transition-all"
-              >
-                View Attempts
-                <HiArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </Link>
-            ) : (
+          {/* Actions Section - Bento Box 4 */}
+          <div className="bg-slate-900 p-5 sm:p-6 sm:rounded-2xl flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <h3 className="text-white font-bold text-base">Next Steps</h3>
+            <div className="flex gap-2 w-full sm:w-auto">
               <Link
                 to="/teacher"
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-lg bg-slate-800 text-white text-sm sm:text-base font-medium hover:bg-slate-900 shadow-sm hover:shadow transition-all"
+                className="flex-1 sm:flex-none px-6 py-2 rounded-lg bg-white/10 text-white font-bold text-xs text-center border border-white/10"
               >
-                Try Again
-                <HiArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                Dashboard
               </Link>
-            )}
+              {isQualified ? (
+                <Link
+                  to="/teacher/view-attempts"
+                  className="flex-1 sm:flex-none px-6 py-2 rounded-lg bg-teal-500 text-white font-bold text-xs text-center flex items-center justify-center gap-1"
+                >
+                  View Attempts <HiArrowRight />
+                </Link>
+              ) : (
+                <Link
+                  to="/teacher"
+                  className="flex-1 sm:flex-none px-6 py-2 rounded-lg bg-indigo-500 text-white font-bold text-xs text-center flex items-center justify-center gap-1"
+                >
+                  Try Again <HiArrowRight />
+                </Link>
+              )}
+            </div>
           </div>
+
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };

@@ -211,16 +211,52 @@ const FilterdExamCard = forwardRef(
         setErrors(null);
         setSelectedLevel(level);
 
+        // Determine if we should request a specific language (especially for Level 1 reattempts)
+        let targetLanguage = null;
+        if (level?.level_code === 1.0) {
+          const passedLang = getPassedLanguage(
+            selectedCategory?.id,
+            selectedSubject?.id,
+            1.0,
+          );
+          if (passedLang) {
+            targetLanguage = passedLang.toLowerCase() === "english" ? "Hindi" : "English";
+          }
+        }
+
         const payload = {
           subject_id: selectedSubject?.id,
           class_category_id: selectedCategory?.id,
           level_id: level?.id,
+          language: targetLanguage,
         };
 
-        await dispatch(examCard(payload)).unwrap();
-        setExamReady(true);
+        try {
+          await dispatch(examCard(payload)).unwrap();
+          setExamReady(true);
+        } catch (err) {
+          // FALLBACK LOGIC: If "No exams" error occurs, check if we already have a valid exam ID for this level
+          const fallbackAttempt = attempts?.find(
+            (a) =>
+              a?.exam?.class_category_id === selectedCategory?.id &&
+              a?.exam?.subject_id === selectedSubject?.id &&
+              a?.exam?.level_code === level?.level_code
+          );
+
+          if (fallbackAttempt?.exam?.id) {
+            // Manually populate examCards state with the existing exam data
+            dispatch({ 
+              type: "exam/examCard/fulfilled", 
+              payload: fallbackAttempt.exam 
+            });
+            setExamReady(true);
+            setErrors(null);
+          } else {
+            setErrors(err || "No exams available for the selected subject and class category.");
+          }
+        }
       } catch (err) {
-        setErrors("Failed to load exam data. Please try again.");
+        setErrors("Failed to initiate exam. Please check your connection.");
       } finally {
         setIsLoading(false);
       }
@@ -1363,17 +1399,8 @@ const FilterdExamCard = forwardRef(
                               let enabled = ["English", "Hindi"];
 
                               if (selectedLevel?.level_code === 1.0) {
-                                const passedLang = getPassedLanguage(
-                                  selectedCategory?.id,
-                                  selectedSubject?.id,
-                                  1.0,
-                                );
-                                if (passedLang) {
-                                  if (passedLang.toLowerCase() === "english")
-                                    enabled = ["Hindi"];
-                                  else if (passedLang.toLowerCase() === "hindi")
-                                    enabled = ["English"];
-                                }
+                                // For Level 1, allow both English and Hindi up to their limits
+                                enabled = ["English", "Hindi"];
                               } else if (selectedLevel?.level_code === 2.0) {
                                 const passedL1Attempts = attempts?.filter(
                                   (a) =>
@@ -1523,19 +1550,9 @@ const FilterdExamCard = forwardRef(
               <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden mb-6 sm:mb-8">
                 <div className="bg-slate-50/50 p-8 sm:p-12 text-center">
                   <div className="max-w-md mx-auto">
-                    <div 
-                      className="w-20 h-20 sm:w-24 sm:h-24 bg-white border border-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 relative"
-                    >
-                      <FaGraduationCap
-                        className="text-teal-600 text-3xl sm:text-4xl"
-                        aria-hidden="true"
-                      />
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center">
-                        <FaArrowRight className="text-white text-[10px]" />
-                      </div>
-                    </div>
+                    
                     <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-4 leading-tight">
-                      Start Your Professional Journey
+                     Start Your Teaching Journey
                     </h3>
                     <p className="text-slate-500 text-sm sm:text-base mb-8 leading-relaxed">
                       Select your class category and subject above to begin your assessment and unlock teaching opportunities.

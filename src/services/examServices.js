@@ -34,18 +34,17 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-export const addExamCard = async ({ subject_id, class_category_id, level_id }) => {
+export const addExamCard = async ({ subject_id, class_category_id, level_id, language }) => {
   try {
     const params = new URLSearchParams();
     if (subject_id) params.append('subject_id', subject_id);
     if (class_category_id) params.append('class_category_id', class_category_id);
     if (level_id) params.append('level_id', level_id);
-
+    if (language) params.append('language', language);
     const response = await apiClient.get(`api/self/new/exam/exam/?${params.toString()}`);
 
     return response.data;
   } catch (err) {
-
     throw err;
   }
 };

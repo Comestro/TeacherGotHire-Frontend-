@@ -9,9 +9,9 @@ const initialState ={
 
 export const examCard = createAsyncThunk(
   "examCard",
-  async ({subject_id,class_category_id,level_id},{ rejectWithValue }) => {
+  async ({subject_id,class_category_id,level_id, language},{ rejectWithValue }) => {
     try {
-      const data = await addExamCard({subject_id,class_category_id,level_id});
+      const data = await addExamCard({subject_id,class_category_id,level_id, language});
 
       return data;
     } catch (error) {
