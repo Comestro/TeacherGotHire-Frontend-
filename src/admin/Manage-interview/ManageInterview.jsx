@@ -186,7 +186,9 @@ export default function InterviewManagementRedesign() {
           id: item.id,
           name: `${item.user?.Fname || ""} ${item.user?.Lname || ""}`.trim(),
           userId: item.user?.id,
+          userCode: item.user?.user_code || (item.user?.id ? `T-${item.user.id}` : "—"),
           email: item.user?.email,
+          phone: item.user?.profiles?.phone_number || item.user?.phone_number || item.user?.mobile || "—",
           profilePicture: item.user?.profile_picture,
           classCategory: item.class_category?.name || "Unknown",
           subjectName: item.subject?.subject_name || "Unknown",
@@ -300,6 +302,7 @@ export default function InterviewManagementRedesign() {
     const headers = [
       "Teacher Name",
       "Email",
+      "Mobile",
       "Subject (Class)",
       "Status",
       "Score",
@@ -310,6 +313,7 @@ export default function InterviewManagementRedesign() {
       [
         t.name,
         t.email,
+        t.phone,
         t.mergedSubject,
         `${t.status}`,
         t.score,
@@ -662,7 +666,7 @@ export default function InterviewManagementRedesign() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold tracking-wider">
-                    <th className="px-4 py-3">Teacher</th>
+                    <th className="px-4 py-3">Teacher / Contact</th>
                     <th className="px-4 py-3">Subject (Class)</th>
                     <th className="px-4 py-3">Desired Time</th>
                     <th className="px-4 py-3">Grade</th>
@@ -687,9 +691,13 @@ export default function InterviewManagementRedesign() {
                           </div>
                           <div>
                             <p className="font-medium text-gray-900">
-                              {row.name}
-                            </p>
+                                {row.name}
+                                <span className="ml-2 text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                                  {row.userCode}
+                                </span>
+                              </p>
                             <p className="text-xs text-gray-500">{row.email}</p>
+                            <p className="text-xs text-teal-600 font-medium">{row.phone}</p>
                           </div>
                         </div>
                       </td>
@@ -795,8 +803,14 @@ export default function InterviewManagementRedesign() {
                       {row.name.charAt(0)}
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900">{row.name}</p>
+                        <p className="font-bold text-gray-900">
+                          {row.name}{" "}
+                          <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                            {row.userCode}
+                          </span>
+                        </p>
                       <p className="text-xs text-gray-500">{row.email}</p>
+                      <p className="text-xs text-teal-600 font-medium">{row.phone}</p>
                     </div>
                   </div>
                   <span
@@ -892,9 +906,15 @@ export default function InterviewManagementRedesign() {
               <div>
                 <h4 className="font-bold text-gray-900">
                   {detailsModal.data.name}
+                  <span className="ml-2 text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded border border-gray-200 uppercase tracking-widest">
+                    {detailsModal.data.userCode}
+                  </span>
                 </h4>
                 <p className="text-sm text-gray-500">
                   {detailsModal.data.email}
+                </p>
+                <p className="text-sm text-teal-600 font-bold">
+                  {detailsModal.data.phone}
                 </p>
               </div>
             </div>
