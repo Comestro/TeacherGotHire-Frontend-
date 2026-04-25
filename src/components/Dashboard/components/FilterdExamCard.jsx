@@ -91,6 +91,20 @@ const FilterdExamCard = forwardRef(
 
       fetchData();
     }, []);
+    const isLanguageSubject = (subjectName) => {
+      if (!subjectName) return false;
+      const lowerName = subjectName.toLowerCase();
+      const languages = [
+        "english", "hindi", "urdu", "sanskrit", "bengali", 
+        "marathi", "telugu", "tamil", "gujarati", "kannada", 
+        "malayalam", "punjabi", "odia", "assamese", "maithili", 
+        "santali", "kashmiri", "nepali", "konkani", "sindhi", 
+        "dogri", "manipuri", "bodo", "japanese", "french", 
+        "german", "spanish"
+      ];
+      return languages.some((lang) => lowerName.includes(lang));
+    };
+
     const checkLevelQualification = (categoryId, subjectId, levelCode) => {
       return attempts?.some(
         (attempt) =>
@@ -213,7 +227,7 @@ const FilterdExamCard = forwardRef(
 
         // Determine if we should request a specific language (especially for Level 1 reattempts)
         let targetLanguage = null;
-        if (level?.level_code === 1.0) {
+        if (level?.level_code === 1.0 && !isLanguageSubject(selectedSubject?.subject_name)) {
           const passedLang = getPassedLanguage(
             selectedCategory?.id,
             selectedSubject?.id,
@@ -767,7 +781,8 @@ const FilterdExamCard = forwardRef(
                           .filter(Boolean)
                           .map((l) => l.toLowerCase()),
                       );
-                      const isFullyQualified = uniqueLanguages.size >= 2;
+                      const isLangSub = isLanguageSubject(selectedSubject?.subject_name);
+                      const isFullyQualified = isLangSub ? uniqueLanguages.size >= 1 : uniqueLanguages.size >= 2;
 
                       return (
                         <div

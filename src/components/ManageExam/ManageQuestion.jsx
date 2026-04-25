@@ -16,6 +16,7 @@ import {
   FiBookOpen,
   FiAlertTriangle,
   FiLink,
+  FiRefreshCw,
 } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -46,6 +47,7 @@ import {
   deleteQuestion,
   createNewQuestion,
   updateNewQuestion,
+  syncQuestions,
 } from "../../services/adminManageExam";
 import { reorderQuestions } from "../../services/apiService";
 
@@ -71,6 +73,7 @@ const ManageQuestion = () => {
   // Custom Delete Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteContext, setDeleteContext] = useState({ question: null, pair: null });
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Use location.state first, fall back to URL param for direct navigation
   const examId = location.state?.exam?.id || routeExamId;
@@ -339,6 +342,23 @@ const ManageQuestion = () => {
     return { englishCount, hindiCount, totalMarks };
   };
 
+  const handleSyncData = async () => {
+    if (!window.confirm("This will automatically fix duplicates, repair language labels, and link question pairs. Continue?")) return;
+    
+    try {
+      setIsSyncing(true);
+      const response = await syncQuestions(examId);
+      if (response) {
+        toast.success("Exam data synchronized and repaired successfully");
+        await refreshExamData();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to sync data");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleBack = () => {
     navigate("/manage-exam");
   };
@@ -409,17 +429,32 @@ const ManageQuestion = () => {
         return;
       }
 
-      const currentOrder = editingQuestion?.order;
-      const existingEnglishId = (currentOrder !== undefined && currentOrder !== null)
-        ? (editingQuestion.language === "English" 
-            ? editingQuestion.id 
-            : questions.find(q => q.order === currentOrder && q.language === "English")?.id)
-        : null;
-      const existingHindiId = (currentOrder !== undefined && currentOrder !== null)
-        ? (editingQuestion.language === "Hindi" 
-            ? editingQuestion.id 
-            : questions.find(q => q.order === currentOrder && q.language === "Hindi")?.id)
-        : null;
+      const findPair = (q) => {
+        if (!q) return null;
+        const otherLang = q.language === "English" ? "Hindi" : "English";
+        // 1. Try related_question link
+        let pair = questions.find(item => 
+          (item.related_question === q.id || q.related_question === item.id) &&
+          item.language === otherLang
+        );
+        // 2. Fallback to order matching
+        if (!pair && q.order !== undefined && q.order !== null) {
+          pair = questions.find(item => 
+            item.order === q.order && 
+            item.language === otherLang && 
+            item.id !== q.id
+          );
+        }
+        return pair;
+      };
+
+      const pairedQuestion = editingQuestion ? findPair(editingQuestion) : null;
+      const existingEnglishId = editingQuestion?.language === "English" 
+        ? editingQuestion.id 
+        : (pairedQuestion?.language === "English" ? pairedQuestion.id : null);
+      const existingHindiId = editingQuestion?.language === "Hindi" 
+        ? editingQuestion.id 
+        : (pairedQuestion?.language === "Hindi" ? pairedQuestion.id : null);
 
       if (editingQuestion) {
         let updatedQuestions = [];
@@ -662,6 +697,19 @@ const ManageQuestion = () => {
                   className="bg-white text-teal-700 hover:bg-teal-50 px-3 py-1.5 rounded-lg flex items-center text-xs font-bold uppercase tracking-wider shadow-sm transition-all"
                 >
                   <FiPlus className="w-4 h-4 mr-1.5" /> Add Question
+                </button>
+                <button
+                  onClick={handleSyncData}
+                  disabled={isSyncing}
+                  className={`px-3 py-1.5 rounded-lg flex items-center text-xs font-bold uppercase tracking-wider shadow-sm transition-all border ${
+                    isSyncing 
+                    ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed" 
+                    : "bg-teal-50 text-teal-700 hover:bg-teal-100 border-teal-100"
+                  }`}
+                  title="Repair duplicates and sync pairs"
+                >
+                  <FiRefreshCw className={`w-4 h-4 mr-1.5 ${isSyncing ? "animate-spin" : ""}`} /> 
+                  {isSyncing ? "Syncing..." : "Sync Data"}
                 </button>
               </div>
             </div>

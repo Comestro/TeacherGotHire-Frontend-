@@ -27,3 +27,4 @@ export const reorderQuestions = async (questionIds) => {
     throw error;
   }
 };
+export const syncQuestions = (examId) => apiService.create("/api/new/examsetter/question/sync/", { exam_id: examId });
