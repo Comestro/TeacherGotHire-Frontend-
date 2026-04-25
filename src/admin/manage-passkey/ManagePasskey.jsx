@@ -77,7 +77,10 @@ export default function ManagePasskey() {
       const rows = (Array.isArray(resp) ? resp : []).map((r) => ({
         ...r,
         id: r.id,
+        userName: `${r.user?.Fname || ""} ${r.user?.Lname || ""}`.trim(),
+        userCode: r.user?.user_code || (r.user?.id ? `T-${r.user.id}` : "—"),
         userEmail: r.user?.email || "N/A",
+        userPhone: r.user?.phone_number || "—",
         examName: r.exam?.name || "N/A",
         centerName: r.center?.name || "N/A",
         requestDate: r.created_at || r.request_date || null,
@@ -100,6 +103,8 @@ export default function ManagePasskey() {
       const matchesQ =
         !q ||
         (r.userEmail || "").toLowerCase().includes(q) ||
+        (r.userName || "").toLowerCase().includes(q) ||
+        (r.userCode || "").toLowerCase().includes(q) ||
         (r.examName || "").toLowerCase().includes(q) ||
         (r.centerName || "").toLowerCase().includes(q) ||
         (r.code || "").toLowerCase().includes(q);
@@ -298,7 +303,7 @@ export default function ManagePasskey() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold tracking-wider">
-                    <th className="px-4 py-3">User Email</th>
+                    <th className="px-4 py-3">Teacher / Contact</th>
                     <th className="px-4 py-3">Exam</th>
                     <th className="px-4 py-3">Passkey</th>
                     <th className="px-4 py-3">Status</th>
@@ -312,8 +317,21 @@ export default function ManagePasskey() {
                       key={row.id}
                       className="hover:bg-gray-50/80 transition-colors group"
                     >
-                      <td className="px-4 py-3 font-medium text-gray-900">
-                        {row.userEmail}
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-gray-900">
+                            {row.userName}{" "}
+                            <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                              {row.userCode}
+                            </span>
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {row.userEmail}
+                          </span>
+                          <span className="text-xs text-teal-600 font-medium">
+                            {row.userPhone}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-gray-600">
                         <div className="flex flex-col">
@@ -431,13 +449,24 @@ export default function ManagePasskey() {
 
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
+                  <div className="col-span-2">
                     <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                      User Email
+                      Teacher Information
                     </label>
-                    <p className="font-medium text-gray-800 break-words">
-                      {detailsModal.row.userEmail}
-                    </p>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-gray-900 text-base">
+                        {detailsModal.row.userName}{" "}
+                        <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded border border-gray-200 uppercase tracking-widest">
+                          {detailsModal.row.userCode}
+                        </span>
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {detailsModal.row.userEmail}
+                      </span>
+                      <span className="text-sm text-teal-600 font-bold">
+                        {detailsModal.row.userPhone}
+                      </span>
+                    </div>
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
