@@ -96,6 +96,21 @@ export const fetchSingleTeacherById = async (teacherId) => {
   }
 };
 
+export const updateTeacherById = async (teacherId, data) => {
+  try {
+    const response = await axiosInstance.put(
+      `/api/teacher/${teacherId}/`,
+      data
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message ||
+        "An error occurred while updating the teacher."
+    );
+  }
+};
+
 const apiService = {
   getAll: async (endpoint) => {
     try {

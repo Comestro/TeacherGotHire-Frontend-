@@ -13,7 +13,15 @@ import {
   FiUser,
   FiArrowLeft,
   FiMoreVertical,
+  FiEdit,
+  FiCheck,
+  FiX,
+  FiCalendar,
+  FiClock,
+  FiFileText,
+  FiAlertCircle,
 } from "react-icons/fi";
+import { updateTeacherById } from "../../services/apiService";
 
 const ViewTeacherAdmin = () => {
   const navigate = useNavigate();
@@ -34,6 +42,17 @@ const ViewTeacherAdmin = () => {
   const [attempts, setAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    Fname: "",
+    Lname: "",
+    email: "",
+    is_active: true,
+    is_verified: false,
+    phone_number: "",
+  });
+
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [filters, setFilters] = useState({
     classCategory: "",
@@ -184,6 +203,56 @@ const ViewTeacherAdmin = () => {
       document.title = "Teacher Management";
     };
   }, [id]);
+
+  useEffect(() => {
+    if (teacherData) {
+      setEditFormData({
+        Fname: teacherData.Fname || "",
+        Lname: teacherData.Lname || "",
+        email: teacherData.email || "",
+        is_active: !!teacherData.is_active,
+        is_verified: !!teacherData.is_verified,
+        phone_number: teacherData.profiles?.phone_number || "",
+      });
+    }
+  }, [teacherData]);
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setIsUpdating(true);
+    try {
+      // Prepare payload. Fname, Lname, email, is_active, is_verified are direct CustomUser fields.
+      // phone_number needs to be updated via profile if we want to be thorough, 
+      // but the TeacherSerializer handles 'profiles' nested object if we pass it.
+      const payload = {
+        Fname: editFormData.Fname,
+        Lname: editFormData.Lname,
+        email: editFormData.email,
+        is_active: editFormData.is_active,
+        is_verified: editFormData.is_verified,
+        profiles: {
+          phone_number: editFormData.phone_number
+        }
+      };
+      
+      const updated = await updateTeacherById(id, payload);
+      setTeacherData(updated);
+      setIsEditModalOpen(false);
+      setNotificationMessage({
+        type: "success",
+        text: "Profile updated successfully",
+      });
+      setOpenSnackbar(true);
+    } catch (err) {
+      setNotificationMessage({
+        type: "error",
+        text: err.message || "Failed to update profile",
+      });
+      setOpenSnackbar(true);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const formatDate = (value, { dateOnly } = { dateOnly: false }) => {
     if (!value) return "";
@@ -384,6 +453,12 @@ const ViewTeacherAdmin = () => {
             </div>
             <div className="flex items-center gap-2">
               <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="inline-flex items-center gap-2 px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-semibold shadow-sm"
+              >
+                <FiEdit /> Edit
+              </button>
+              <button
                 onClick={handleBackClick}
                 className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm"
               >
@@ -433,6 +508,44 @@ const ViewTeacherAdmin = () => {
                           ID: {teacherData?.user_code || id}
                         </span>
                       </div>
+
+                      {/* Profile Completion Progress Bar */}
+                      <div className="w-full max-w-sm space-y-1.5 p-3 bg-teal-50/30 rounded-lg border border-teal-100/50">
+                        <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
+                          <span className="text-teal-700">Profile Completion</span>
+                          <span className="text-teal-600 bg-teal-100/50 px-1.5 py-0.5 rounded">{teacherData?.completion_score ?? teacherData?.profile_completed ?? 0}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-200 shadow-inner">
+                          <div 
+                            className={`h-full rounded-full transition-all duration-1000 ease-out shadow-sm ${
+                              (teacherData?.completion_score ?? teacherData?.profile_completed ?? 0) < 40 ? 'bg-rose-500' :
+                              (teacherData?.completion_score ?? teacherData?.profile_completed ?? 0) < 80 ? 'bg-orange-500' :
+                              'bg-teal-500'
+                            }`}
+                            style={{ width: `${teacherData?.completion_score ?? teacherData?.profile_completed ?? 0}%` }}
+                          />
+                        </div>
+                        <p className="text-[10px] text-gray-500 italic"> Includes Education, Experience, and Academic Preferences </p>
+                      </div>
+
+                      {/* Missing Information Feedback */}
+                      {teacherData?.profile_feedback?.length > 0 && (
+                        <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 space-y-2 max-w-sm">
+                          <div className="flex items-center gap-2 text-amber-700">
+                            <FiAlertCircle size={14} className="shrink-0" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Pending Tasks ({teacherData.profile_feedback.length})</span>
+                          </div>
+                          <ul className="space-y-1">
+                            {teacherData.profile_feedback.map((item, idx) => (
+                              <li key={idx} className="flex items-center gap-2 text-[11px] text-amber-600">
+                                <div className="w-1 h-1 bg-amber-400 rounded-full shrink-0" />
+                                <span className="font-medium">{item.label}</span>
+                                <span className="text-[9px] bg-amber-100 px-1 rounded uppercase tracking-tighter ml-auto">{item.step}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div className="flex items-center gap-2 text-gray-600 break-all leading-tight">
                           <FiUser className="shrink-0 text-gray-400" />
@@ -445,6 +558,18 @@ const ViewTeacherAdmin = () => {
                         <div className="flex items-center gap-2 text-gray-600">
                           <FiActivity className="text-gray-400" />
                           <span className="text-sm font-medium">{teacherData?.is_active ? 'Active' : 'Inactive'} Account</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <FiCalendar className="text-gray-400" />
+                          <span className="text-sm font-medium">Joined: {formatDate(teacherData?.date, { dateOnly: true })}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <FiClock className="text-gray-400" />
+                          <span className="text-sm font-medium">Last Login: {teacherData?.last_login ? formatDate(teacherData.last_login) : "Never"}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <FiCheck className={teacherData?.is_verified ? "text-green-500" : "text-gray-400"} />
+                          <span className="text-sm font-medium">{teacherData?.is_verified ? 'Verified' : 'Unverified'} Profile</span>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-2 justify-center md:justify-start">
@@ -619,8 +744,13 @@ const ViewTeacherAdmin = () => {
                         <div>
                           <h4 className="text-sm font-bold text-gray-900 leading-tight">{q.qualification?.name}</h4>
                           <p className="text-[11px] text-gray-500 font-medium mt-0.5 truncate">{q.institution}</p>
+                          {q.stream_or_degree && <p className="text-[10px] text-teal-600 font-bold mt-1 uppercase tracking-tight">{q.stream_or_degree}</p>}
+                          {q.subjects && <p className="text-[10px] text-gray-500 mt-0.5 line-clamp-1">{q.subjects}</p>}
                         </div>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-t border-gray-50 pt-2">{q.year_of_passing}</p>
+                        <div className="flex items-center justify-between border-t border-gray-50 pt-2">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{q.year_of_passing}</p>
+                          {q.session && <p className="text-[10px] text-gray-400 italic">Sess: {q.session}</p>}
+                        </div>
                       </div>
                     )) : <div className="col-span-full bg-white p-6 rounded-lg border border-gray-200 text-gray-400 text-xs italic text-center">No qualifications listed.</div>}
                   </div>
@@ -706,6 +836,58 @@ const ViewTeacherAdmin = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Applied Jobs History */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-5 bg-orange-500 rounded-full" />
+                  <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Applied Jobs / Hiring History</h3>
+                </div>
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-200 text-gray-600">
+                          <th className="p-3 text-left font-bold">Category</th>
+                          <th className="p-3 text-left font-bold">Subject</th>
+                          <th className="p-3 text-left font-bold">Job Type</th>
+                          <th className="p-3 text-left font-bold">Location</th>
+                          <th className="p-3 text-left font-bold">Exp. Salary</th>
+                          <th className="p-3 text-left font-bold">Status</th>
+                          <th className="p-3 text-left font-bold">Applied On</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {teacherData?.apply?.length > 0 ? teacherData.apply.map((app, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                            <td className="p-3 font-semibold text-gray-700">{app.class_category?.name || "—"}</td>
+                            <td className="p-3 font-medium text-teal-700">{app.subject?.name || "—"}</td>
+                            <td className="p-3 text-gray-600">{app.teacher_job_type?.teacher_job_name || "—"}</td>
+                            <td className="p-3 text-gray-500">
+                              {app.preferred_locations?.length > 0 
+                                ? app.preferred_locations.map(l => l.area || l.city).join(", ") 
+                                : "—"}
+                            </td>
+                            <td className="p-3 text-gray-700 font-bold">₹{app.expected_salary || "—"}</td>
+                            <td className="p-3">
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                                String(app.status).toLowerCase() === 'accepted' ? 'bg-green-100 text-green-700 border border-green-200' :
+                                String(app.status).toLowerCase() === 'rejected' ? 'bg-rose-100 text-rose-700 border border-rose-200' :
+                                'bg-orange-100 text-orange-700 border border-orange-200'
+                              }`}>
+                                {app.status || "Pending"}
+                              </span>
+                            </td>
+                            <td className="p-3 text-gray-500 italic whitespace-nowrap">{formatDate(app.created_at, { dateOnly: true })}</td>
+                          </tr>
+                        )) : (
+                          <tr><td colSpan={7} className="p-8 text-center text-gray-400 italic">No job applications found for this teacher.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </React.Fragment>
           )}
         </div>
@@ -747,6 +929,115 @@ const ViewTeacherAdmin = () => {
               <div className="p-4 overflow-auto bg-gray-50">
                 <pre className="text-[10px] leading-relaxed font-mono">{JSON.stringify(jsonDialogContent, null, 2)}</pre>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Teacher Modal */}
+        {isEditModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fadeIn">
+              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-teal-100 text-teal-600 rounded-lg flex items-center justify-center">
+                    <FiEdit size={18} />
+                  </div>
+                  <h3 className="font-bold text-gray-800">Edit Teacher Details</h3>
+                </div>
+                <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                  <FiX size={20} />
+                </button>
+              </div>
+              <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">First Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={editFormData.Fname}
+                      onChange={(e) => setEditFormData({ ...editFormData, Fname: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Last Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={editFormData.Lname}
+                      onChange={(e) => setEditFormData({ ...editFormData, Lname: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Phone Number</label>
+                  <input
+                    type="tel"
+                    value={editFormData.phone_number}
+                    onChange={(e) => setEditFormData({ ...editFormData, phone_number: e.target.value })}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all"
+                  />
+                </div>
+
+                <div className="flex gap-6 py-2">
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <div className="relative flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={editFormData.is_active}
+                        onChange={(e) => setEditFormData({ ...editFormData, is_active: e.target.checked })}
+                        className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 checked:bg-teal-600 transition-all"
+                      />
+                      <FiCheck className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 left-1" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">Account Active</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <div className="relative flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={editFormData.is_verified}
+                        onChange={(e) => setEditFormData({ ...editFormData, is_verified: e.target.checked })}
+                        className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 checked:bg-green-600 transition-all"
+                      />
+                      <FiCheck className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 left-1" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">Verified Profile</span>
+                  </label>
+                </div>
+
+                <div className="flex gap-3 pt-4 border-t border-gray-50">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditModalOpen(false)}
+                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isUpdating}
+                    className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-bold hover:bg-teal-700 shadow-lg shadow-teal-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {isUpdating ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
