@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import Layout from "../Admin/Layout";
-import { fetchSingleTeacherById } from "../../services/apiService";
+import { fetchSingleTeacherById, updateTeacherById } from "../../services/apiService";
+import apiService from "../../services/apiService";
 import DataLoader from "../../components/DataLoader";
 import {
   FiBook,
@@ -14,6 +15,7 @@ import {
   FiArrowLeft,
   FiMoreVertical,
   FiEdit,
+  FiEdit2,
   FiCheck,
   FiX,
   FiCalendar,
@@ -21,7 +23,7 @@ import {
   FiFileText,
   FiAlertCircle,
 } from "react-icons/fi";
-import { updateTeacherById } from "../../services/apiService";
+
 
 const ViewTeacherAdmin = () => {
   const navigate = useNavigate();
@@ -42,16 +44,32 @@ const ViewTeacherAdmin = () => {
   const [attempts, setAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editType, setEditType] = useState(null); // 'basic', 'academic', 'skills', 'education', 'experience', 'address', 'locations'
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [editFormData, setEditFormData] = useState({
-    Fname: "",
-    Lname: "",
-    email: "",
-    is_active: true,
-    is_verified: false,
-    phone_number: "",
-  });
+  const [editFormData, setEditFormData] = useState({});
+
+  const [allCategories, setAllCategories] = useState([]);
+  const [allSubjects, setAllSubjects] = useState([]);
+  const [allSkills, setAllSkills] = useState([]);
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        // Try both with and without leading slash if one fails, or just use relative
+        const catResp = await apiService.getAll("api/admin/classcategory/");
+        const subResp = await apiService.getAll("api/admin/subject/");
+        const skillResp = await apiService.getAll("api/admin/skill/");
+        
+        setAllCategories(Array.isArray(catResp) ? catResp : (catResp?.results || []));
+        setAllSubjects(Array.isArray(subResp) ? subResp : (subResp?.results || []));
+        setAllSkills(Array.isArray(skillResp) ? skillResp : (skillResp?.results || []));
+      } catch (err) {
+        console.error("Failed to fetch options", err);
+      }
+    };
+    fetchOptions();
+  }, []);
 
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [filters, setFilters] = useState({
@@ -62,43 +80,17 @@ const ViewTeacherAdmin = () => {
     district: "",
     skills: [],
     qualifications: [],
-    experience: [0, 20], // Years range
-    status: "all", // 'all', 'active', 'inactive'
+    experience: [0, 20],
+    status: "all",
     minTestScore: 0,
     searchQuery: "",
   });
-  const [filterOptions, setFilterOptions] = useState({
-    classCategories: ["Primary", "Middle School", "High School", "College"],
-    subjects: [
-      "Mathematics",
-      "Science",
-      "English",
-      "History",
-      "Computer Science",
-    ],
-    states: ["Delhi", "Maharashtra", "Karnataka", "Tamil Nadu"],
-    districts: {
-      Delhi: ["New Delhi", "North Delhi", "South Delhi"],
-      Maharashtra: ["Mumbai", "Pune", "Nagpur"],
-      Karnataka: ["Bangalore", "Mysore", "Hubli"],
-      "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai"],
-    },
-    skills: [
-      "Communication",
-      "Leadership",
-      "Technology",
-      "Classroom Management",
-    ],
-    qualifications: ["Matric", "Bachelor", "Master", "PhD", "B.Ed"],
-    genders: ["Male", "Female", "Other"],
-  });
+
   const handleFilterChange = (event) => {
     const { name, value } = event.target;
-    setFilters({
-      ...filters,
-      [name]: value,
-    });
+    setFilters({ ...filters, [name]: value });
   };
+
   const handleMultiFilterChange = (event, filterName) => {
     const { value } = event.target;
     setFilters({
@@ -106,12 +98,7 @@ const ViewTeacherAdmin = () => {
       [filterName]: typeof value === "string" ? value.split(",") : value,
     });
   };
-  const handleSliderChange = (event, newValue) => {
-    setFilters({
-      ...filters,
-      experience: newValue,
-    });
-  };
+
   const handleResetFilters = () => {
     setFilters({
       classCategory: "",
@@ -127,44 +114,6 @@ const ViewTeacherAdmin = () => {
       searchQuery: "",
     });
   };
-  useEffect(() => {
-    if (filters.classCategory) {
-      const filteredSubjects = filterOptions.subjects.filter((subject) => {
-        if (filters.classCategory === "Primary")
-          return ["Mathematics", "English"].includes(subject);
-        if (filters.classCategory === "Middle School")
-          return ["Mathematics", "Science", "English", "History"].includes(
-            subject,
-          );
-        if (filters.classCategory === "High School")
-          return [
-            "Mathematics",
-            "Science",
-            "English",
-            "History",
-            "Computer Science",
-          ].includes(subject);
-        return true; // For College or if no filtering needed
-      });
-      setFilterOptions((prev) => ({
-        ...prev,
-        availableSubjects: filteredSubjects,
-      }));
-    }
-  }, [filters.classCategory]);
-  useEffect(() => {
-    if (filters.state && filterOptions.districts[filters.state]) {
-      if (
-        filters.district &&
-        !filterOptions.districts[filters.state].includes(filters.district)
-      ) {
-        setFilters((prev) => ({
-          ...prev,
-          district: "",
-        }));
-      }
-    }
-  }, [filters.state, filterOptions.districts]);
 
   useEffect(() => {
     const fetchTeacherData = async () => {
@@ -204,49 +153,82 @@ const ViewTeacherAdmin = () => {
     };
   }, [id]);
 
-  useEffect(() => {
-    if (teacherData) {
-      setEditFormData({
-        Fname: teacherData.Fname || "",
-        Lname: teacherData.Lname || "",
-        email: teacherData.email || "",
-        is_active: !!teacherData.is_active,
-        is_verified: !!teacherData.is_verified,
-        phone_number: teacherData.profiles?.phone_number || "",
-      });
+  const openEditModal = (type) => {
+    setEditType(type);
+    let initialData = {};
+
+    switch (type) {
+      case "basic":
+        initialData = {
+          Fname: teacherData.Fname || "",
+          Lname: teacherData.Lname || "",
+          email: teacherData.email || "",
+          is_active: !!teacherData.is_active,
+          is_verified: !!teacherData.is_verified,
+          profiles: {
+            phone_number: teacherData.profiles?.phone_number || "",
+            bio: teacherData.profiles?.bio || "",
+            gender: teacherData.profiles?.gender || "",
+            marital_status: teacherData.profiles?.marital_status || "",
+            religion: teacherData.profiles?.religion || "",
+            date_of_birth: teacherData.profiles?.date_of_birth || "",
+          }
+        };
+        break;
+      case "address":
+        initialData = {
+          teachersaddress: {
+            current_address: teacherData.teachersaddress?.current_address || {},
+            permanent_address: teacherData.teachersaddress?.permanent_address || {}
+          }
+        };
+        break;
+      case "academic":
+        const pref = teacherData.preferences?.[0] || {};
+        initialData = {
+          preferences: {
+            class_category: pref.class_category?.map(c => c.id) || [],
+            prefered_subject: pref.prefered_subject?.map(s => s.id) || []
+          }
+        };
+        break;
+      case "skills":
+        initialData = {
+          teacherskill: teacherData.teacherskill || []
+        };
+        break;
+      case "education":
+        initialData = {
+          teacherqualifications: teacherData.teacherqualifications || []
+        };
+        break;
+      case "experience":
+        initialData = {
+          teacherexperiences: teacherData.teacherexperiences || []
+        };
+        break;
     }
-  }, [teacherData]);
+
+    setEditFormData(initialData);
+    setIsEditModalOpen(true);
+  };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     setIsUpdating(true);
     try {
-      // Prepare payload. Fname, Lname, email, is_active, is_verified are direct CustomUser fields.
-      // phone_number needs to be updated via profile if we want to be thorough, 
-      // but the TeacherSerializer handles 'profiles' nested object if we pass it.
-      const payload = {
-        Fname: editFormData.Fname,
-        Lname: editFormData.Lname,
-        email: editFormData.email,
-        is_active: editFormData.is_active,
-        is_verified: editFormData.is_verified,
-        profiles: {
-          phone_number: editFormData.phone_number
-        }
-      };
-      
-      const updated = await updateTeacherById(id, payload);
-      setTeacherData(updated);
+      await updateTeacherById(id, editFormData);
+      await fetchTeacherData();
       setIsEditModalOpen(false);
       setNotificationMessage({
         type: "success",
-        text: "Profile updated successfully",
+        text: "Information updated successfully",
       });
       setOpenSnackbar(true);
     } catch (err) {
       setNotificationMessage({
         type: "error",
-        text: err.message || "Failed to update profile",
+        text: err.message || "Failed to update information",
       });
       setOpenSnackbar(true);
     } finally {
@@ -491,93 +473,88 @@ const ViewTeacherAdmin = () => {
             <React.Fragment>
               {/* Primary Info */}
               <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-                <div className="p-6 md:p-8">
-                  <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start text-center md:text-left">
-                    <div className="relative">
+                <div className="p-4 md:p-5">
+                  <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-center md:items-start text-center md:text-left">
+                    <div className="relative shrink-0">
                       <img
                         src={teacherData?.profiles?.profile_picture || "https://via.placeholder.com/150"}
                         alt="Profile"
-                        className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-lg border border-gray-100"
+                        className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg border border-gray-100 shadow-sm"
                       />
-                      <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${teacherData?.is_active ? 'bg-green-500' : 'bg-gray-400'}`} />
+                      <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white ${teacherData?.is_active ? 'bg-green-500' : 'bg-gray-400'}`} />
                     </div>
-                    <div className="flex-1 space-y-4">
+                    <div className="flex-1 space-y-3">
                       <div className="flex flex-col md:flex-row md:items-center gap-2">
-                        <h2 className="text-2xl font-bold text-gray-900">{teacherData?.Fname} {teacherData?.Lname}</h2>
-                        <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-bold rounded border border-gray-200 uppercase tracking-widest">
+                        <h2 className="text-xl font-bold text-gray-900">{teacherData?.Fname} {teacherData?.Lname}</h2>
+                        <span className="inline-block px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[9px] font-bold rounded border border-gray-200 uppercase tracking-widest">
                           ID: {teacherData?.user_code || id}
                         </span>
                       </div>
 
-                      {/* Profile Completion Progress Bar */}
-                      <div className="w-full max-w-sm space-y-1.5 p-3 bg-teal-50/30 rounded-lg border border-teal-100/50">
-                        <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
-                          <span className="text-teal-700">Profile Completion</span>
-                          <span className="text-teal-600 bg-teal-100/50 px-1.5 py-0.5 rounded">{teacherData?.completion_score ?? teacherData?.profile_completed ?? 0}%</span>
+                      <div className="flex flex-col xl:flex-row gap-3">
+                        {/* Compact Profile Completion */}
+                        <div className="flex-1 max-w-sm space-y-1.5 p-2.5 bg-teal-50/30 rounded-lg border border-teal-100/50">
+                          <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest">
+                            <span className="text-teal-700">Completion</span>
+                            <span className="text-teal-600 bg-teal-100/50 px-1.5 py-0.5 rounded">{teacherData?.completion_score ?? teacherData?.profile_completed ?? 0}%</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-200 shadow-inner">
+                            <div 
+                              className={`h-full rounded-full transition-all duration-1000 ease-out shadow-sm ${
+                                (teacherData?.completion_score ?? teacherData?.profile_completed ?? 0) < 40 ? 'bg-rose-500' :
+                                (teacherData?.completion_score ?? teacherData?.profile_completed ?? 0) < 80 ? 'bg-orange-500' :
+                                'bg-teal-500'
+                              }`}
+                              style={{ width: `${teacherData?.completion_score ?? teacherData?.profile_completed ?? 0}%` }}
+                            />
+                          </div>
+                          <p className="text-[9px] text-gray-500 italic leading-none">Edu, Exp, & Academic Prefs</p>
                         </div>
-                        <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-200 shadow-inner">
-                          <div 
-                            className={`h-full rounded-full transition-all duration-1000 ease-out shadow-sm ${
-                              (teacherData?.completion_score ?? teacherData?.profile_completed ?? 0) < 40 ? 'bg-rose-500' :
-                              (teacherData?.completion_score ?? teacherData?.profile_completed ?? 0) < 80 ? 'bg-orange-500' :
-                              'bg-teal-500'
-                            }`}
-                            style={{ width: `${teacherData?.completion_score ?? teacherData?.profile_completed ?? 0}%` }}
-                          />
-                        </div>
-                        <p className="text-[10px] text-gray-500 italic"> Includes Education, Experience, and Academic Preferences </p>
+
+                        {/* Compact Pending Tasks */}
+                        {teacherData?.profile_feedback?.length > 0 && (
+                          <div className="flex-1 max-w-sm bg-amber-50/50 border border-amber-100 rounded-lg p-2.5 space-y-1.5">
+                            <div className="flex items-center gap-2 text-amber-700">
+                              <FiAlertCircle size={12} className="shrink-0" />
+                              <span className="text-[9px] font-bold uppercase tracking-wider">Pending ({teacherData.profile_feedback.length})</span>
+                            </div>
+                            <div className="flex flex-wrap gap-x-3 gap-y-1">
+                              {teacherData.profile_feedback.map((item, idx) => (
+                                <div key={idx} className="flex items-center gap-1 text-[10px] text-amber-600 font-medium">
+                                  <div className="w-1 h-1 bg-amber-400 rounded-full shrink-0" />
+                                  <span>{item.label}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Missing Information Feedback */}
-                      {teacherData?.profile_feedback?.length > 0 && (
-                        <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 space-y-2 max-w-sm">
-                          <div className="flex items-center gap-2 text-amber-700">
-                            <FiAlertCircle size={14} className="shrink-0" />
-                            <span className="text-[10px] font-bold uppercase tracking-wider">Pending Tasks ({teacherData.profile_feedback.length})</span>
-                          </div>
-                          <ul className="space-y-1">
-                            {teacherData.profile_feedback.map((item, idx) => (
-                              <li key={idx} className="flex items-center gap-2 text-[11px] text-amber-600">
-                                <div className="w-1 h-1 bg-amber-400 rounded-full shrink-0" />
-                                <span className="font-medium">{item.label}</span>
-                                <span className="text-[9px] bg-amber-100 px-1 rounded uppercase tracking-tighter ml-auto">{item.step}</span>
-                              </li>
-                            ))}
-                          </ul>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-2 gap-x-4">
+                        <div className="flex items-center gap-2 text-gray-600 break-all leading-none">
+                          <FiUser size={13} className="shrink-0 text-gray-400" />
+                          <span className="text-xs font-medium">{teacherData?.email || "No Email"}</span>
                         </div>
-                      )}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div className="flex items-center gap-2 text-gray-600 break-all leading-tight">
-                          <FiUser className="shrink-0 text-gray-400" />
-                          <span className="text-sm font-medium">{teacherData?.email || "No Email"}</span>
+                        <div className="flex items-center gap-2 text-gray-600 leading-none">
+                          <FiActivity size={13} className="text-gray-400" />
+                          <span className="text-xs font-medium">{teacherData?.profiles?.phone_number || "No Phone"}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <FiActivity className="text-gray-400" />
-                          <span className="text-sm font-medium">{teacherData?.profiles?.phone_number || "No Phone"}</span>
+                        <div className="flex items-center gap-2 text-gray-600 leading-none">
+                          <FiCheck size={13} className={teacherData?.is_active ? "text-green-500" : "text-gray-400"} />
+                          <span className="text-xs font-medium">{teacherData?.is_active ? 'Active' : 'Inactive'}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <FiActivity className="text-gray-400" />
-                          <span className="text-sm font-medium">{teacherData?.is_active ? 'Active' : 'Inactive'} Account</span>
+                        <div className="flex items-center gap-2 text-gray-600 leading-none">
+                          <FiCalendar size={13} className="text-gray-400" />
+                          <span className="text-xs font-medium">Joined: {formatDate(teacherData?.date, { dateOnly: true })}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <FiCalendar className="text-gray-400" />
-                          <span className="text-sm font-medium">Joined: {formatDate(teacherData?.date, { dateOnly: true })}</span>
+                        <div className="flex items-center gap-2 text-gray-600 leading-none">
+                          <FiClock size={13} className="text-gray-400" />
+                          <span className="text-xs font-medium">Last Login: {teacherData?.last_login ? formatDate(teacherData.last_login) : "Never"}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <FiClock className="text-gray-400" />
-                          <span className="text-sm font-medium">Last Login: {teacherData?.last_login ? formatDate(teacherData.last_login) : "Never"}</span>
+                        <div className="flex items-center gap-2 text-gray-600 leading-none">
+                          <FiCheck size={13} className={teacherData?.is_verified ? "text-green-500" : "text-gray-400"} />
+                          <span className="text-xs font-medium">{teacherData?.is_verified ? 'Verified' : 'Unverified'}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <FiCheck className={teacherData?.is_verified ? "text-green-500" : "text-gray-400"} />
-                          <span className="text-sm font-medium">{teacherData?.is_verified ? 'Verified' : 'Unverified'} Profile</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                        {teacherData?.teacherclasscategory?.map((c, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-gray-50 text-gray-600 rounded border border-gray-200 text-[10px] font-bold">
-                            {c.class_category?.name || c.name}
-                          </span>
-                        ))}
                       </div>
                     </div>
                   </div>
@@ -639,202 +616,266 @@ const ViewTeacherAdmin = () => {
                 </div>
               </div>
 
-              {/* Details Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Basic Info */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-5 bg-indigo-600 rounded-full" />
-                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Basic Information</h3>
-                  </div>
-                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 grid grid-cols-2 gap-4">
-                    {[
-                      { l: "Gender", v: teacherData?.profiles?.gender },
-                      { l: "Marital Status", v: teacherData?.profiles?.marital_status },
-                      { l: "Religion", v: teacherData?.profiles?.religion },
-                      { l: "Birth Date", v: teacherData?.profiles?.date_of_birth ? formatDate(teacherData.profiles.date_of_birth, { dateOnly: true }) : "—" }
-                    ].map((item, i) => (
-                      <div key={i} className="space-y-0.5">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{item.l}</p>
-                        <p className="text-sm font-bold text-gray-800 capitalize transition-all">{item.v || "—"}</p>
+              {/* Profile Details Container */}
+              <div className="space-y-6 mt-6">
+                {/* Basic & Contact Information Row */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Basic Information */}
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="bg-gray-50/80 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-indigo-600 rounded-full" />
+                        <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Basic Information</h3>
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Contact Info */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-5 bg-pink-600 rounded-full" />
-                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Contact Information</h3>
-                  </div>
-                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-0.5">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Email Address</p>
-                      <p className="text-sm font-bold text-gray-800 break-all">{teacherData?.email || "—"}</p>
+                      <button onClick={() => openEditModal('basic')} className="p-1.5 hover:bg-gray-200 rounded text-teal-600 transition-colors">
+                        <FiEdit size={14} />
+                      </button>
                     </div>
-                    <div className="space-y-0.5">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Phone Number</p>
-                      <p className="text-sm font-bold text-gray-800">{teacherData?.profiles?.phone_number || "—"}</p>
+                    <div className="p-4 grid grid-cols-2 gap-4">
+                      {[
+                        { label: "Gender", value: teacherData?.profiles?.gender },
+                        { label: "Marital Status", value: teacherData?.profiles?.marital_status },
+                        { label: "Religion", value: teacherData?.profiles?.religion },
+                        { label: "Birth Date", value: teacherData?.profiles?.date_of_birth ? formatDate(teacherData.profiles.date_of_birth, { dateOnly: true }) : "—" }
+                      ].map((item, i) => (
+                        <div key={i} className="space-y-1">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">{item.label}</p>
+                          <p className="text-xs font-bold text-gray-800 capitalize">{item.value || "—"}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
 
-                {/* Skills */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-5 bg-amber-500 rounded-full" />
-                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Professional Skills</h3>
-                  </div>
-                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-5">
-                    <div className="flex flex-wrap gap-1.5">
-                      {teacherData?.teacherskill?.length > 0 ? teacherData.teacherskill.map((s, i) => (
-                        <span key={i} className="px-2 py-0.5 bg-gray-50 border border-gray-200 text-gray-600 text-xs font-semibold rounded">
-                          {s.skill?.name || s.name}
-                        </span>
-                      )) : <p className="text-xs text-gray-400 italic">No skills listed.</p>}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Subject Preferences */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-5 bg-teal-500 rounded-full" />
-                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Academic Preferences</h3>
-                  </div>
-                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
-                    {teacherData?.preferences?.length > 0 ? teacherData.preferences.map((pref, i) => (
-                      <div key={i} className="space-y-3">
-                        {pref.class_category?.map((cat, ci) => (
-                          <div key={ci} className="p-3 bg-teal-50/30 rounded-lg border border-teal-100/50">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-[10px] font-bold text-teal-600 uppercase tracking-widest bg-teal-100/50 px-2 py-0.5 rounded">Category</span>
-                              <h4 className="text-sm font-bold text-teal-900">{cat.name}</h4>
-                            </div>
-                            <div className="flex flex-wrap gap-1.5">
-                              {cat.subjects?.length > 0 ? cat.subjects.map((sub, si) => (
-                                <span key={si} className="px-2 py-0.5 bg-white border border-teal-200 text-teal-700 text-[11px] font-semibold rounded-full shadow-sm">
-                                  {sub.subject_name || sub.name}
-                                </span>
-                              )) : <p className="text-[10px] text-teal-400 italic">No subjects selected for this category.</p>}
-                            </div>
-                          </div>
-                        ))}
+                  {/* Contact Information */}
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="bg-gray-50/80 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-pink-600 rounded-full" />
+                        <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Contact Information</h3>
                       </div>
-                    )) : <p className="text-xs text-gray-400 italic p-2 text-center">No academic preferences saved.</p>}
-                  </div>
-                </div>
-                <div className="space-y-3 lg:col-span-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-5 bg-blue-600 rounded-full" />
-                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Educational Qualifications</h3>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {teacherData?.teacherqualifications?.length > 0 ? teacherData.teacherqualifications.map((q, i) => (
-                      <div key={i} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm space-y-3">
-                        <div className="flex items-start justify-between">
-                          <div className="w-8 h-8 bg-blue-50 rounded text-blue-600 flex items-center justify-center border border-blue-100">
-                            <FiAward size={18} />
-                          </div>
-                          <span className="px-1.5 py-0.5 bg-teal-50 text-teal-700 rounded text-[10px] font-bold border border-teal-100">
-                            {q.grade_or_percentage || "—"}
-                          </span>
+                      <button onClick={() => openEditModal('basic')} className="p-1.5 hover:bg-gray-200 rounded text-teal-600 transition-colors">
+                        <FiEdit size={14} />
+                      </button>
+                    </div>
+                    <div className="p-4 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-pink-50 rounded-lg flex items-center justify-center text-pink-600">
+                          <FiUser size={16} />
                         </div>
                         <div>
-                          <h4 className="text-sm font-bold text-gray-900 leading-tight">{q.qualification?.name}</h4>
-                          <p className="text-[11px] text-gray-500 font-medium mt-0.5 truncate">{q.institution}</p>
-                          {q.stream_or_degree && <p className="text-[10px] text-teal-600 font-bold mt-1 uppercase tracking-tight">{q.stream_or_degree}</p>}
-                          {q.subjects && <p className="text-[10px] text-gray-500 mt-0.5 line-clamp-1">{q.subjects}</p>}
-                        </div>
-                        <div className="flex items-center justify-between border-t border-gray-50 pt-2">
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{q.year_of_passing}</p>
-                          {q.session && <p className="text-[10px] text-gray-400 italic">Sess: {q.session}</p>}
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Email Address</p>
+                          <p className="text-xs font-bold text-gray-800 break-all">{teacherData?.email || "—"}</p>
                         </div>
                       </div>
-                    )) : <div className="col-span-full bg-white p-6 rounded-lg border border-gray-200 text-gray-400 text-xs italic text-center">No qualifications listed.</div>}
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-teal-50 rounded-lg flex items-center justify-center text-teal-600">
+                          <FiActivity size={16} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Phone Number</p>
+                          <p className="text-xs font-bold text-gray-800">{teacherData?.profiles?.phone_number || "—"}</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Experience */}
-                <div className="space-y-3 lg:col-span-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-5 bg-purple-600 rounded-full" />
-                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Teaching Experience</h3>
-                  </div>
-                  <div className="space-y-3">
-                    {teacherData?.teacherexperiences?.length > 0 ? teacherData.teacherexperiences.map((exp, i) => (
-                      <div key={i} className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex gap-4">
-                        <div className="shrink-0 w-10 h-10 bg-purple-50 rounded flex items-center justify-center text-purple-600 border border-purple-100">
-                          <FiBriefcase size={20} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1">
-                            <h4 className="text-sm font-bold text-gray-900 truncate">{exp.institution}</h4>
-                            <span className="text-[10px] font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded border border-gray-100">
-                              {exp.start_date ? formatDate(exp.start_date, { dateOnly: true }) : ""} - {exp.end_date ? formatDate(exp.end_date, { dateOnly: true }) : "Present"}
-                            </span>
-                          </div>
-                          <p className="text-purple-700 text-xs font-bold mt-0.5">{exp.role?.jobrole_name}</p>
-                          {exp.achievements && <p className="text-xs text-gray-600 mt-2 p-2 bg-gray-50 rounded border border-gray-100 leading-relaxed">{exp.achievements}</p>}
-                        </div>
+                {/* Secondary Details Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Professional Skills */}
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                    <div className="bg-gray-50/80 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-orange-500 rounded-full" />
+                        <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Professional Skills</h3>
                       </div>
-                    )) : <div className="bg-white p-6 rounded-lg border border-gray-200 text-gray-400 text-xs italic text-center">No experience records.</div>}
-                  </div>
-                </div>
-
-                {/* Locations */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-5 bg-rose-500 rounded-full" />
-                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Preferred Locations</h3>
-                  </div>
-                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-                    {jobLocations.length > 0 ? (
+                      <button onClick={() => openEditModal('skills')} className="p-1.5 hover:bg-gray-200 rounded text-teal-600 transition-colors">
+                        <FiEdit2 size={14} />
+                      </button>
+                    </div>
+                    <div className="p-4 flex-1">
                       <div className="flex flex-wrap gap-2">
-                        {jobLocations.map((loc, i) => (
-                          <div key={i} className="flex-1 min-w-[140px] p-3 bg-gray-50 rounded border border-gray-200">
-                            <FiMapPin className="text-rose-500 mb-1" size={14} />
-                            <p className="text-[9px] font-bold text-gray-400 uppercase">Target Area</p>
-                            <p className="text-xs font-bold text-gray-800 truncate">{typeof loc === 'string' ? loc : `${loc.area || ''} ${loc.city || loc.district || ''}`}</p>
-                            <p className="text-[10px] text-gray-500 font-medium">{loc.state}</p>
-                          </div>
-                        ))}
+                        {teacherData?.teacherskill?.length > 0 ? (
+                          teacherData.teacherskill.map((s, idx) => (
+                            <span key={idx} className="px-2.5 py-1 bg-orange-50 text-orange-700 text-[11px] font-bold rounded border border-orange-100 uppercase tracking-tight">
+                              {s.skill?.name || s.skill}
+                            </span>
+                          ))
+                        ) : (
+                          <p className="text-[11px] text-gray-400 italic">No skills listed.</p>
+                        )}
                       </div>
-                    ) : <p className="text-xs text-gray-400 italic">No preferences set.</p>}
+                    </div>
+                  </div>
+
+                  {/* Academic Preferences */}
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                    <div className="bg-gray-50/80 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-teal-500 rounded-full" />
+                        <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Academic Preferences</h3>
+                      </div>
+                      <button onClick={() => openEditModal('academic')} className="p-1.5 hover:bg-gray-200 rounded text-teal-600 transition-colors">
+                        <FiEdit2 size={14} />
+                      </button>
+                    </div>
+                    <div className="p-4 flex-1 space-y-3">
+                      {teacherData?.preferences?.length > 0 ? (
+                        teacherData.preferences.map((pref, idx) => (
+                          <div key={idx} className="p-3 bg-gray-50 rounded-lg border border-gray-100 space-y-2">
+                            <div className="flex flex-wrap gap-1.5">
+                              {pref.class_category?.map((cat, cidx) => (
+                                <span key={cidx} className="px-2 py-0.5 bg-teal-100/50 text-teal-700 text-[10px] font-bold rounded border border-teal-200 uppercase">
+                                  {cat.name}
+                                </span>
+                              ))}
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {pref.prefered_subject?.map((sub, sidx) => (
+                                <span key={sidx} className="px-2 py-0.5 bg-white text-blue-700 text-[10px] font-bold rounded border border-blue-200">
+                                  {sub.subject_name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-[11px] text-gray-400 italic">No preferences saved.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Education Card (Full Width inside Grid) */}
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden lg:col-span-2">
+                    <div className="bg-gray-50/80 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-blue-600 rounded-full" />
+                        <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Educational Qualifications</h3>
+                      </div>
+                      <button onClick={() => openEditModal('education')} className="p-1.5 hover:bg-gray-200 rounded text-teal-600 transition-colors">
+                        <FiEdit2 size={14} />
+                      </button>
+                    </div>
+                    <div className="p-4">
+                      {teacherData?.teacherqualifications?.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {teacherData.teacherqualifications.map((edu, idx) => (
+                            <div key={idx} className="p-3 bg-gray-50/50 rounded-lg border border-gray-100 hover:border-blue-200 transition-colors group">
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[10px] font-bold text-blue-700 uppercase tracking-widest">{edu.qualification?.name || "Matric"}</span>
+                                <span className="text-[9px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{edu.year_of_passing}</span>
+                              </div>
+                              <p className="text-xs font-bold text-gray-800 line-clamp-1 mb-1">{edu.institution}</p>
+                              <div className="flex justify-between items-center text-[10px] text-gray-500 font-bold uppercase tracking-tight">
+                                <span>Grade: <span className="text-blue-600">{edu.grade_or_percentage}</span></span>
+                                {edu.stream_or_degree && <span className="italic">{edu.stream_or_degree}</span>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-gray-400 italic text-center py-4">No qualifications listed.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Experience Card (Full Width inside Grid) */}
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden lg:col-span-2">
+                    <div className="bg-gray-50/80 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-purple-600 rounded-full" />
+                        <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Teaching Experience</h3>
+                      </div>
+                      <button onClick={() => openEditModal('experience')} className="p-1.5 hover:bg-gray-200 rounded text-teal-600 transition-colors">
+                        <FiEdit2 size={14} />
+                      </button>
+                    </div>
+                    <div className="p-4">
+                      {teacherData?.teacherexperiences?.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {teacherData.teacherexperiences.map((exp, idx) => (
+                            <div key={idx} className="p-3 bg-gray-50/50 rounded-lg border border-gray-100 hover:border-purple-200 transition-colors group">
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[10px] font-bold text-purple-700 uppercase tracking-widest">
+                                  {typeof exp.role === 'object' ? exp.role?.jobrole_name : exp.role}
+                                </span>
+                                <span className="text-[9px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">{exp.years_of_experience || 0} yrs</span>
+                              </div>
+                              <p className="text-xs font-bold text-gray-800 line-clamp-1 mb-1">{exp.institution}</p>
+                              {exp.description && <p className="text-[10px] text-gray-500 leading-relaxed line-clamp-2">{exp.description}</p>}
+                              {exp.achievements && <p className="text-[9px] text-purple-400 mt-1 italic">★ {exp.achievements}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-gray-400 italic text-center py-4">No experience records.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Preferred Locations */}
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                    <div className="bg-gray-50/80 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-rose-500 rounded-full" />
+                        <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Preferred Locations</h3>
+                      </div>
+                      <button onClick={() => openEditModal('address')} className="p-1.5 hover:bg-gray-200 rounded text-teal-600 transition-colors">
+                        <FiEdit2 size={14} />
+                      </button>
+                    </div>
+                    <div className="p-4 flex-1">
+                      <div className="flex flex-wrap gap-2">
+                        {teacherData?.jobpreferencelocation?.length > 0 ? (
+                          teacherData.jobpreferencelocation.map((loc, idx) => (
+                            <span key={idx} className="px-2.5 py-1 bg-rose-50 text-rose-700 text-[11px] font-bold rounded border border-rose-100 tracking-tight uppercase">
+                              {loc.location}
+                            </span>
+                          ))
+                        ) : (
+                          <p className="text-[11px] text-gray-400 italic">No preferences set.</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Residency (Detailed) */}
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+                    <div className="bg-gray-50/80 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-4 bg-slate-700 rounded-full" />
+                        <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Residency</h3>
+                      </div>
+                      <button onClick={() => openEditModal('address')} className="p-1.5 hover:bg-gray-200 rounded text-teal-600 transition-colors">
+                        <FiEdit2 size={14} />
+                      </button>
+                    </div>
+                    <div className="p-4 flex-1">
+                      {teacherData?.teachersaddress ? (
+                        <div className="space-y-4">
+                          {[
+                            { type: "Current", data: teacherData.teachersaddress.current_address },
+                            { type: "Permanent", data: teacherData.teachersaddress.permanent_address }
+                          ].map((addr, idx) => addr.data && (
+                            <div key={idx} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                              <div className="w-8 h-8 bg-white rounded-full border border-gray-200 flex items-center justify-center shrink-0">
+                                <FiMapPin className="text-gray-400" size={14} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1.5">{addr.type} Address</p>
+                                <p className="text-xs font-bold text-gray-800 truncate">{addr.data.area || addr.data.village || 'N/A'}</p>
+                                <p className="text-[11px] text-gray-500 truncate">{addr.data.district || addr.data.city}, {addr.data.state} {addr.data.pincode}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-gray-400 italic">No address records.</p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Residency */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1 h-5 bg-gray-700 rounded-full" />
-                    <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Residency</h3>
-                  </div>
-                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
-                    {(() => {
-                      const addrObj = teacherData?.teachersaddress;
-                      const addresses = [];
-                      if (addrObj?.current_address) addresses.push(addrObj.current_address);
-                      if (addrObj?.permanent_address) addresses.push(addrObj.permanent_address);
-                      
-                      if (addresses.length === 0) return <p className="text-xs text-gray-400 italic text-center">No address records.</p>;
-                      
-                      return addresses.map((addr, i) => (
-                        <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded border border-gray-200">
-                          <div className="w-7 h-7 bg-white rounded-full border border-gray-200 flex items-center justify-center shrink-0">
-                            <FiMapPin className="text-gray-400" size={12} />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[9px] font-bold text-gray-400 uppercase leading-none mb-1">{addr.address_type} Address</p>
-                            <p className="text-xs font-bold text-gray-800 truncate">{addr.area || addr.village || 'N/A'}</p>
-                            <p className="text-[11px] text-gray-500 truncate">{addr.district || addr.city}, {addr.state} {addr.pincode}</p>
-                          </div>
-                        </div>
-                      ));
-                    })()}
-                  </div>
-                </div>
               </div>
 
               {/* Applied Jobs History */}
@@ -933,108 +974,318 @@ const ViewTeacherAdmin = () => {
           </div>
         )}
 
-        {/* Edit Teacher Modal */}
+        {/* Dynamic Edit Modal */}
         {isEditModalOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fadeIn">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm overflow-y-auto">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg my-8 overflow-hidden animate-fadeIn">
               <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-teal-100 text-teal-600 rounded-lg flex items-center justify-center">
                     <FiEdit size={18} />
                   </div>
-                  <h3 className="font-bold text-gray-800">Edit Teacher Details</h3>
+                  <h3 className="font-bold text-gray-800">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-gray-100 animate-in zoom-in-95 duration-200">
+              {/* Modal Header */}
+              <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Edit {editType.charAt(0).toUpperCase() + editType.slice(1)}</h2>
+                  <p className="text-[10px] text-gray-500 font-medium uppercase tracking-widest mt-0.5">Teacher Profile Management</p>
                 </div>
-                <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
-                  <FiX size={20} />
+                <button onClick={() => setIsEditModalOpen(false)} className="p-2 hover:bg-white rounded-xl transition-colors shadow-sm">
+                  <FiX className="text-gray-400 hover:text-gray-600" />
                 </button>
               </div>
-              <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">First Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={editFormData.Fname}
-                      onChange={(e) => setEditFormData({ ...editFormData, Fname: e.target.value })}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Last Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={editFormData.Lname}
-                      onChange={(e) => setEditFormData({ ...editFormData, Lname: e.target.value })}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all"
-                    />
-                  </div>
-                </div>
 
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    value={editFormData.email}
-                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Phone Number</label>
-                  <input
-                    type="tel"
-                    value={editFormData.phone_number}
-                    onChange={(e) => setEditFormData({ ...editFormData, phone_number: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all"
-                  />
-                </div>
-
-                <div className="flex gap-6 py-2">
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <div className="relative flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={editFormData.is_active}
-                        onChange={(e) => setEditFormData({ ...editFormData, is_active: e.target.checked })}
-                        className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 checked:bg-teal-600 transition-all"
-                      />
-                      <FiCheck className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 left-1" />
+              {/* Modal Body */}
+              <form onSubmit={handleEditSubmit} className="flex-1 overflow-y-auto p-6 custom-scrollbar space-y-6">
+                {editType === 'basic' && (
+                  <React.Fragment>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">First Name</label>
+                        <input
+                          type="text"
+                          value={editFormData.Fname || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, Fname: e.target.value })}
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-500"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Last Name</label>
+                        <input
+                          type="text"
+                          value={editFormData.Lname || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, Lname: e.target.value })}
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-500"
+                        />
+                      </div>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Account Active</span>
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <div className="relative flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={editFormData.is_verified}
-                        onChange={(e) => setEditFormData({ ...editFormData, is_verified: e.target.checked })}
-                        className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-300 checked:bg-green-600 transition-all"
-                      />
-                      <FiCheck className="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 left-1" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Email Address</label>
+                        <input
+                          type="email"
+                          value={editFormData.email || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-500"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Date of Birth</label>
+                        <input
+                          type="date"
+                          value={editFormData.profiles?.date_of_birth || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, profiles: { ...editFormData.profiles, date_of_birth: e.target.value } })}
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-500"
+                        />
+                      </div>
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Verified Profile</span>
-                  </label>
-                </div>
+                  </React.Fragment>
+                )}
 
-                <div className="flex gap-3 pt-4 border-t border-gray-50">
+                {editType === 'academic' && (
+                  <div className="space-y-6">
+                    <h4 className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 p-2 rounded">Select Preferred Subjects</h4>
+                    <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                      {allSubjects
+                        .filter(sub => {
+                          const selectedCats = editFormData.preferences?.class_category || [];
+                          if (selectedCats.length === 0) return true;
+                          return selectedCats.includes(sub.class_category);
+                        })
+                        .map(sub => (
+                        <label key={sub.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors group border border-gray-100">
+                          <input
+                            type="checkbox"
+                            checked={editFormData.preferences?.prefered_subject?.includes(sub.id)}
+                            onChange={() => {
+                              const current = editFormData.preferences?.prefered_subject || [];
+                              const updated = current.includes(sub.id) ? current.filter(i => i !== sub.id) : [...current, sub.id];
+                              setEditFormData({ ...editFormData, preferences: { ...editFormData.preferences, prefered_subject: updated } });
+                            }}
+                            className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                          />
+                          <span className="text-[11px] font-bold text-gray-700 group-hover:text-indigo-700 line-clamp-1">{sub.subject_name || sub.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {editType === 'education' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 p-2 rounded">Educational Qualifications</h4>
+                      <button type="button" onClick={() => setEditFormData({ ...editFormData, teacherqualifications: [...(editFormData.teacherqualifications || []), { qualification: 1, institution: '', year_of_passing: '', grade_or_percentage: '', stream_or_degree: '' }] })} className="text-[10px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg">
+                        <FiPlus /> Add New
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      {(editFormData.teacherqualifications || []).map((edu, idx) => (
+                        <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-200 relative group">
+                          <button type="button" onClick={() => {
+                            const updated = editFormData.teacherqualifications.filter((_, i) => i !== idx);
+                            setEditFormData({ ...editFormData, teacherqualifications: updated });
+                          }} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 bg-white rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-sm">
+                            <FiTrash2 size={14} />
+                          </button>
+                          <div className="grid grid-cols-2 gap-3 mb-3">
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold text-gray-400 uppercase">Level</label>
+                              <select 
+                                value={edu.qualification?.id || edu.qualification} 
+                                onChange={(e) => {
+                                  const updated = [...editFormData.teacherqualifications];
+                                  updated[idx].qualification = parseInt(e.target.value);
+                                  setEditFormData({ ...editFormData, teacherqualifications: updated });
+                                }}
+                                className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs"
+                              >
+                                <option value="1">Matric</option>
+                                <option value="2">Intermediate</option>
+                                <option value="3">Graduation</option>
+                                <option value="4">Post Graduation</option>
+                                <option value="5">Other</option>
+                              </select>
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold text-gray-400 uppercase">Year</label>
+                              <input 
+                                placeholder="YYYY" 
+                                value={edu.year_of_passing || ''} 
+                                onChange={(e) => {
+                                  const updated = [...editFormData.teacherqualifications];
+                                  updated[idx].year_of_passing = e.target.value;
+                                  setEditFormData({ ...editFormData, teacherqualifications: updated });
+                                }}
+                                className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs" 
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-1 mb-3">
+                            <label className="text-[9px] font-bold text-gray-400 uppercase">Institution</label>
+                            <input 
+                              placeholder="School / University Name" 
+                              value={edu.institution || ''} 
+                              onChange={(e) => {
+                                const updated = [...editFormData.teacherqualifications];
+                                updated[idx].institution = e.target.value;
+                                setEditFormData({ ...editFormData, teacherqualifications: updated });
+                              }}
+                              className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs" 
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <input 
+                              placeholder="Stream / Degree" 
+                              value={edu.stream_or_degree || ''} 
+                              onChange={(e) => {
+                                const updated = [...editFormData.teacherqualifications];
+                                updated[idx].stream_or_degree = e.target.value;
+                                setEditFormData({ ...editFormData, teacherqualifications: updated });
+                              }}
+                              className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs" 
+                            />
+                            <input 
+                              placeholder="Grade / %" 
+                              value={edu.grade_or_percentage || ''} 
+                              onChange={(e) => {
+                                const updated = [...editFormData.teacherqualifications];
+                                updated[idx].grade_or_percentage = e.target.value;
+                                setEditFormData({ ...editFormData, teacherqualifications: updated });
+                              }}
+                              className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs" 
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {editType === 'experience' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[10px] font-bold text-purple-600 uppercase tracking-widest bg-purple-50 p-2 rounded">Professional Experience</h4>
+                      <button type="button" onClick={() => setEditFormData({ ...editFormData, teacherexperiences: [...(editFormData.teacherexperiences || []), { role: 1, institution: '', start_date: '', end_date: '', description: '', achievements: '' }] })} className="text-[10px] font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1 bg-purple-50 px-2 py-1 rounded-lg">
+                        <FiPlus /> Add New
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      {(editFormData.teacherexperiences || []).map((exp, idx) => (
+                        <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-200 relative group">
+                          <button type="button" onClick={() => {
+                            const updated = editFormData.teacherexperiences.filter((_, i) => i !== idx);
+                            setEditFormData({ ...editFormData, teacherexperiences: updated });
+                          }} className="absolute top-2 right-2 p-1 text-gray-400 hover:text-red-500 bg-white rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-sm">
+                            <FiTrash2 size={14} />
+                          </button>
+                          <div className="grid grid-cols-2 gap-3 mb-3">
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold text-gray-400 uppercase">Role Type</label>
+                              <select 
+                                value={exp.role?.id || exp.role} 
+                                onChange={(e) => {
+                                  const updated = [...editFormData.teacherexperiences];
+                                  updated[idx].role = parseInt(e.target.value);
+                                  setEditFormData({ ...editFormData, teacherexperiences: updated });
+                                }}
+                                className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs"
+                              >
+                                <option value="1">Mathematics</option>
+                                <option value="2">Science</option>
+                                <option value="3">English</option>
+                                <option value="4">Social Science</option>
+                                <option value="5">Other</option>
+                              </select>
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold text-gray-400 uppercase">Institution</label>
+                              <input 
+                                placeholder="School / Coaching Name" 
+                                value={exp.institution || ''} 
+                                onChange={(e) => {
+                                  const updated = [...editFormData.teacherexperiences];
+                                  updated[idx].institution = e.target.value;
+                                  setEditFormData({ ...editFormData, teacherexperiences: updated });
+                                }}
+                                className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs" 
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 mb-3">
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold text-gray-400 uppercase">Start Date</label>
+                              <input 
+                                type="date"
+                                value={exp.start_date || ''} 
+                                onChange={(e) => {
+                                  const updated = [...editFormData.teacherexperiences];
+                                  updated[idx].start_date = e.target.value;
+                                  setEditFormData({ ...editFormData, teacherexperiences: updated });
+                                }}
+                                className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs" 
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[9px] font-bold text-gray-400 uppercase">End Date</label>
+                              <input 
+                                type="date"
+                                value={exp.end_date || ''} 
+                                onChange={(e) => {
+                                  const updated = [...editFormData.teacherexperiences];
+                                  updated[idx].end_date = e.target.value;
+                                  setEditFormData({ ...editFormData, teacherexperiences: updated });
+                                }}
+                                className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs" 
+                                placeholder="Leave blank for Present"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <textarea 
+                              placeholder="Role Description" 
+                              value={exp.description || ''} 
+                              onChange={(e) => {
+                                const updated = [...editFormData.teacherexperiences];
+                                updated[idx].description = e.target.value;
+                                setEditFormData({ ...editFormData, teacherexperiences: updated });
+                              }}
+                              className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs h-16 resize-none" 
+                            />
+                            <input 
+                              placeholder="Key Achievements" 
+                              value={exp.achievements || ''} 
+                              onChange={(e) => {
+                                const updated = [...editFormData.teacherexperiences];
+                                updated[idx].achievements = e.target.value;
+                                setEditFormData({ ...editFormData, teacherexperiences: updated });
+                              }}
+                              className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs italic" 
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-4 sticky bottom-0 bg-white pb-2">
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all"
+                    className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isUpdating}
-                    className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-bold hover:bg-teal-700 shadow-lg shadow-teal-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 disabled:opacity-50 shadow-lg shadow-teal-600/20 transition-all flex items-center justify-center gap-2"
                   >
-                    {isUpdating ? "Saving..." : "Save Changes"}
+                    {isUpdating ? <FiClock className="animate-spin" /> : <FiCheck />}
+                    {isUpdating ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
               </form>
