@@ -22,6 +22,8 @@ import {
   FiClock,
   FiFileText,
   FiAlertCircle,
+  FiPlus,
+  FiTrash2,
 } from "react-icons/fi";
 
 
@@ -548,6 +550,10 @@ const ViewTeacherAdmin = () => {
                           <span className="text-xs font-medium">Joined: {formatDate(teacherData?.date, { dateOnly: true })}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600 leading-none">
+                          <FiBriefcase size={13} className="text-gray-400" />
+                          <span className="text-xs font-bold text-teal-600">{teacherData?.total_experience || "Fresher"}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600 leading-none">
                           <FiClock size={13} className="text-gray-400" />
                           <span className="text-xs font-medium">Last Login: {teacherData?.last_login ? formatDate(teacherData.last_login) : "Never"}</span>
                         </div>
@@ -799,11 +805,18 @@ const ViewTeacherAdmin = () => {
                                 <span className="text-[10px] font-bold text-purple-700 uppercase tracking-widest">
                                   {typeof exp.role === 'object' ? exp.role?.jobrole_name : exp.role}
                                 </span>
-                                <span className="text-[9px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">{exp.years_of_experience || 0} yrs</span>
+                                {exp.years_of_experience && (
+                                  <span className="text-[9px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">{exp.years_of_experience}</span>
+                                )}
                               </div>
-                              <p className="text-xs font-bold text-gray-800 line-clamp-1 mb-1">{exp.institution}</p>
+                              <p className="text-xs font-bold text-gray-800 line-clamp-1 mb-0.5">{exp.institution}</p>
+                              {(exp.start_date || exp.end_date) && (
+                                <p className="text-[9px] text-gray-400 mb-1 font-medium italic">
+                                  {exp.start_date ? formatDate(exp.start_date, { dateOnly: true }) : '?'} - {exp.end_date ? formatDate(exp.end_date, { dateOnly: true }) : 'Present'}
+                                </p>
+                              )}
                               {exp.description && <p className="text-[10px] text-gray-500 leading-relaxed line-clamp-2">{exp.description}</p>}
-                              {exp.achievements && <p className="text-[9px] text-purple-400 mt-1 italic">★ {exp.achievements}</p>}
+                              {exp.achievements && <p className="text-[9px] text-purple-400 mt-1 italic font-medium">★ {exp.achievements}</p>}
                             </div>
                           ))}
                         </div>
@@ -862,9 +875,21 @@ const ViewTeacherAdmin = () => {
                                 <FiMapPin className="text-gray-400" size={14} />
                               </div>
                               <div className="min-w-0">
-                                <p className="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1.5">{addr.type} Address</p>
-                                <p className="text-xs font-bold text-gray-800 truncate">{addr.data.area || addr.data.village || 'N/A'}</p>
-                                <p className="text-[11px] text-gray-500 truncate">{addr.data.district || addr.data.city}, {addr.data.state} {addr.data.pincode}</p>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase leading-none mb-2">{addr.type} Address</p>
+                                <div className="space-y-1">
+                                  {addr.data.area && <p className="text-xs font-bold text-gray-800 leading-tight">Area: {addr.data.area}</p>}
+                                  <div className="grid grid-cols-1 gap-0.5">
+                                    {addr.data.village && <p className="text-[11px] text-gray-600">Village: {addr.data.village}</p>}
+                                    {addr.data.postoffice && <p className="text-[11px] text-gray-600">PO: {addr.data.postoffice}</p>}
+                                    {addr.data.block && <p className="text-[11px] text-gray-600">Block: {addr.data.block}</p>}
+                                    {(addr.data.district || addr.data.division) && (
+                                      <p className="text-[11px] text-gray-600">Dist/Div: {addr.data.district || addr.data.division}</p>
+                                    )}
+                                    <p className="text-[11px] font-bold text-teal-700 mt-1">
+                                      {addr.data.state} {addr.data.pincode ? `- ${addr.data.pincode}` : ''}
+                                    </p>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -976,14 +1001,6 @@ const ViewTeacherAdmin = () => {
 
         {/* Dynamic Edit Modal */}
         {isEditModalOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg my-8 overflow-hidden animate-fadeIn">
-              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-teal-100 text-teal-600 rounded-lg flex items-center justify-center">
-                    <FiEdit size={18} />
-                  </div>
-                  <h3 className="font-bold text-gray-800">
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-gray-100 animate-in zoom-in-95 duration-200">
               {/* Modal Header */}
@@ -1046,29 +1063,55 @@ const ViewTeacherAdmin = () => {
 
                 {editType === 'academic' && (
                   <div className="space-y-6">
-                    <h4 className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 p-2 rounded">Select Preferred Subjects</h4>
-                    <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
-                      {allSubjects
-                        .filter(sub => {
-                          const selectedCats = editFormData.preferences?.class_category || [];
-                          if (selectedCats.length === 0) return true;
-                          return selectedCats.includes(sub.class_category);
-                        })
-                        .map(sub => (
-                        <label key={sub.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors group border border-gray-100">
-                          <input
-                            type="checkbox"
-                            checked={editFormData.preferences?.prefered_subject?.includes(sub.id)}
-                            onChange={() => {
-                              const current = editFormData.preferences?.prefered_subject || [];
-                              const updated = current.includes(sub.id) ? current.filter(i => i !== sub.id) : [...current, sub.id];
-                              setEditFormData({ ...editFormData, preferences: { ...editFormData.preferences, prefered_subject: updated } });
-                            }}
-                            className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
-                          />
-                          <span className="text-[11px] font-bold text-gray-700 group-hover:text-indigo-700 line-clamp-1">{sub.subject_name || sub.name}</span>
-                        </label>
-                      ))}
+                    <div>
+                      <h4 className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 p-2 rounded mb-3">1. Select Class Categories</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        {allCategories.map(cat => (
+                          <label key={cat.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors group border border-gray-100">
+                            <input
+                              type="checkbox"
+                              checked={editFormData.preferences?.class_category?.includes(cat.id)}
+                              onChange={() => {
+                                const current = editFormData.preferences?.class_category || [];
+                                const updated = current.includes(cat.id) ? current.filter(i => i !== cat.id) : [...current, cat.id];
+                                setEditFormData({ ...editFormData, preferences: { ...editFormData.preferences, class_category: updated } });
+                              }}
+                              className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                            />
+                            <span className="text-[11px] font-bold text-gray-700 group-hover:text-indigo-700">{cat.category_name || cat.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 p-2 rounded mb-3">2. Select Preferred Subjects</h4>
+                      <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                        {allSubjects
+                          .filter(sub => {
+                            const selectedCats = editFormData.preferences?.class_category || [];
+                            if (selectedCats.length === 0) return false; // Don't show any if no category selected
+                            return selectedCats.includes(sub.class_category);
+                          })
+                          .map(sub => (
+                          <label key={sub.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg cursor-pointer hover:bg-indigo-50 transition-colors group border border-gray-100">
+                            <input
+                              type="checkbox"
+                              checked={editFormData.preferences?.prefered_subject?.includes(sub.id)}
+                              onChange={() => {
+                                const current = editFormData.preferences?.prefered_subject || [];
+                                const updated = current.includes(sub.id) ? current.filter(i => i !== sub.id) : [...current, sub.id];
+                                setEditFormData({ ...editFormData, preferences: { ...editFormData.preferences, prefered_subject: updated } });
+                              }}
+                              className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                            />
+                            <span className="text-[11px] font-bold text-gray-700 group-hover:text-indigo-700 line-clamp-1">{sub.subject_name || sub.name}</span>
+                          </label>
+                        ))}
+                        {allSubjects.filter(sub => (editFormData.preferences?.class_category || []).includes(sub.class_category)).length === 0 && (
+                          <p className="col-span-2 text-center py-4 text-xs text-gray-400 italic">Select a Class Category first to see subjects.</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
