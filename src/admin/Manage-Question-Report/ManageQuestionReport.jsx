@@ -405,7 +405,7 @@ export default function ManageQuestionReport() {
                           </Tooltip>
                           {!report.status && (
                             <Tooltip title="Mark Resolved">
-                              <IconButton size="small" color="success" onClick={() => markAsDone(report)} sx={{ bgcolor: alpha("#10b981", 0.05) }}>
+                              <IconButton size="small" color="success" onClick={() => markAsDone(report.id)} sx={{ bgcolor: alpha("#10b981", 0.05) }}>
                                 <CheckIcon sx={{ fontSize: 18 }} />
                               </IconButton>
                             </Tooltip>

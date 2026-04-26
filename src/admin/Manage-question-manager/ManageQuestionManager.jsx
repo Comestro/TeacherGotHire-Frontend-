@@ -805,7 +805,7 @@ const ManageQuestionManager = () => {
                               <IconButton size="small" onClick={() => handleOpenModal(true, manager)} sx={{ color: '#0d9488' }}>
                                 <EditIcon sx={{ fontSize: 18 }} />
                               </IconButton>
-                              <IconButton size="small" onClick={() => handleDeleteConfirm(manager)} sx={{ color: '#ef4444' }}>
+                              <IconButton size="small" onClick={() => handleDeleteConfirmation(manager)} sx={{ color: '#ef4444' }}>
                                 <DeleteIcon sx={{ fontSize: 18 }} />
                               </IconButton>
                             </Stack>
