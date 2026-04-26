@@ -203,8 +203,8 @@ export default function ManageQuestionReport() {
         question: r.question?.id,
         issue_type: (r.issue_type || []).map((i) => i.id),
       };
-      await updateQuestionReport(id, payload);
-      setReports((prev) => prev.map((x) => (x.id === id ? { ...x, status: true } : x)));
+      const updated = await updateQuestionReport(id, payload);
+      setReports((prev) => prev.map((x) => (x.id === id ? { ...x, ...updated } : x)));
       showSnack(`Report #${id} marked as Resolved`);
       if (selectedReport?.id === id) closeReportDetails();
     } catch (err) {
@@ -349,6 +349,7 @@ export default function ManageQuestionReport() {
                     <th style={{ padding: "10px 16px", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Reported Question & Context</th>
                     <th style={{ padding: "10px 16px", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Issue Description</th>
                     <th style={{ padding: "10px 16px", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Reporter Details</th>
+                    <th style={{ padding: "10px 16px", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Resolved By</th>
                     <th style={{ padding: "10px 16px", textAlign: "center", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Status</th>
                     <th style={{ padding: "10px 16px", textAlign: "right", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Action</th>
                   </tr>
@@ -381,6 +382,20 @@ export default function ManageQuestionReport() {
                         <Typography variant="caption" color="text.secondary">
                           {report.user?.email || "anonymous@ptpi.com"}
                         </Typography>
+                      </td>
+                      <td style={{ padding: "12px 16px" }}>
+                        {report.status && report.resolved_by ? (
+                          <>
+                            <Typography variant="body2" fontWeight={600} color="#334155">
+                              {`${report.resolved_by.Fname || ""} ${report.resolved_by.Lname || ""}`.trim() || report.resolved_by.username}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Admin / Manager
+                            </Typography>
+                          </>
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">—</Typography>
+                        )}
                       </td>
                       <td style={{ padding: "12px 16px", textAlign: "center" }}>
                         <Chip
@@ -464,6 +479,16 @@ export default function ManageQuestionReport() {
                   <Typography variant="overline" color="text.secondary" fontWeight={700}>Exam</Typography>
                   <Typography variant="body2" fontWeight={600} color="text.primary">{selectedReport.exam_name || "—"}</Typography>
                 </Grid>
+                {selectedReport.status && selectedReport.resolved_by && (
+                  <Grid item xs={12}>
+                    <Box sx={{ mt: 1, p: 1.5, borderRadius: 2, bgcolor: alpha("#10b981", 0.05), border: "1px solid", borderColor: alpha("#10b981", 0.1) }}>
+                      <Typography variant="overline" color="success.main" fontWeight={700}>Resolved By</Typography>
+                      <Typography variant="body2" fontWeight={600}>
+                        {`${selectedReport.resolved_by.Fname || ""} ${selectedReport.resolved_by.Lname || ""}`.trim() || selectedReport.resolved_by.username}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                )}
               </Grid>
 
               <Divider sx={{ mb: 2 }} />
