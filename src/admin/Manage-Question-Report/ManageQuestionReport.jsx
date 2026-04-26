@@ -234,11 +234,11 @@ export default function ManageQuestionReport() {
         </Alert>
       </Snackbar>
 
-      <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: 1400, mx: "auto" }}>
+      <Box sx={{ p: 2, maxWidth: 1400, mx: "auto" }}>
         {/* Header Section */}
-        <Box sx={{ mb: 4, display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, gap: 2 }}>
+        <Box sx={{ mb: 2, display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", alignItems: { xs: "flex-start", sm: "center" }, gap: 2 }}>
           <Box>
-            <Typography variant="h4" fontWeight={800} sx={{ color: "#008080", letterSpacing: "-0.02em", mb: 0.5 }}>
+            <Typography variant="h5" fontWeight={700} sx={{ color: "#008080", letterSpacing: "-0.01em", mb: 0.5 }}>
               Issue Reports
             </Typography>
             <Typography variant="body1" color="text.secondary" fontWeight={500}>
@@ -264,21 +264,21 @@ export default function ManageQuestionReport() {
         </Box>
 
         {/* Stats Grid */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={2} sx={{ mb: 2 }}>
           {[
             { label: "Total Reports", value: stats.total, color: "#008080", icon: <VisibilityIcon /> },
             { label: "Pending Resolution", value: stats.pending, color: "#f59e0b", icon: <FilterListIcon /> },
             { label: "Resolved", value: stats.resolved, color: "#10b981", icon: <CheckIcon /> },
           ].map((stat, idx) => (
             <Grid item xs={12} sm={4} key={idx}>
-              <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid", borderColor: "divider", background: `linear-gradient(135deg, white 0%, ${alpha(stat.color, 0.03)} 100%)`, position: "relative", overflow: "hidden" }}>
+              <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: "1px solid", borderColor: "divider", bgcolor: "white", position: "relative", overflow: "hidden" }}>
                 <Box sx={{ position: "absolute", top: -10, right: -10, opacity: 0.05, transform: "scale(2.5)", color: stat.color }}>
                   {stat.icon}
                 </Box>
                 <Typography variant="overline" fontWeight={700} color="text.secondary" sx={{ letterSpacing: "0.1em" }}>
                   {stat.label}
                 </Typography>
-                <Typography variant="h3" fontWeight={800} sx={{ color: stat.color, mt: 0.5 }}>
+                <Typography variant="h4" fontWeight={700} sx={{ color: stat.color, mt: 0.5 }}>
                   {stat.value}
                 </Typography>
               </Paper>
@@ -288,7 +288,7 @@ export default function ManageQuestionReport() {
 
         {/* Search & Filter Bar */}
         {filtersOpen && (
-          <Paper elevation={0} sx={{ p: 2.5, mb: 3, borderRadius: 3, border: "1px solid", borderColor: "divider", bgcolor: "#fbfcfd" }}>
+          <Paper elevation={0} sx={{ p: 2, mb: 2, borderRadius: 2, border: "1px solid", borderColor: "divider", bgcolor: "#fbfcfd" }}>
             <Grid container spacing={2}>
               <Grid item xs={12} md={5}>
                 <TextField
@@ -330,7 +330,7 @@ export default function ManageQuestionReport() {
         )}
 
         {/* Custom Modern Table */}
-        <Paper elevation={0} sx={{ borderRadius: 4, border: "1px solid", borderColor: "divider", overflow: "hidden", bgcolor: "white", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
+        <Paper elevation={0} sx={{ borderRadius: 2, border: "1px solid", borderColor: "divider", overflow: "hidden", bgcolor: "white" }}>
           {loading ? (
             <Box sx={{ p: 12, textAlign: "center" }}>
               <CircularProgress size={40} sx={{ color: "#008080" }} />
@@ -346,17 +346,17 @@ export default function ManageQuestionReport() {
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ borderBottom: "1px solid #f1f5f9", background: "#f8fafc" }}>
-                    <th style={{ padding: "16px 24px", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Reported Question & Context</th>
-                    <th style={{ padding: "16px 24px", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Issue Description</th>
-                    <th style={{ padding: "16px 24px", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Reporter Details</th>
-                    <th style={{ padding: "16px 24px", textAlign: "center", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Status</th>
-                    <th style={{ padding: "16px 24px", textAlign: "right", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Action</th>
+                    <th style={{ padding: "10px 16px", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Reported Question & Context</th>
+                    <th style={{ padding: "10px 16px", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Issue Description</th>
+                    <th style={{ padding: "10px 16px", textAlign: "left", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Reporter Details</th>
+                    <th style={{ padding: "10px 16px", textAlign: "center", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Status</th>
+                    <th style={{ padding: "10px 16px", textAlign: "right", fontSize: "0.75rem", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginated.map((report) => (
                     <tr key={report.id} style={{ borderBottom: "1px solid #f1f5f9", transition: "all 0.2s" }}>
-                      <td style={{ padding: "20px 24px", width: "35%" }}>
+                      <td style={{ padding: "12px 16px", width: "35%" }}>
                         <Typography variant="body2" fontWeight={600} sx={{ color: "#1e293b", mb: 1, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                           {report.question?.text || "—"}
                         </Typography>
@@ -366,7 +366,7 @@ export default function ManageQuestionReport() {
                           <Chip label={report.exam_name || "Custom Exam"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: "#fff7ed", color: "#ea580c" }} />
                         </Stack>
                       </td>
-                      <td style={{ padding: "20px 24px" }}>
+                      <td style={{ padding: "12px 16px" }}>
                         <Typography variant="body2" fontWeight={600} sx={{ color: "#008080" }}>
                           {formatIssueTypes(report.issue_type)}
                         </Typography>
@@ -374,7 +374,7 @@ export default function ManageQuestionReport() {
                           ID: REP-{report.id.toString().padStart(4, "0")}
                         </Typography>
                       </td>
-                      <td style={{ padding: "20px 24px" }}>
+                      <td style={{ padding: "12px 16px" }}>
                         <Typography variant="body2" fontWeight={600} color="#334155">
                           {`${report.user?.Fname || "Guest"} ${report.user?.Lname || ""}`.trim()}
                         </Typography>
@@ -382,7 +382,7 @@ export default function ManageQuestionReport() {
                           {report.user?.email || "anonymous@ptpi.com"}
                         </Typography>
                       </td>
-                      <td style={{ padding: "20px 24px", textAlign: "center" }}>
+                      <td style={{ padding: "12px 16px", textAlign: "center" }}>
                         <Chip
                           label={report.status ? "Resolved" : "Pending"}
                           size="small"
@@ -396,7 +396,7 @@ export default function ManageQuestionReport() {
                           }}
                         />
                       </td>
-                      <td style={{ padding: "20px 24px", textAlign: "right" }}>
+                      <td style={{ padding: "12px 16px", textAlign: "right" }}>
                         <Stack direction="row" spacing={1} justifyContent="flex-end">
                           <Tooltip title="View Details">
                             <IconButton size="small" onClick={() => openReportDetails(report)} sx={{ color: "#008080", bgcolor: alpha("#008080", 0.05) }}>
@@ -433,10 +433,10 @@ export default function ManageQuestionReport() {
 
       {/* Modern Detail Drawer */}
       <Drawer anchor="right" open={drawerOpen} onClose={closeReportDetails} PaperProps={{ sx: { width: { xs: "100%", sm: 600 }, p: 0, borderRadius: { xs: 0, sm: "20px 0 0 20px" } } }}>
-        <Box sx={{ p: 4, height: "100%", display: "flex", flexDirection: "column" }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+        <Box sx={{ p: 3, height: "100%", display: "flex", flexDirection: "column" }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
             <Box>
-              <Typography variant="h5" fontWeight={800} sx={{ color: "#008080" }}>Report Profile</Typography>
+              <Typography variant="h6" fontWeight={700} sx={{ color: "#008080" }}>Report Profile</Typography>
               <Typography variant="caption" color="text.secondary">Transaction ID: PTPI-AUDIT-{selectedReport?.id}</Typography>
             </Box>
             <IconButton onClick={closeReportDetails}><RefreshIcon sx={{ transform: "rotate(45deg)" }} /></IconButton>
@@ -444,14 +444,14 @@ export default function ManageQuestionReport() {
 
           {selectedReport && (
             <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
-              <Box sx={{ mb: 4, p: 3, borderRadius: 3, bgcolor: "#f1f5f9" }}>
+              <Box sx={{ mb: 2, p: 2, borderRadius: 2, bgcolor: "#f1f5f9" }}>
                 <Typography variant="overline" color="text.secondary" fontWeight={700}>Reported Content</Typography>
                 <Typography variant="body1" fontWeight={600} sx={{ mt: 1, lineHeight: 1.6, color: "#1e293b" }}>
                   {selectedReport.question?.text}
                 </Typography>
               </Box>
 
-              <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid container spacing={2} sx={{ mb: 2 }}>
                 <Grid item xs={12} sm={4}>
                   <Typography variant="overline" color="text.secondary" fontWeight={700}>Class Category</Typography>
                   <Typography variant="body2" fontWeight={600}>{selectedReport.class_category || "—"}</Typography>
@@ -466,9 +466,9 @@ export default function ManageQuestionReport() {
                 </Grid>
               </Grid>
 
-              <Divider sx={{ mb: 4 }} />
+              <Divider sx={{ mb: 2 }} />
 
-              <Box sx={{ mb: 4 }}>
+              <Box sx={{ mb: 2 }}>
                 <Typography variant="overline" color="text.secondary" fontWeight={700} sx={{ mb: 1.5, display: "block" }}>Options Check</Typography>
                 <Stack spacing={1}>
                   {(selectedReport.question?.options || []).map((opt, i) => (
@@ -484,14 +484,14 @@ export default function ManageQuestionReport() {
                 </Stack>
               </Box>
 
-              <Divider sx={{ mb: 4 }} />
+              <Divider sx={{ mb: 2 }} />
 
-              <Box sx={{ mb: 4 }}>
+              <Box sx={{ mb: 2 }}>
                 <Typography variant="overline" color="text.secondary" fontWeight={700} sx={{ mb: 1, display: "block" }}>Internal Notes</Typography>
                 <TextField multiline rows={4} fullWidth placeholder="Add administrative notes regarding this audit..." variant="filled" hiddenLabel />
               </Box>
 
-              <Box sx={{ mt: "auto", pt: 4, display: "flex", gap: 2 }}>
+              <Box sx={{ mt: "auto", pt: 2, display: "flex", gap: 2 }}>
                 <Button fullWidth variant="outlined" size="large" onClick={closeReportDetails} sx={{ borderRadius: 3, fontWeight: 700, borderColor: "divider", color: "text.primary" }}>
                   Cancel
                 </Button>
