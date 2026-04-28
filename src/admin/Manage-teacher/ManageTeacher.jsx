@@ -199,23 +199,29 @@ const ManageTeacher = () => {
 
   const filtered = useMemo(() => {
     return teachers.filter((t) => {
-      const qNames = (t.teacherqualifications || [])
-        .map((q) => q?.qualification?.name?.toLowerCase())
-        .filter(Boolean);
-      const subjectIds = (t.teachersubjects || [])
-        .map((s) => (typeof s === "object" ? s.id || s.subject_id : null))
-        .filter(Boolean);
-      const addrObj = t.teachersaddress || {};
+      const qNames = [
+        ...(t.qualifications || []),
+        ...(t.teacherqualifications || []).map(q => q?.qualification?.name)
+      ].filter(Boolean).map(q => q.toLowerCase());
+
+      const subjectIds = [
+        ...(t.subject_ids || []),
+        ...(t.teachersubjects || []).map((s) => (typeof s === "object" ? s.id || s.subject_id : null))
+      ].filter(Boolean);
+
+      const current_address = t.current_address || t.teachersaddress?.current_address || {};
+      const permanent_address = t.permanent_address || t.teachersaddress?.permanent_address || {};
+
       const addresses = [
-        addrObj.current_address?.state,
-        addrObj.permanent_address?.state,
+        current_address?.state,
+        permanent_address?.state,
       ]
         .filter(Boolean)
         .map((s) => s.toLowerCase());
-      const currentState = t.current_address?.state?.toLowerCase();
-      const currentDistrict = t.current_address?.district?.toLowerCase();
+      const currentState = current_address?.state?.toLowerCase();
+      const currentDistrict = current_address?.district?.toLowerCase();
 
-      const pincode = String(t.current_address?.pincode || "").toLowerCase();
+      const pincode = String(current_address?.pincode || "").toLowerCase();
 
       const nameMatch =
         !searchValue ||
@@ -229,8 +235,8 @@ const ManageTeacher = () => {
         selectedQualifications.length === 0 ||
         selectedQualifications.some(
           (q) =>
-            qNames.includes(q) ||
-            (t.last_education?.qualification?.name || "").toLowerCase() === q
+            qNames.includes(q.toLowerCase()) ||
+            (t.last_education?.qualification?.name || "").toLowerCase() === q.toLowerCase()
         );
 
       const subjectMatch =
@@ -256,25 +262,25 @@ const ManageTeacher = () => {
         (selectedStatuses.includes("active") && t.is_active) ||
         (selectedStatuses.includes("inactive") && !t.is_active);
 
+      const gender = (t.gender || t.profiles?.gender || "").toLowerCase();
       const genderMatch =
         selectedGenders.length === 0 ||
-        (t.gender && selectedGenders.includes(t.gender.toLowerCase()));
+        (gender && selectedGenders.includes(gender));
 
+      const exp_years = t.experience_years !== undefined ? t.experience_years : 0;
       const experienceMatch =
-        (!experienceRange.min ||
-          (t.experience_years &&
-            t.experience_years >= parseInt(experienceRange.min))) &&
-        (!experienceRange.max ||
-          (t.experience_years &&
-            t.experience_years <= parseInt(experienceRange.max)));
+        (!experienceRange.min || exp_years >= parseInt(experienceRange.min)) &&
+        (!experienceRange.max || exp_years <= parseInt(experienceRange.max));
 
       const classMatch =
         selectedClassCategories.length === 0 ||
-        selectedClassCategories.some((c) =>
-          t.class_categories?.some(
-            (cat) => cat?.name?.toLowerCase() === c.toLowerCase()
-          )
-        );
+        selectedClassCategories.some((c) => {
+           const cats = t.class_categories || [];
+           const oldCats = (t.teacherclasscategory || []).map(tc => tc.class_category?.name || tc.name);
+           return [...cats, ...oldCats].some(
+             (catName) => typeof catName === "string" && catName.toLowerCase() === c.toLowerCase()
+           );
+        });
 
       return (
         nameMatch &&
