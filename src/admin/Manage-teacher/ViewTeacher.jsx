@@ -375,13 +375,19 @@ const ViewTeacherAdmin = () => {
     groupedData.forEach((classGroup, cIdx) => {
       classGroup.subjects.forEach((subGroup, sIdx) => {
         subGroup.levels.forEach((levelGroup, lIdx) => {
-          levelGroup.attempts.forEach((attempt, aIdx) => {
-            const interviews = (attempt.interviews || []).filter(iv => 
+          // Find the primary interview for the entire level
+          let levelPrimaryInterview = {};
+          for (const att of levelGroup.attempts) {
+            const ivs = (att.interviews || []).filter(iv => 
               String(iv.status || "").toLowerCase() === "fulfilled" || iv.grade !== "N/A"
             );
-            
-            const primaryInterview = interviews[0] || {};
-            
+            if (ivs.length > 0) {
+              levelPrimaryInterview = ivs[0];
+              break;
+            }
+          }
+
+          levelGroup.attempts.forEach((attempt, aIdx) => {
             // Percentage comes from calculate_percentage in serializer
             const resultVal = attempt.calculate_percentage;
             const resultDisplay = (resultVal !== null && resultVal !== undefined) ? `${resultVal}%` : "-";
@@ -397,9 +403,9 @@ const ViewTeacherAdmin = () => {
               examResult: resultDisplay,
               examDuration: timeDisplay,
               examDate: attempt.created_at ? formatDate(attempt.created_at, { dateOnly: true }) : "-",
-              interviewAttempt: primaryInterview.attempt || "-",
-              interviewResult: (primaryInterview.grade !== "N/A" && primaryInterview.grade !== undefined) ? `${primaryInterview.grade}` : "-",
-              interviewDate: primaryInterview.created_at ? formatDate(primaryInterview.created_at, { dateOnly: true }) : "-",
+              interviewAttempt: levelPrimaryInterview.attempt || "-",
+              interviewResult: (levelPrimaryInterview.grade !== "N/A" && levelPrimaryInterview.grade !== undefined) ? `${levelPrimaryInterview.grade}` : "-",
+              interviewDate: levelPrimaryInterview.created_at ? formatDate(levelPrimaryInterview.created_at, { dateOnly: true }) : "-",
               
               // Spans
               classSpan: (sIdx === 0 && lIdx === 0 && aIdx === 0) ? classGroup.rowCount : 0,
@@ -609,9 +615,9 @@ const ViewTeacherAdmin = () => {
                             </td>
                             <td className="p-3 text-gray-600 border-r border-gray-200 whitespace-nowrap">{row.examDuration}</td>
                             <td className="p-3 text-gray-500 whitespace-nowrap italic border-r border-gray-200">{row.examDate}</td>
-                            <td className="p-3 text-gray-600 text-center border-r border-gray-200">{row.interviewAttempt}</td>
-                            <td className="p-3 font-bold text-gray-800 text-center border-r border-gray-200">{row.interviewResult}</td>
-                            <td className="p-3 text-gray-500 whitespace-nowrap text-center italic">{row.interviewDate}</td>
+                            {row.levelSpan > 0 && <td rowSpan={row.levelSpan} className="p-3 text-gray-600 text-center border-r border-gray-200 align-middle bg-gray-50/30">{row.interviewAttempt}</td>}
+                            {row.levelSpan > 0 && <td rowSpan={row.levelSpan} className="p-3 font-bold text-gray-800 text-center border-r border-gray-200 align-middle bg-gray-50/30">{row.interviewResult}</td>}
+                            {row.levelSpan > 0 && <td rowSpan={row.levelSpan} className="p-3 text-gray-500 whitespace-nowrap text-center italic align-middle bg-gray-50/30">{row.interviewDate}</td>}
                           </tr>
                         )) : (
                           <tr><td colSpan={12} className="p-8 text-center text-gray-400 italic">No analytical records found.</td></tr>
