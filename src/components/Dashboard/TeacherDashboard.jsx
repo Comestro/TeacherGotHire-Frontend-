@@ -137,7 +137,7 @@ function TeacherDashboard() {
     [teacherprefrence?.class_category]
   );
 
-  const handleSubmitPhoneNumber = async (e) => {
+  const handleSubmitPhoneNumber = async (e, finalWhatsapp) => {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -149,7 +149,7 @@ function TeacherDashboard() {
     }
 
     try {
-      await updateBasicProfile({ phone_number: phoneNumber });
+      await updateBasicProfile({ phone_number: phoneNumber, whatsapp_number: finalWhatsapp });
       toast.success("Phone number updated successfully!");
       setShowPhoneModal(false);
       dispatch(getProfilCompletion());

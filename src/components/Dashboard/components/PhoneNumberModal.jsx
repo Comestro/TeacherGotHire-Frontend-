@@ -10,6 +10,8 @@ const PhoneNumberModal = ({
   onSubmit
 }) => {
   const inputRef = useRef(null);
+  const [isWhatsappSame, setIsWhatsappSame] = React.useState(true);
+  const [whatsappNumber, setWhatsappNumber] = React.useState("");
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -19,13 +21,21 @@ const PhoneNumberModal = ({
 
   if (!isOpen) return null;
 
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    const finalWhatsapp = isWhatsappSame ? phoneNumber : whatsappNumber;
+    onSubmit(e, finalWhatsapp);
+  };
+
+  const isFormValid = phoneNumber.length === 10 && (isWhatsappSame || whatsappNumber.length === 10);
+
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
         <h2 className="text-xl font-semibold text-gray-700 mb-4">
           Please Provide your Contact Number
         </h2>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={handleFormSubmit}>
           <div className="mb-4">
             <label className="block text-teal-600 text-sm font-medium mb-2">
               Phone Number*
@@ -47,7 +57,36 @@ const PhoneNumberModal = ({
               <p className="text-red-500 text-sm mt-1">{error}</p>
             )}
           </div>
-          <div className="flex justify-end space-x-3">
+          
+          <div className="mb-4">
+            <label className="flex items-center space-x-2 cursor-pointer mb-2">
+              <input
+                type="checkbox"
+                checked={isWhatsappSame}
+                onChange={(e) => setIsWhatsappSame(e.target.checked)}
+                className="w-4 h-4 text-teal-600 rounded border-gray-300 focus:ring-teal-500"
+              />
+              <span className="text-sm font-medium text-gray-700">Is this also your WhatsApp number?</span>
+            </label>
+            
+            {!isWhatsappSame && (
+              <div className="mt-3">
+                <label className="block text-teal-600 text-sm font-medium mb-2">
+                  WhatsApp Number*
+                </label>
+                <input
+                  type="tel"
+                  value={whatsappNumber}
+                  onChange={(e) => setWhatsappNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  required={!isWhatsappSame}
+                  placeholder="Enter 10-digit WhatsApp number"
+                  className="w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors border-gray-200 focus:border-teal-600"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
             <button
               type="button"
               onClick={onClose}
@@ -57,9 +96,9 @@ const PhoneNumberModal = ({
             </button>
             <button
               type="submit"
-              disabled={loading || phoneNumber.length !== 10}
+              disabled={loading || !isFormValid}
               className={`px-5 py-2 text-white rounded-lg transition-all ${
-                loading || phoneNumber.length !== 10
+                loading || !isFormValid
                   ? "bg-teal-400 cursor-not-allowed"
                   : "bg-teal-600 hover:bg-teal-700 hover:shadow-md"
               }`}

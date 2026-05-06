@@ -162,6 +162,7 @@ const BasicInformation = () => {
     profile_picture: null,
     Fname: "",
     phone_number: "",
+    whatsapp_number: "",
     language: [],
     gender: "",
     marital_status: "",
@@ -190,6 +191,7 @@ const BasicInformation = () => {
         profile_picture: basicData.profile_picture,
         Fname: `${profile.Fname || ""} ${profile.Lname || ""}`.trim(),
         phone_number: basicData.phone_number || "",
+        whatsapp_number: basicData.whatsapp_number || "",
         language: parseLanguage(basicData.language),
         gender: basicData.gender || "",
         marital_status: basicData.marital_status || "",
@@ -249,6 +251,7 @@ const BasicInformation = () => {
       data.append("Lname", nameParts.slice(1).join(" ") || "");
 
       data.append("phone_number", formData.phone_number);
+      data.append("whatsapp_number", formData.whatsapp_number);
       data.append("language", JSON.stringify(formData.language));
       data.append("gender", formData.gender);
       data.append("marital_status", formData.marital_status);
@@ -408,6 +411,30 @@ const BasicInformation = () => {
                     : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
                 }`}
                 placeholder="10-digit mobile number"
+              />
+            </div>
+
+            {/* WhatsApp Number */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                {bi("WhatsApp No")}
+              </label>
+              <input
+                type="tel"
+                value={formData.whatsapp_number}
+                disabled={!isEditing}
+                onChange={(e) =>
+                  handleInputChange(
+                    "whatsapp_number",
+                    e.target.value.replace(/\D/g, "").slice(0, 10),
+                  )
+                }
+                className={`w-full px-4 py-2.5 rounded-lg border text-sm transition-all ${
+                  isEditing
+                    ? "bg-white border-slate-300 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-default"
+                }`}
+                placeholder="10-digit WhatsApp number"
               />
             </div>
 
