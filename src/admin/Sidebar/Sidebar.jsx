@@ -168,6 +168,12 @@ export default function Sidebar({ isOpen, onToggle }) {
       link: "/admin/manage/backup",
       section: "main",
     },
+    {
+      text: "Email Templates",
+      icon: <FiInbox />,
+      link: "/admin/manage/email-templates",
+      section: "main",
+    },
   ];
 
   // Group items
