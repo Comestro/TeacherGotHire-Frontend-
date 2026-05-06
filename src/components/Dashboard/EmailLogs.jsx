@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import apiService from "../../services/apiService";
 import { HiOutlineMail, HiOutlineMailOpen } from "react-icons/hi";
 
 const EmailLogs = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedLog, setSelectedLog] = useState(null);
-  const axiosPrivate = useAxiosPrivate();
 
   useEffect(() => {
     fetchLogs();
@@ -14,8 +13,8 @@ const EmailLogs = () => {
 
   const fetchLogs = async () => {
     try {
-      const response = await axiosPrivate.get("/teacherhire/emaillogs/");
-      setLogs(response.data);
+      const response = await apiService.getAll("/api/emaillogs/");
+      setLogs(response);
     } catch (error) {
       console.error("Error fetching email logs:", error);
     } finally {

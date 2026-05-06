@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import apiService from "../../services/apiService";
 import { HiOutlinePencilAlt, HiOutlinePlus } from "react-icons/hi";
 
 const ManageEmailTemplates = () => {
@@ -8,7 +8,6 @@ const ManageEmailTemplates = () => {
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [formData, setFormData] = useState({ name: "", subject: "", body_html: "" });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const axiosPrivate = useAxiosPrivate();
 
   useEffect(() => {
     fetchTemplates();
@@ -16,8 +15,8 @@ const ManageEmailTemplates = () => {
 
   const fetchTemplates = async () => {
     try {
-      const response = await axiosPrivate.get("/teacherhire/admin/emailtemplates/");
-      setTemplates(response.data);
+      const response = await apiService.getAll("/api/admin/emailtemplates/");
+      setTemplates(response);
     } catch (error) {
       console.error("Error fetching email templates:", error);
     } finally {
@@ -41,9 +40,9 @@ const ManageEmailTemplates = () => {
     e.preventDefault();
     try {
       if (editingTemplate) {
-        await axiosPrivate.put(`/teacherhire/admin/emailtemplates/${editingTemplate.id}/`, formData);
+        await apiService.update(`/api/admin/emailtemplates`, editingTemplate.id, formData);
       } else {
-        await axiosPrivate.post("/teacherhire/admin/emailtemplates/", formData);
+        await apiService.create("/api/admin/emailtemplates", formData);
       }
       setIsModalOpen(false);
       fetchTemplates();
