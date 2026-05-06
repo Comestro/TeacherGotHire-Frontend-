@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import apiService from "../../services/apiService";
 import { HiOutlinePencilAlt, HiOutlinePlus } from "react-icons/hi";
 
+import Layout from "../Admin/Layout";
+
 const ManageEmailTemplates = () => {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +55,8 @@ const ManageEmailTemplates = () => {
   };
 
   return (
-    <div className="p-6">
+    <Layout>
+      <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Email Templates</h1>
@@ -178,6 +181,7 @@ const ManageEmailTemplates = () => {
         </div>
       )}
     </div>
+    </Layout>
   );
 };
 
