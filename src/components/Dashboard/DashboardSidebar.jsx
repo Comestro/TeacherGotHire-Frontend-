@@ -6,6 +6,7 @@ import {
   HiUser,
   HiBriefcase,
   HiOutlineLogin,
+  HiOutlineMail,
 } from "react-icons/hi";
 import { HiMiniEye } from "react-icons/hi2";
 import { getUserData, userLogout } from "../../features/authSlice";
@@ -105,6 +106,22 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               >
                 <HiMiniEye className="size-5"/>
                 View Exam Attempts
+              </NavLink>
+
+              <NavLink
+                to="notifications"
+                onClick={() => setIsOpen(false)}
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 mx-2 rounded-lg ${
+                    isActive
+                      ? "bg-primary text-white font-semibold"
+                      : "text-secondary"
+                  } hover:bg-primary hover:text-white transition flex items-center gap-2`
+                }
+              >
+                <HiOutlineMail className="size-5" />
+                Notifications
               </NavLink>
 
               <NavLink

@@ -14,10 +14,12 @@ import Login from "./components/SignIn";
 import { Provider } from "react-redux";
 import store from "./store/store";
 import TeacherDashboard from "./components/Dashboard/TeacherDashboard";
+import EmailLogs from "./components/Dashboard/EmailLogs";
 import EditPersonalProfile from "./components/Profile/PersonalProfile/EditPersonalProfile";
 import AdminDashboard from "./admin/Dashboard/Dashboard";
 import ManageSubject from "./admin/Manage-subject/ManageSubject";
 import ManageTeacher from "./admin/Manage-teacher/ManageTeacher";
+import ManageEmailTemplates from "./admin/Manage-email-templates/ManageEmailTemplates";
 import ManageRecruiter from "./admin/Manage-recruiter/ManageRecruiter";
 import ManageSkills from "./admin/Manage-skills/ManageSkills";
 import ManageQualification from "./admin/Manage-qualification/ManageQualification";
@@ -280,6 +282,15 @@ function AppContent() {
           }
         />
         <Route
+          path="admin/manage/email-templates"
+          element={
+            <RoleBasedRoute
+              element={<ManageEmailTemplates />}
+              allowedRoles={["admin"]}
+            />
+          }
+        />
+        <Route
           path="admin/manage/teacher/jobtype"
           element={
             <RoleBasedRoute
@@ -441,6 +452,15 @@ function AppContent() {
             element={
               <RoleBasedRoute
                 element={<ResultPage />}
+                allowedRoles={["teacher"]}
+              />
+            }
+          />
+          <Route
+            path="notifications"
+            element={
+              <RoleBasedRoute
+                element={<EmailLogs />}
                 allowedRoles={["teacher"]}
               />
             }
