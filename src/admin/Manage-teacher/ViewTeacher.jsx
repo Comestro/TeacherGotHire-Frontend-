@@ -731,24 +731,29 @@ const ViewTeacherAdmin = () => {
                         <FiEdit2 size={14} />
                       </button>
                     </div>
-                    <div className="p-4 flex-1 space-y-3">
+                    <div className="p-4 flex-1 space-y-4">
                       {teacherData?.preferences?.length > 0 ? (
                         teacherData.preferences.map((pref, idx) => (
-                          <div key={idx} className="p-3 bg-gray-50 rounded-lg border border-gray-100 space-y-2">
-                            <div className="flex flex-wrap gap-1.5">
-                              {pref.class_category?.map((cat, cidx) => (
-                                <span key={cidx} className="px-2 py-0.5 bg-teal-100/50 text-teal-700 text-[10px] font-bold rounded border border-teal-200 uppercase">
+                          <div key={idx} className="space-y-3">
+                            {pref.class_category?.map((cat, cidx) => (
+                              <div key={cidx} className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                <div className="text-[10px] font-bold text-teal-700 uppercase mb-2 flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 bg-teal-500 rounded-full" />
                                   {cat.name}
-                                </span>
-                              ))}
-                            </div>
-                            <div className="flex flex-wrap gap-1.5">
-                              {pref.prefered_subject?.map((sub, sidx) => (
-                                <span key={sidx} className="px-2 py-0.5 bg-white text-blue-700 text-[10px] font-bold rounded border border-blue-200">
-                                  {sub.subject_name}
-                                </span>
-                              ))}
-                            </div>
+                                </div>
+                                <div className="flex flex-wrap gap-1.5 pl-3.5">
+                                  {cat.subjects?.length > 0 ? (
+                                    cat.subjects.map((sub, sidx) => (
+                                      <span key={sidx} className="px-2 py-0.5 bg-white text-blue-700 text-[10px] font-bold rounded border border-blue-200 shadow-sm">
+                                        {sub.subject_name}
+                                      </span>
+                                    ))
+                                  ) : (
+                                    <span className="text-[10px] text-gray-400 italic">No specific subjects selected</span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         ))
                       ) : (

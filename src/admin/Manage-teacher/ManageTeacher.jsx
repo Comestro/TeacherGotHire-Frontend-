@@ -695,21 +695,24 @@ const ManageTeacher = () => {
                           {currentAddress.district || "—"}
                         </p>
                       </div>
-                      <div className="bg-gray-50 p-2 rounded-lg">
-                        <p className="text-gray-400 font-medium mb-0.5 uppercase tracking-wider text-[10px]">
-                          Category
+                      <div className="bg-gray-50 p-2 rounded-lg col-span-2">
+                        <p className="text-gray-400 font-medium mb-1 uppercase tracking-wider text-[10px]">
+                          Academic Preferences
                         </p>
-                        <p className="text-gray-700 font-medium truncate" title={categories}>
-                          {categories}
-                        </p>
-                      </div>
-                      <div className="bg-gray-50 p-2 rounded-lg">
-                        <p className="text-gray-400 font-medium mb-0.5 uppercase tracking-wider text-[10px]">
-                          Subjects
-                        </p>
-                        <p className="text-gray-700 font-medium truncate" title={subjects}>
-                          {subjects}
-                        </p>
+                        <div className="space-y-1">
+                          {t.academic_preferences?.length > 0 ? (
+                            t.academic_preferences.map((pref, pidx) => (
+                              <div key={pidx} className="text-[10px] leading-tight">
+                                <span className="font-bold text-teal-700">{pref.category}:</span>
+                                <span className="text-gray-600 ml-1">
+                                  {pref.subjects.join(", ") || "No subjects"}
+                                </span>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-gray-700 font-medium">No preferences</p>
+                          )}
+                        </div>
                       </div>
                       <div className="bg-gray-50 p-2 rounded-lg">
                         <p className="text-gray-400 font-medium mb-0.5 uppercase tracking-wider text-[10px]">
@@ -758,8 +761,7 @@ const ManageTeacher = () => {
                     <tr className="bg-gray-50/50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
                       <th className="px-4 py-3">Teacher</th>
                       <th className="px-4 py-3">Qualification</th>
-                      <th className="px-4 py-3">Class Categories</th>
-                      <th className="px-4 py-3">Subjects</th>
+                      <th className="px-4 py-3">Academic Preferences</th>
                       <th className="px-4 py-3">Location</th>
                       <th className="px-4 py-3">Joined Date</th>
                       <th className="px-4 py-3 text-center">Status</th>
@@ -776,11 +778,6 @@ const ManageTeacher = () => {
                       const initials = `${t.Fname?.charAt(0) || ""}${
                         t.Lname?.charAt(0) || ""
                       }`.toUpperCase();
-                      const subNames = t.subjects || (t.teachersubjects || []).map(s => s.subject_name || s.subject?.subject_name || s);
-                      const catNames = t.class_categories || (t.teacherclasscategory || []).map(c => c.class_category?.name || c.name);
-
-                      const subjects = subNames.filter(Boolean).join(", ") || "—";
-                      const categories = catNames.filter(Boolean).join(", ") || "—";
                       const qualifications =
                         (Array.isArray(t.qualifications) ? t.qualifications : [])
                           .concat((t.teacherqualifications || []).map(q => q?.qualification?.name))
@@ -840,19 +837,19 @@ const ManageTeacher = () => {
                             </div>
                           </td>
                           <td className="px-4 py-3">
-                            <div
-                              className="text-sm text-gray-700 max-w-[150px] truncate"
-                              title={categories}
-                            >
-                              {categories}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div
-                              className="text-sm text-gray-700 max-w-[150px] truncate"
-                              title={subjects}
-                            >
-                              {subjects}
+                            <div className="space-y-1 max-w-[200px]">
+                              {t.academic_preferences?.length > 0 ? (
+                                t.academic_preferences.map((pref, pidx) => (
+                                  <div key={pidx} className="text-xs">
+                                    <span className="font-bold text-teal-700">{pref.category}:</span>
+                                    <span className="text-gray-600 ml-1">
+                                      {pref.subjects.join(", ") || "No subjects"}
+                                    </span>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="text-xs text-gray-400 italic">No preferences</div>
+                              )}
                             </div>
                           </td>
                           <td className="px-4 py-3">
