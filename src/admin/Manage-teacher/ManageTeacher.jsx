@@ -689,7 +689,6 @@ const ManageTeacher = () => {
                               {t.user_code}
                             </Link>
                           )}
-                        </div>
                       </div>
                     </div>
 
