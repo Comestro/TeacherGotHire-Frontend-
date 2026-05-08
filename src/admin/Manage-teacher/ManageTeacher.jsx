@@ -229,6 +229,7 @@ const ManageTeacher = () => {
           .toLowerCase()
           .includes(searchValue.toLowerCase()) ||
         (t.email || "").toLowerCase().includes(searchValue.toLowerCase()) ||
+        (t.user_code || "").toLowerCase().includes(searchValue.toLowerCase()) ||
         String(t.id || "").includes(searchValue);
 
       const qualMatch =
@@ -516,7 +517,7 @@ const ManageTeacher = () => {
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
-              placeholder="Search by name, email, or ID..."
+              placeholder="Search by name, email, ID or User Code..."
             />
           </div>
 
@@ -663,6 +664,11 @@ const ManageTeacher = () => {
                           <p className="text-xs text-gray-500 truncate">
                             {t.email}
                           </p>
+                          {t.user_code && (
+                            <p className="text-[10px] font-mono text-indigo-500 mt-0.5">
+                              {t.user_code}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -808,6 +814,11 @@ const ManageTeacher = () => {
                                 <div className="text-xs text-gray-500 truncate">
                                   {t.email}
                                 </div>
+                                {t.user_code && (
+                                  <div className="text-[10px] font-mono text-indigo-500">
+                                    {t.user_code}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </td>
