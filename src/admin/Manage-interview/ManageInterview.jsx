@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import {
@@ -692,9 +693,13 @@ export default function InterviewManagementRedesign() {
                           <div>
                             <p className="font-medium text-gray-900">
                                 {row.name}
-                                <span className="ml-2 text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                                <Link 
+                                  to={`/admin/view/teacher/${row.userId}`}
+                                  className="ml-2 text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 hover:text-teal-600 hover:bg-teal-50 hover:border-teal-200 transition-all cursor-pointer"
+                                  title="View Profile"
+                                >
                                   {row.userCode}
-                                </span>
+                                </Link>
                               </p>
                             <p className="text-xs text-gray-500">{row.email}</p>
                             <p className="text-xs text-teal-600 font-medium">{row.phone}</p>
@@ -805,9 +810,13 @@ export default function InterviewManagementRedesign() {
                     <div>
                         <p className="font-bold text-gray-900">
                           {row.name}{" "}
-                          <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                          <Link 
+                            to={`/admin/view/teacher/${row.userId}`}
+                            className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 hover:text-teal-600 hover:bg-teal-50 hover:border-teal-200 transition-all cursor-pointer"
+                            title="View Profile"
+                          >
                             {row.userCode}
-                          </span>
+                          </Link>
                         </p>
                       <p className="text-xs text-gray-500">{row.email}</p>
                       <p className="text-xs text-teal-600 font-medium">{row.phone}</p>
@@ -906,9 +915,12 @@ export default function InterviewManagementRedesign() {
               <div>
                 <h4 className="font-bold text-gray-900">
                   {detailsModal.data.name}
-                  <span className="ml-2 text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded border border-gray-200 uppercase tracking-widest">
+                  <Link 
+                    to={`/admin/view/teacher/${detailsModal.data.userId}`}
+                    className="ml-2 text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded border border-gray-200 uppercase tracking-widest hover:text-teal-600 hover:bg-teal-50 hover:border-teal-200 transition-all cursor-pointer"
+                  >
                     {detailsModal.data.userCode}
-                  </span>
+                  </Link>
                 </h4>
                 <p className="text-sm text-gray-500">
                   {detailsModal.data.email}

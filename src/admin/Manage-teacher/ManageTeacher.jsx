@@ -328,7 +328,7 @@ const ManageTeacher = () => {
   };
 
   const handleRefresh = () => {
-    dispatch(fetchTeachers({}));
+    dispatch(fetchAdminTeachers({}));
     setToast({
       open: true,
       type: "success",
@@ -665,9 +665,13 @@ const ManageTeacher = () => {
                             {t.email}
                           </p>
                           {t.user_code && (
-                            <p className="text-[10px] font-mono text-indigo-500 mt-0.5">
+                            <Link 
+                              to={`/admin/view/teacher/${t.id}`}
+                              className="text-[10px] font-mono text-indigo-500 hover:text-indigo-700 transition-colors cursor-pointer"
+                              title="View Profile"
+                            >
                               {t.user_code}
-                            </p>
+                            </Link>
                           )}
                         </div>
                       </div>
@@ -815,9 +819,13 @@ const ManageTeacher = () => {
                                   {t.email}
                                 </div>
                                 {t.user_code && (
-                                  <div className="text-[10px] font-mono text-indigo-500">
+                                  <Link 
+                                    to={`/admin/view/teacher/${t.id}`}
+                                    className="text-[10px] font-mono text-indigo-500 hover:text-indigo-700 transition-colors cursor-pointer"
+                                    title="View Profile"
+                                  >
                                     {t.user_code}
-                                  </div>
+                                  </Link>
                                 )}
                               </div>
                             </div>

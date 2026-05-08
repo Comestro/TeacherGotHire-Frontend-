@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { Link } from "react-router-dom";
 import {
   FiSearch,
   FiFilter,
@@ -321,9 +322,13 @@ export default function ManagePasskey() {
                         <div className="flex flex-col">
                           <span className="font-bold text-gray-900">
                             {row.userName}{" "}
-                            <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                            <Link 
+                              to={`/admin/view/teacher/${row.user?.id}`}
+                              className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 hover:text-teal-600 hover:bg-teal-50 hover:border-teal-200 transition-all cursor-pointer"
+                              title="View Profile"
+                            >
                               {row.userCode}
-                            </span>
+                            </Link>
                           </span>
                           <span className="text-xs text-gray-500">
                             {row.userEmail}
@@ -456,9 +461,13 @@ export default function ManagePasskey() {
                     <div className="flex flex-col">
                       <span className="font-bold text-gray-900 text-base">
                         {detailsModal.row.userName}{" "}
-                        <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded border border-gray-200 uppercase tracking-widest">
+                        <Link 
+                          to={`/admin/view/teacher/${detailsModal.row.user?.id}`}
+                          className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded border border-gray-200 uppercase tracking-widest hover:text-teal-600 hover:bg-teal-50 hover:border-teal-200 transition-all cursor-pointer"
+                          title="View Profile"
+                        >
                           {detailsModal.row.userCode}
-                        </span>
+                        </Link>
                       </span>
                       <span className="text-sm text-gray-500">
                         {detailsModal.row.userEmail}

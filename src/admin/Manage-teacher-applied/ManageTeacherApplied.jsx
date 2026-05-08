@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import {
   Box,
   Button,
@@ -150,6 +151,8 @@ const ManageTeacherApplied = () => {
             id: app.id,
             teacherName: `${safe(app.user?.Fname, "")} ${safe(app.user?.Lname, "")}`.trim(),
             teacherEmail: app.user?.email || "",
+            userCode: app.user?.user_code || (app.user?.id ? `T-${app.user.id}` : "—"),
+            userId: app.user?.id,
             verified: !!app.user?.is_verified,
             classCategory: app.class_category?.length ? app.class_category[0].name : "N/A",
             subjects: Array.isArray(app.subject) ? app.subject.map((s) => s.subject_name) : [],
@@ -494,7 +497,28 @@ const ManageTeacherApplied = () => {
                             {app.teacherName.charAt(0)}
                           </Avatar>
                           <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>{app.teacherName}</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b' }}>{app.teacherName}</Typography>
+                              <Link 
+                                to={`/admin/view/teacher/${app.userId}`}
+                                style={{ 
+                                  fontSize: '10px', 
+                                  fontWeight: 700, 
+                                  color: '#94a3b8', 
+                                  backgroundColor: '#f1f5f9', 
+                                  padding: '2px 6px', 
+                                  borderRadius: '4px',
+                                  border: '1px solid #e2e8f0',
+                                  textDecoration: 'none',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px'
+                                }}
+                                onMouseOver={(e) => { e.target.style.color = 'teal'; e.target.style.backgroundColor = '#f0fdfa'; e.target.style.borderColor = '#99f6e4'; }}
+                                onMouseOut={(e) => { e.target.style.color = '#94a3b8'; e.target.style.backgroundColor = '#f1f5f9'; e.target.style.borderColor = '#e2e8f0'; }}
+                              >
+                                {app.userCode}
+                              </Link>
+                            </Box>
                             <Typography variant="caption" color="text.secondary">{app.teacherEmail}</Typography>
                           </Box>
                         </Stack>
@@ -549,7 +573,28 @@ const ManageTeacherApplied = () => {
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
                     <Typography variant="subtitle2" color="text.secondary">Full name</Typography>
-                    <Typography variant="body1" fontWeight={600}>{selectedApplication.teacherName}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="body1" fontWeight={600}>{selectedApplication.teacherName}</Typography>
+                      <Link 
+                        to={`/admin/view/teacher/${selectedApplication.userId}`}
+                        style={{ 
+                          fontSize: '11px', 
+                          fontWeight: 700, 
+                          color: '#94a3b8', 
+                          backgroundColor: '#f1f5f9', 
+                          padding: '2px 8px', 
+                          borderRadius: '4px',
+                          border: '1px solid #e2e8f0',
+                          textDecoration: 'none',
+                          textTransform: 'uppercase',
+                          letterSpacing: '1px'
+                        }}
+                        onMouseOver={(e) => { e.target.style.color = 'teal'; e.target.style.backgroundColor = '#f0fdfa'; e.target.style.borderColor = '#99f6e4'; }}
+                        onMouseOut={(e) => { e.target.style.color = '#94a3b8'; e.target.style.backgroundColor = '#f1f5f9'; e.target.style.borderColor = '#e2e8f0'; }}
+                      >
+                        {selectedApplication.userCode}
+                      </Link>
+                    </Box>
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
