@@ -11,11 +11,12 @@ import { getSubjects } from "../../services/adminSubujectApi";
 import { updateTeacher } from "../../services/adminTeacherApi";
 import { getClassCategory } from "../../services/adminClassCategoryApi";
 import {
-  FiChevronLeft,
-  FiChevronRight,
-  FiEye,
   FiCheck,
   FiX,
+  FiEye,
+  FiSlash,
+  FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 import { MdFilterAlt, MdFilterAltOff } from "react-icons/md";
 import {
@@ -658,7 +659,7 @@ const ManageTeacher = () => {
                         <div className="flex items-center gap-2 mt-0.5">
                           <span
                             className={`w-2 h-2 rounded-full ${
-                              t.is_active ? "bg-green-500" : "bg-red-500"
+                              t.is_active ? "bg-green-500" : "bg-amber-500"
                             }`}
                           />
                           <p className="text-xs text-gray-500 truncate">
@@ -730,7 +731,7 @@ const ManageTeacher = () => {
                           onClick={() => openConfirm(t.id, t.is_active)}
                           className={`h-8 px-3 rounded-lg text-xs font-medium border transition-colors ${
                             t.is_active
-                              ? "border-red-100 text-red-600 bg-red-50 hover:bg-red-100"
+                              ? "border-amber-100 text-amber-600 bg-amber-50 hover:bg-amber-100"
                               : "border-green-100 text-green-600 bg-green-50 hover:bg-green-100"
                           }`}
                         >
@@ -874,7 +875,7 @@ const ManageTeacher = () => {
                               className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
                                 t.is_active
                                   ? "bg-green-50 text-green-700 border-green-200"
-                                  : "bg-red-50 text-red-700 border-red-200"
+                                  : "bg-amber-50 text-amber-700 border-amber-200"
                               }`}
                             >
                               {t.is_active ? "Active" : "Inactive"}
@@ -893,13 +894,13 @@ const ManageTeacher = () => {
                                 onClick={() => openConfirm(t.id, t.is_active)}
                                 className={`w-8 h-8 flex items-center justify-center rounded-lg ring-1 ring-inset transition-all ${
                                   t.is_active
-                                    ? "bg-red-50 text-red-600 hover:bg-red-100 ring-red-100"
+                                    ? "bg-amber-50 text-amber-600 hover:bg-amber-100 ring-amber-100"
                                     : "bg-green-50 text-green-600 hover:bg-green-100 ring-green-100"
                                 }`}
                                 title={t.is_active ? "Deactivate" : "Activate"}
                               >
                                 {t.is_active ? (
-                                  <FiX size={16} />
+                                  <FiSlash size={16} />
                                 ) : (
                                   <FiCheck size={16} />
                                 )}
