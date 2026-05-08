@@ -25,7 +25,7 @@ import {
   HiOutlinePhone,
   HiOutlineLocationMarker,
 } from "react-icons/hi";
-import { IoReloadOutline, IoDownloadOutline } from "react-icons/io5";
+import { IoReloadOutline, IoDownloadOutline, IoLogoWhatsapp } from "react-icons/io5";
 import FilterModal from "./FilterModal";
 import DataLoader from "../../components/DataLoader";
 
@@ -665,6 +665,21 @@ const ManageTeacher = () => {
                           <p className="text-xs text-gray-500 truncate">
                             {t.email}
                           </p>
+                        </div>
+                        <div className="flex flex-col gap-1 mt-1">
+                            {t.phone_number && (
+                              <div className="flex items-center gap-1 text-[10px] text-gray-600">
+                                <HiOutlinePhone size={10} />
+                                {t.phone_number}
+                              </div>
+                            )}
+                            {t.whatsapp_number && (
+                              <div className="flex items-center gap-1 text-[10px] text-teal-600 font-medium">
+                                <IoLogoWhatsapp size={10} />
+                                {t.whatsapp_number}
+                              </div>
+                            )}
+                          </div>
                           {t.user_code && (
                             <Link 
                               to={`/admin/view/teacher/${t.id}`}
@@ -813,8 +828,22 @@ const ManageTeacher = () => {
                                 <div className="font-semibold text-gray-900 text-sm truncate">
                                   {t.Fname} {t.Lname}
                                 </div>
-                                <div className="text-xs text-gray-500 truncate">
+                                <div className="text-xs text-gray-500 truncate mb-1">
                                   {t.email}
+                                </div>
+                                <div className="flex flex-col gap-0.5 mb-2">
+                                  {t.phone_number && (
+                                    <div className="flex items-center gap-1 text-[10px] text-gray-600">
+                                      <HiOutlinePhone className="shrink-0" />
+                                      {t.phone_number}
+                                    </div>
+                                  )}
+                                  {t.whatsapp_number && (
+                                    <div className="flex items-center gap-1 text-[10px] text-teal-600 font-medium">
+                                      <IoLogoWhatsapp className="shrink-0" />
+                                      {t.whatsapp_number}
+                                    </div>
+                                  )}
                                 </div>
                                 {t.user_code && (
                                   <Link 
