@@ -383,7 +383,7 @@ const Education = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-slate-200 p-4 md:p-6 shadow-sm">
+    <div className="bg-transparent md:bg-gradient-to-br md:from-white md:to-background/30 rounded-none md:rounded-xl border-0 md:border md:border-slate-200 p-0 md:p-6 shadow-none md:shadow-sm">
       <ErrorMessage
         message={generalError}
         onDismiss={() => setGeneralError(null)}
@@ -652,7 +652,7 @@ const Education = () => {
       {isEditing && (
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-gradient-to-br from-white to-background/20 p-4 rounded-xl border border-secondary/30 shadow-sm"
+          className="bg-transparent md:bg-gradient-to-br md:from-white md:to-background/20 p-0 md:p-4 rounded-xl border-0 md:border md:border-secondary/30 md:shadow-sm mt-4 md:mt-0"
         >
           {/* Step 1: Select Qualification Level */}
           <div className="mb-4 p-4 bg-primary/5 rounded-lg border border-primary/20">

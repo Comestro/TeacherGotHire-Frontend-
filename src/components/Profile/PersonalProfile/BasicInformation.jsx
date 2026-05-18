@@ -295,7 +295,7 @@ const BasicInformation = () => {
   if (!dataLoaded) return <Loader />;
 
   return (
-    <div className="w-full mx-auto bg-white rounded  shadow-sm border border-slate-200 overflow-hidden">
+    <div className="w-full mx-auto bg-transparent md:bg-white rounded-none md:rounded-lg shadow-none md:shadow-sm border-0 md:border md:border-slate-200 overflow-hidden">
       {loading && <Loader />}
 
       {/* Header */}

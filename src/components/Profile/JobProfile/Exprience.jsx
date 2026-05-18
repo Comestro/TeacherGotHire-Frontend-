@@ -147,7 +147,7 @@ const Experience = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-background/30 rounded-xl border border-slate-200 p-4 md:p-6">
+    <div className="bg-transparent md:bg-gradient-to-br md:from-white md:to-background/30 rounded-none md:rounded-xl border-0 md:border md:border-slate-200 p-0 md:p-6">
       <ErrorMessage
         message={generalError}
         onDismiss={() => setGeneralError(null)}

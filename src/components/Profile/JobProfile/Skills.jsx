@@ -93,7 +93,7 @@ const Skills = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
+    <div className="bg-transparent md:bg-white rounded-none md:rounded-lg border-0 md:border md:border-slate-200 p-0 md:p-6">
       <ErrorMessage
         message={generalError}
         onDismiss={() => setGeneralError(null)}

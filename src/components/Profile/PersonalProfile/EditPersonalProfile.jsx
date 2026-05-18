@@ -129,9 +129,9 @@ const EditPersonalProfile = () => {
         </div>
 
         {/* Main Content Container */}
-        <div className="bg-white rounded-lg overflow-hidden border border-slate-200">
+        <div className="bg-transparent md:bg-white md:rounded-lg overflow-hidden md:border md:border-slate-200">
           {/* Tabs Navigation - Desktop & Mobile */}
-          <div className="border-b border-slate-200 bg-slate-50">
+          <div className="border-b border-slate-200 bg-white md:bg-slate-50 rounded-lg md:rounded-none border md:border-0 md:border-b mb-4 md:mb-0">
             <div className="lg:flex hidden">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
@@ -170,7 +170,7 @@ const EditPersonalProfile = () => {
             </div>
 
             {/* Mobile Horizontal Scrollable Tabs */}
-            <div ref={mobileTabsRef} className="lg:hidden overflow-x-auto scrollbar-hide">
+            <div ref={mobileTabsRef} className="lg:hidden overflow-x-auto scrollbar-hide rounded-lg">
               <div className="flex min-w-max">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
@@ -182,13 +182,13 @@ const EditPersonalProfile = () => {
                       onClick={() => setActiveTab(tab.id)}
                       className={`relative px-6 py-3 transition-all duration-200 whitespace-nowrap ${
                         isActive
-                          ? "bg-white text-slate-900"
-                          : "text-slate-600"
+                          ? "bg-teal-50 text-teal-700 font-semibold"
+                          : "text-slate-600 hover:bg-slate-50"
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <Icon className={`w-4 h-4 ${isActive ? "text-teal-500" : ""}`} />
-                        <div className="text-xs font-medium">{tab.label}</div>
+                        <Icon className={`w-4 h-4 ${isActive ? "text-teal-600" : ""}`} />
+                        <div className="text-sm">{tab.label}</div>
                       </div>
                       {isActive && (
                         <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-500" />
@@ -201,7 +201,7 @@ const EditPersonalProfile = () => {
           </div>
 
           {/* Tab Content */}
-          <div className="p-4 lg:p-6">
+          <div className="p-0 md:p-6">
             <div className="animate-fadeIn">
               {renderTabContent()}
             </div>

@@ -190,7 +190,7 @@ const PrefrenceProfile = ({ forceEdit = false }) => {
   ];
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+    <div className="bg-transparent md:bg-white rounded-none md:rounded-lg border-0 md:border md:border-gray-200 shadow-none md:shadow-sm overflow-hidden">
       <ErrorMessage
         message={successMessage}
         type="success"

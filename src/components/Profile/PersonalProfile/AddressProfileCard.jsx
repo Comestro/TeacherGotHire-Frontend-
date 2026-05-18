@@ -393,7 +393,7 @@ const AddressProfileCard = () => {
           {/* Current Address */}
           <div className="h-full">
             {isEditingType === "current" ? (
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-1 animate-fadeIn">
+              <div className="bg-transparent md:bg-white rounded-none md:rounded-xl shadow-none md:shadow-sm border-0 md:border md:border-slate-200 p-0 md:p-1 animate-fadeIn">
                 <AddressForm
                   type="current"
                   addressData={personalProfile.current_address}
@@ -414,7 +414,7 @@ const AddressProfileCard = () => {
           {/* Permanent Address */}
           <div className="h-full">
             {isEditingType === "permanent" ? (
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-1 animate-fadeIn">
+              <div className="bg-transparent md:bg-white rounded-none md:rounded-xl shadow-none md:shadow-sm border-0 md:border md:border-slate-200 p-0 md:p-1 animate-fadeIn">
                 <AddressForm
                   type="permanent"
                   addressData={personalProfile.permanent_address}

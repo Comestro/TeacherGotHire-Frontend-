@@ -105,6 +105,43 @@ export const fetchAllSkills = async()=>{
   }
 }
 
+const formatErrorMessages = (errorData) => {
+  if (typeof errorData === 'string') return errorData;
+  if (!errorData || typeof errorData !== 'object') return "Unknown error occurred";
+  
+  // Check for custom backend error format: { status: "error", errors: [{ detail: "message" }] }
+  if (errorData.status === "error" && Array.isArray(errorData.errors)) {
+    const messages = errorData.errors.map(err => err.detail).filter(Boolean);
+    if (messages.length > 0) return messages.join(" | ");
+  }
+  
+  // Fallback for standard DRF format or other structures
+  const messages = [];
+  const extractMessages = (obj) => {
+    if (obj.detail && typeof obj.detail === 'string') {
+      messages.push(obj.detail);
+      return;
+    }
+    for (const key in obj) {
+      if (key === 'status' || key === 'type' || key === 'code') continue; // skip metadata
+      
+      if (typeof obj[key] === 'string') {
+        messages.push(obj[key]);
+      } else if (Array.isArray(obj[key])) {
+        obj[key].forEach(item => {
+          if (typeof item === 'string') messages.push(item);
+          else if (typeof item === 'object') extractMessages(item);
+        });
+      } else if (typeof obj[key] === 'object') {
+        extractMessages(obj[key]);
+      }
+    }
+  };
+  
+  extractMessages(errorData);
+  return messages.length > 0 ? messages.join(" | ") : "Validation error occurred";
+};
+
 export const updateEducationProfile = async({payload, id })=>{
      try{
         const response = await apiClient.put(`api/self/teacherqualification/${id}/`,payload);
@@ -112,10 +149,7 @@ export const updateEducationProfile = async({payload, id })=>{
         return JSON.parse(JSON.stringify(response)); 
      }
         catch (err) {
-            const errorMessage = err.response?.data && typeof err.response.data === "object"
-                ? Object.values(err.response.data).flat().join(", ") // Convert nested errors to a string
-                : err.message || "Failed to update education profile";
-        
+            const errorMessage = err.response?.data ? formatErrorMessages(err.response.data) : err.message || "Failed to update education profile";
             throw new Error(errorMessage);
           }
      }
@@ -128,10 +162,7 @@ export const addEducationProfile = async(expriencedata)=>{
     return JSON.parse(JSON.stringify(response));
   }
   catch (err) {
-    const errorMessage = err.response?.data && typeof err.response.data === "object"
-        ? Object.values(err.response.data).flat().join(", ") // Convert nested errors to a string
-        : err.message || "Failed to update education profile";
-
+    const errorMessage = err.response?.data ? formatErrorMessages(err.response.data) : err.message || "Failed to update education profile";
     throw new Error(errorMessage);
   }
 }
