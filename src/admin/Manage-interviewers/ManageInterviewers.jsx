@@ -74,7 +74,7 @@ const ManageInterviewers = () => {
   const fetchInterviewers = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get("/teacherhire/interviewer/profile/");
+      const response = await axiosInstance.get("/api/interviewer/profile/");
       setInterviewers(response.data);
     } catch (error) {
       console.error("Failed to fetch interviewers", error);
@@ -233,10 +233,10 @@ const ManageInterviewers = () => {
       };
 
       if (isEditMode && selectedInterviewer) {
-        await axiosInstance.patch(`/teacherhire/interviewer/profile/${selectedInterviewer.id}/`, payload);
+        await axiosInstance.patch(`/api/interviewer/profile/${selectedInterviewer.id}/`, payload);
         showToast("Interviewer profile updated successfully", "success");
       } else {
-        await axiosInstance.post("/teacherhire/interviewer/profile/", payload);
+        await axiosInstance.post("/api/interviewer/profile/", payload);
         showToast("Interviewer role assigned successfully", "success");
       }
 
@@ -254,7 +254,7 @@ const ManageInterviewers = () => {
   const handleDeleteConfirm = async () => {
     if (!interviewerToDelete) return;
     try {
-      await axiosInstance.delete(`/teacherhire/interviewer/profile/${interviewerToDelete.id}/`);
+      await axiosInstance.delete(`/api/interviewer/profile/${interviewerToDelete.id}/`);
       showToast("Interviewer role removed successfully", "success");
       setOpenDeleteDialog(false);
       setInterviewerToDelete(null);
