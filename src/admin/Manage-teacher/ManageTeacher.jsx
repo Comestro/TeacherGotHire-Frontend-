@@ -231,6 +231,8 @@ const ManageTeacher = () => {
           .includes(searchValue.toLowerCase()) ||
         (t.email || "").toLowerCase().includes(searchValue.toLowerCase()) ||
         (t.user_code || "").toLowerCase().includes(searchValue.toLowerCase()) ||
+        (t.phone_number || "").toLowerCase().includes(searchValue.toLowerCase()) ||
+        (t.whatsapp_number || "").toLowerCase().includes(searchValue.toLowerCase()) ||
         String(t.id || "").includes(searchValue);
 
       const qualMatch =
