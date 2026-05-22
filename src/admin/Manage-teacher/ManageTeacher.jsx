@@ -676,10 +676,16 @@ const ManageTeacher = () => {
                               </div>
                             )}
                             {t.whatsapp_number && (
-                              <div className="flex items-center gap-1 text-[10px] text-teal-600 font-medium">
-                                <IoLogoWhatsapp size={10} />
+                              <a 
+                                href={`https://api.whatsapp.com/send/?phone=${t.whatsapp_number}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-[10px] text-emerald-600 hover:text-emerald-700 font-semibold transition-colors cursor-pointer hover:underline"
+                                title="Chat on WhatsApp"
+                              >
+                                <IoLogoWhatsapp size={10} className="text-[#25D366]" />
                                 {t.whatsapp_number}
-                              </div>
+                              </a>
                             )}
                           </div>
                           {t.user_code && (
@@ -840,10 +846,16 @@ const ManageTeacher = () => {
                                     </div>
                                   )}
                                   {t.whatsapp_number && (
-                                    <div className="flex items-center gap-1 text-[10px] text-teal-600 font-medium">
-                                      <IoLogoWhatsapp className="shrink-0" />
+                                    <a 
+                                      href={`https://api.whatsapp.com/send/?phone=${t.whatsapp_number}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-1 text-[10px] text-emerald-600 hover:text-emerald-700 font-semibold transition-colors cursor-pointer hover:underline"
+                                      title="Chat on WhatsApp"
+                                    >
+                                      <IoLogoWhatsapp className="shrink-0 text-[#25D366]" />
                                       {t.whatsapp_number}
-                                    </div>
+                                    </a>
                                   )}
                                 </div>
                                 {t.user_code && (

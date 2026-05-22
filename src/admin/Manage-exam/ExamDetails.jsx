@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import {
   FiArrowLeft,
   FiEdit2,
@@ -72,6 +72,7 @@ const ErrorMessage = ({ message, type = "error", onClose }) => {
 const QuestionCard = ({ question, index, onEdit, onDelete }) => {
   return (
     <div
+      id={`question-card-${question.id}`}
       className={`mb-3 p-4 rounded-xl border transition-all duration-200 relative bg-white group hover:shadow-md ${
         question.language === "English"
           ? "border-l-4 border-l-teal-500 border-gray-200 hover:border-teal-200"
@@ -171,6 +172,7 @@ const QuestionCard = ({ question, index, onEdit, onDelete }) => {
 const ExamDetails = () => {
   const { examId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [loading, setLoading] = useState(true);
   const [exam, setExam] = useState(null);
@@ -218,6 +220,48 @@ const ExamDetails = () => {
       fetchExamData();
     }
   }, [examId]);
+
+  useEffect(() => {
+    if (!questions.length) return;
+
+    const searchParams = new URLSearchParams(location.search);
+    const findQuestionId = searchParams.get("findQuestion");
+    if (findQuestionId) {
+      const targetQ = questions.find(
+        (q) => String(q.id) === String(findQuestionId)
+      );
+      if (targetQ) {
+        setSelectedLanguage(targetQ.language);
+        
+        // Wait for tab rendering to complete in DOM
+        const timer = setTimeout(() => {
+          const element = document.getElementById(`question-card-${findQuestionId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "center" });
+            
+            // Define custom highlighting styles
+            const highlightClasses = [
+              "ring-4",
+              "ring-amber-500",
+              "scale-[1.01]",
+              "bg-amber-50/30",
+              "shadow-md"
+            ];
+            element.classList.add(...highlightClasses);
+            
+            // Remove after a premium duration (4 seconds)
+            const removeTimer = setTimeout(() => {
+              element.classList.remove(...highlightClasses);
+            }, 4000);
+            
+            return () => clearTimeout(removeTimer);
+          }
+        }, 400);
+
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [questions, location.search]);
 
   const showNotification = (message, type = "success") => {
     setNotification({ message, type });

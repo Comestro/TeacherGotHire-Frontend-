@@ -25,6 +25,7 @@ import {
   FiPlus,
   FiTrash2,
 } from "react-icons/fi";
+import { IoLogoWhatsapp } from "react-icons/io5";
 
 
 const ViewTeacherAdmin = () => {
@@ -169,6 +170,7 @@ const ViewTeacherAdmin = () => {
           is_verified: !!teacherData.is_verified,
           profiles: {
             phone_number: teacherData.profiles?.phone_number || "",
+            whatsapp_number: teacherData.profiles?.whatsapp_number || "",
             bio: teacherData.profiles?.bio || "",
             gender: teacherData.profiles?.gender || "",
             marital_status: teacherData.profiles?.marital_status || "",
@@ -688,6 +690,26 @@ const ViewTeacherAdmin = () => {
                           <p className="text-xs font-bold text-gray-800">{teacherData?.profiles?.phone_number || "—"}</p>
                         </div>
                       </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center text-green-600">
+                          <IoLogoWhatsapp size={16} className="text-[#25D366]" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">WhatsApp Number</p>
+                          {teacherData?.profiles?.whatsapp_number ? (
+                            <a
+                              href={`https://api.whatsapp.com/send/?phone=${teacherData.profiles.whatsapp_number}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-bold text-green-600 hover:text-green-700 flex items-center gap-1 hover:underline"
+                            >
+                              {teacherData.profiles.whatsapp_number}
+                            </a>
+                          ) : (
+                            <p className="text-xs font-bold text-gray-800">—</p>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1066,6 +1088,30 @@ const ViewTeacherAdmin = () => {
                           value={editFormData.profiles?.date_of_birth || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, profiles: { ...editFormData.profiles, date_of_birth: e.target.value } })}
                           className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-500"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Phone Number</label>
+                        <input
+                          type="text"
+                          maxLength={15}
+                          value={editFormData.profiles?.phone_number || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, profiles: { ...editFormData.profiles, phone_number: e.target.value } })}
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-500"
+                          placeholder="Phone Number"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">WhatsApp Number</label>
+                        <input
+                          type="text"
+                          maxLength={15}
+                          value={editFormData.profiles?.whatsapp_number || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, profiles: { ...editFormData.profiles, whatsapp_number: e.target.value } })}
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-teal-500"
+                          placeholder="WhatsApp Number"
                         />
                       </div>
                     </div>

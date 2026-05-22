@@ -38,6 +38,7 @@ import {
 import { useTheme } from "@mui/material/styles";
 import moment from "moment";
 import Layout from "../Admin/Layout";
+import { useNavigate } from "react-router-dom";
 import {
   getQuestionReport,
   updateQuestionReport,
@@ -90,6 +91,7 @@ const formatIssueTypes = (issueTypeArray) => {
 };
 export default function ManageQuestionReport() {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -371,7 +373,29 @@ export default function ManageQuestionReport() {
                         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                           <Chip label={report.class_category || "General"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: "#f1f5f9" }} />
                           <Chip label={report.subject || "No Subject"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: alpha("#008080", 0.08), color: "#008080" }} />
-                          <Chip label={report.exam_name || "Custom Exam"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: "#fff7ed", color: "#ea580c" }} />
+                          {report.exam_id ? (
+                            <Tooltip title="View exam & locate question" arrow>
+                              <Chip
+                                label={report.exam_name || "Custom Exam"}
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/admin/exam/${report.exam_id}?findQuestion=${report.question?.id || ""}`);
+                                }}
+                                sx={{
+                                  height: 20,
+                                  fontSize: "0.65rem",
+                                  fontWeight: 700,
+                                  bgcolor: "#fff7ed",
+                                  color: "#ea580c",
+                                  cursor: "pointer",
+                                  "&:hover": { bgcolor: "#ffedd5" },
+                                }}
+                              />
+                            </Tooltip>
+                          ) : (
+                            <Chip label={report.exam_name || "Custom Exam"} size="small" sx={{ height: 20, fontSize: "0.65rem", fontWeight: 700, bgcolor: "#fff7ed", color: "#ea580c" }} />
+                          )}
                         </Stack>
                       </td>
                       <td style={{ padding: "12px 16px" }}>
@@ -474,7 +498,29 @@ export default function ManageQuestionReport() {
           {selectedReport && (
             <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
               <Box sx={{ mb: 2, p: 2, borderRadius: 2, bgcolor: "#f1f5f9" }}>
-                <Typography variant="overline" color="text.secondary" fontWeight={700}>Reported Content</Typography>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <Typography variant="overline" color="text.secondary" fontWeight={700}>Reported Content</Typography>
+                  {selectedReport.exam_id && (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => navigate(`/admin/exam/${selectedReport.exam_id}?findQuestion=${selectedReport.question?.id || ""}`)}
+                      sx={{
+                        py: 0.5,
+                        px: 1.5,
+                        fontSize: "0.7rem",
+                        fontWeight: 700,
+                        borderRadius: 2,
+                        bgcolor: "#ea580c",
+                        color: "white",
+                        textTransform: "none",
+                        "&:hover": { bgcolor: "#c2410c" }
+                      }}
+                    >
+                      Locate in Exam
+                    </Button>
+                  )}
+                </Box>
                 <Typography variant="body1" fontWeight={600} sx={{ mt: 1, lineHeight: 1.6, color: "#1e293b" }}>
                   {selectedReport.question?.text}
                 </Typography>
@@ -491,7 +537,23 @@ export default function ManageQuestionReport() {
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <Typography variant="overline" color="text.secondary" fontWeight={700}>Exam</Typography>
-                  <Typography variant="body2" fontWeight={600} color="text.primary">{selectedReport.exam_name || "—"}</Typography>
+                  {selectedReport.exam_id ? (
+                    <Typography
+                      variant="body2"
+                      fontWeight={600}
+                      onClick={() => navigate(`/admin/exam/${selectedReport.exam_id}?findQuestion=${selectedReport.question?.id || ""}`)}
+                      sx={{
+                        color: "#ea580c",
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                        "&:hover": { color: "#c2410c" }
+                      }}
+                    >
+                      {selectedReport.exam_name || "—"}
+                    </Typography>
+                  ) : (
+                    <Typography variant="body2" fontWeight={600} color="text.primary">{selectedReport.exam_name || "—"}</Typography>
+                  )}
                 </Grid>
                 {selectedReport.question?.id && (
                   <Grid item xs={12} sm={4}>
