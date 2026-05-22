@@ -62,7 +62,8 @@ import {
   DialogContentText,
   Drawer,
   Divider,
-  IconButton
+  IconButton,
+  Typography
 } from "@mui/material";
 
 const ManageInterviewers = () => {
@@ -796,7 +797,7 @@ const ManageInterviewers = () => {
                         if (a.day_of_week !== b.day_of_week) {
                           return a.day_of_week - b.day_of_week;
                         }
-                        return a.start_time.localeCompare(b.start_time);
+                        return (a.start_time || "").localeCompare(b.start_time || "");
                       }).map((slot, i) => (
                         <Box key={i} sx={{
                           p: 1.5,
