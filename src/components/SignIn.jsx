@@ -87,6 +87,9 @@ function Login() {
         case "questionuser":
           navigate("/manage-exam");
           break;
+        case "interviewer":
+          navigate("/interviewer/dashboard");
+          break;
         default:
           navigate("/admin/dashboard");
       }
@@ -114,6 +117,8 @@ function Login() {
         navigate("/examcenter");
       } else if (role === "questionuser") {
         navigate("/manage-exam");
+      } else if (role === "interviewer") {
+        navigate("/interviewer/dashboard");
       } else {
         navigate("/admin/dashboard");
       }
@@ -230,6 +235,8 @@ function Login() {
             navigate("/examcenter");
           } else if (role === "questionuser") {
             navigate("/manage-exam");
+          } else if (role === "interviewer") {
+            navigate("/interviewer/dashboard");
           } else {
             navigate("/admin/dashboard");
           }

@@ -74,7 +74,10 @@ import ManageQuestion from "./components/ManageExam/ManageQuestion";
 import QuestionForm from "./components/ManageExam/componets/QuestionForm";
 import ManageBackup from "./admin/Manage-backup/ManageBackup";
 import ManageMissingSubject from "./admin/Manage-missing-subject/ManageMissingSubject";
-
+import InterviewerLayout from "./interviewerPanel/InterviewerLayout";
+import InterviewerDashboard from "./components/Dashboard/InterviewerDashboard";
+import InterviewerAvailability from "./interviewerPanel/InterviewerAvailability";
+import ManageInterviewers from "./admin/Manage-interviewers/ManageInterviewers";
 const theme = createTheme({
   palette: {
     primary: {
@@ -398,6 +401,38 @@ function AppContent() {
             />
           }
         />
+
+        <Route
+          path="admin/manage/interviewers"
+          element={
+            <RoleBasedRoute
+              element={<ManageInterviewers />}
+              allowedRoles={["admin"]}
+            />
+          }
+        />
+
+        {/* Interviewer Routes */}
+        <Route path="interviewer" element={<InterviewerLayout />}>
+          <Route
+            path="dashboard"
+            element={
+              <RoleBasedRoute
+                element={<InterviewerDashboard />}
+                allowedRoles={["interviewer"]}
+              />
+            }
+          />
+          <Route
+            path="availability"
+            element={
+              <RoleBasedRoute
+                element={<InterviewerAvailability />}
+                allowedRoles={["interviewer"]}
+              />
+            }
+          />
+        </Route>
 
         {/* Teacher Routes */}
         <Route path="teacher" element={<TeacherLayout />}>

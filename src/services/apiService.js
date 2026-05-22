@@ -18,7 +18,7 @@ const getCsrfToken = () => {
   return cookieValue;
 };
 
-const axiosInstance = axios.create({
+export const axiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
