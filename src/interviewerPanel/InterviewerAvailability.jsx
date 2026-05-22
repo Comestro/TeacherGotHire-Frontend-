@@ -18,7 +18,7 @@ const InterviewerAvailability = () => {
 
   const fetchSlots = async () => {
     try {
-      const response = await axiosInstance.get("/teacherhire/interviewer/availability/");
+      const response = await axiosInstance.get("/api/interviewer/availability/");
       setSlots(response.data);
     } catch (error) {
       console.error("Failed to fetch availability slots", error);
@@ -30,7 +30,7 @@ const InterviewerAvailability = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axiosInstance.post("/teacherhire/interviewer/availability/", formData);
+      await axiosInstance.post("/api/interviewer/availability/", formData);
       fetchSlots(); // Refresh list
     } catch (error) {
       console.error("Failed to add slot", error);
@@ -39,7 +39,7 @@ const InterviewerAvailability = () => {
 
   const deleteSlot = async (id) => {
     try {
-      await axiosInstance.delete(`/teacherhire/interviewer/availability/${id}/`);
+      await axiosInstance.delete(`/api/interviewer/availability/${id}/`);
       fetchSlots(); // Refresh list
     } catch (error) {
       console.error("Failed to delete slot", error);
