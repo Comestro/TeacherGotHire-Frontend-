@@ -158,13 +158,15 @@ export default function ManageQuestionReport() {
       out = out.filter((r) => {
         const reportedBy = `${r.user?.Fname || ""} ${r.user?.Lname || ""}`.toLowerCase();
         const questionText = (r.question?.text || "").toLowerCase();
+        const questionId = String(r.question?.id || "").toLowerCase();
         const examInfo = `${r.exam_name || ""} ${r.class_category || ""} ${r.subject || ""}`.toLowerCase();
         const email = (r.user?.email || "").toLowerCase();
         return (
           questionText.includes(q) ||
           examInfo.includes(q) ||
           reportedBy.includes(q) ||
-          email.includes(q)
+          email.includes(q) ||
+          questionId.includes(q)
         );
       });
     }
@@ -358,6 +360,11 @@ export default function ManageQuestionReport() {
                   {paginated.map((report) => (
                     <tr key={report.id} style={{ borderBottom: "1px solid #f1f5f9", transition: "all 0.2s" }}>
                       <td style={{ padding: "12px 16px", width: "35%" }}>
+                        {report.question?.id && (
+                          <Typography variant="caption" sx={{ display: "block", fontWeight: 700, color: "#64748b", mb: 0.5 }}>
+                            Q-ID: {report.question.id}
+                          </Typography>
+                        )}
                         <Typography variant="body2" fontWeight={600} sx={{ color: "#1e293b", mb: 1, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                           {report.question?.text || "—"}
                         </Typography>
@@ -452,7 +459,14 @@ export default function ManageQuestionReport() {
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
             <Box>
               <Typography variant="h6" fontWeight={700} sx={{ color: "#008080" }}>Report Profile</Typography>
-              <Typography variant="caption" color="text.secondary">Transaction ID: PTPI-AUDIT-{selectedReport?.id}</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                Transaction ID: PTPI-AUDIT-{selectedReport?.id}
+              </Typography>
+              {selectedReport?.question?.id && (
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block", fontWeight: 600 }}>
+                  Question ID: {selectedReport.question.id}
+                </Typography>
+              )}
             </Box>
             <IconButton onClick={closeReportDetails}><RefreshIcon sx={{ transform: "rotate(45deg)" }} /></IconButton>
           </Box>
@@ -479,6 +493,12 @@ export default function ManageQuestionReport() {
                   <Typography variant="overline" color="text.secondary" fontWeight={700}>Exam</Typography>
                   <Typography variant="body2" fontWeight={600} color="text.primary">{selectedReport.exam_name || "—"}</Typography>
                 </Grid>
+                {selectedReport.question?.id && (
+                  <Grid item xs={12} sm={4}>
+                    <Typography variant="overline" color="text.secondary" fontWeight={700}>Question ID</Typography>
+                    <Typography variant="body2" fontWeight={600} sx={{ color: "#0d9488" }}>{selectedReport.question.id}</Typography>
+                  </Grid>
+                )}
                 {selectedReport.status && selectedReport.resolved_by && (
                   <Grid item xs={12}>
                     <Box sx={{ mt: 1, p: 1.5, borderRadius: 2, bgcolor: alpha("#10b981", 0.05), border: "1px solid", borderColor: alpha("#10b981", 0.1) }}>
