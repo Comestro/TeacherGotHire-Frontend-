@@ -12,7 +12,7 @@ const InterviewerDashboard = () => {
 
   const fetchDashboard = async () => {
     try {
-      const response = await axiosInstance.get("/teacherhire/interviewer/dashboard/");
+      const response = await axiosInstance.get("/api/interviewer/dashboard/");
       setDashboardData(response.data);
     } catch (error) {
       console.error("Failed to fetch dashboard data", error);
@@ -25,7 +25,7 @@ const InterviewerDashboard = () => {
     if (!dashboardData?.profile) return;
     try {
       const updatedStatus = !dashboardData.profile.is_available;
-      await axiosInstance.patch(`/teacherhire/interviewer/profile/${dashboardData.profile.id}/`, {
+      await axiosInstance.patch(`/api/interviewer/profile/${dashboardData.profile.id}/`, {
         is_available: updatedStatus
       });
       setDashboardData(prev => ({
