@@ -55,7 +55,7 @@ const InterviewerAvailability = () => {
   }
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="w-full space-y-6">
       <div className="bg-white p-5 rounded-lg border border-slate-200">
         <h2 className="text-xl font-bold text-slate-800">My Availability</h2>
         <p className="text-slate-500 text-sm mt-1">Set the days and times you are available to take interviews.</p>
