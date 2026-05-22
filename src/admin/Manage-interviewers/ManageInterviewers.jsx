@@ -4,12 +4,38 @@ import {
   HiOutlineSearch, 
   HiOutlinePencil, 
   HiOutlinePlus, 
-  HiOutlineTrash 
+  HiOutlineTrash,
+  HiOutlineEye
 } from "react-icons/hi";
+import { FiStar, FiCalendar, FiAward, FiX } from "react-icons/fi";
 import Layout from "../Admin/Layout";
 import { getTeacher } from "../../services/adminTeacherApi";
 import { getClassCategory } from "../../services/adminClassCategoryApi";
 import { getSubjects } from "../../services/adminSubujectApi";
+
+const dayNames = {
+  0: 'Monday',
+  1: 'Tuesday',
+  2: 'Wednesday',
+  3: 'Thursday',
+  4: 'Friday',
+  5: 'Saturday',
+  6: 'Sunday'
+};
+
+const formatTime12h = (timeStr) => {
+  if (!timeStr) return "";
+  try {
+    const [hours, minutes] = timeStr.split(":");
+    let h = parseInt(hours, 10);
+    const ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12;
+    h = h ? h : 12;
+    return `${h.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+  } catch {
+    return timeStr;
+  }
+};
 
 // MUI imports
 import {
@@ -33,7 +59,10 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
-  DialogContentText
+  DialogContentText,
+  Drawer,
+  Divider,
+  IconButton
 } from "@mui/material";
 
 const ManageInterviewers = () => {
@@ -65,6 +94,12 @@ const ManageInterviewers = () => {
   
   // Toast notifications
   const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
+
+  // View Details Drawer state
+  const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
+  const [selectedInterviewerForView, setSelectedInterviewerForView] = useState(null);
+  const [viewInterviewerSlots, setViewInterviewerSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   useEffect(() => {
     fetchInterviewers();
@@ -207,6 +242,50 @@ const ManageInterviewers = () => {
   const handleOpenDelete = (interviewer) => {
     setInterviewerToDelete(interviewer);
     setOpenDeleteDialog(true);
+  };
+
+  const handleToggleAvailability = async (interviewer, newStatus) => {
+    try {
+      const payload = {
+        user: interviewer.user,
+        class_category: interviewer.class_category,
+        subject: interviewer.subject,
+        is_available: newStatus
+      };
+      await axiosInstance.patch(`/api/interviewer/profile/${interviewer.id}/`, payload);
+      showToast(`Interviewer status updated to ${newStatus ? 'Active' : 'Inactive'}`, "success");
+      
+      // Update local state without full reload
+      setInterviewers(prev => prev.map(inv => inv.id === interviewer.id ? { ...inv, is_available: newStatus } : inv));
+      
+      if (selectedInterviewerForView && selectedInterviewerForView.id === interviewer.id) {
+        setSelectedInterviewerForView(prev => ({ ...prev, is_available: newStatus }));
+      }
+    } catch (error) {
+      console.error("Failed to toggle availability status", error);
+      showToast("Failed to update status", "error");
+    }
+  };
+
+  const handleOpenView = async (interviewer) => {
+    setSelectedInterviewerForView(interviewer);
+    setViewDrawerOpen(true);
+    setLoadingSlots(true);
+    setViewInterviewerSlots([]);
+    try {
+      const response = await axiosInstance.get("/api/interviewer/availability/");
+      const slots = Array.isArray(response.data) ? response.data : [];
+      // Filter slots for this interviewer profile ID
+      const interviewerSlots = slots.filter(
+        slot => Number(slot.interviewer) === Number(interviewer.id)
+      );
+      setViewInterviewerSlots(interviewerSlots);
+    } catch (error) {
+      console.error("Failed to fetch interviewer availability slots", error);
+      showToast("Failed to load availability calendar", "error");
+    } finally {
+      setLoadingSlots(false);
+    }
   };
 
   const handleSave = async () => {
@@ -353,17 +432,31 @@ const ManageInterviewers = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          inv.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {inv.is_available ? 'Available' : 'Offline'}
-                        </span>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                          <Switch
+                            checked={inv.is_available}
+                            onChange={(e) => handleToggleAvailability(inv, e.target.checked)}
+                            color="success"
+                            size="small"
+                          />
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                            inv.is_available ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+                          }`}>
+                            {inv.is_available ? 'Active' : 'Inactive'}
+                          </span>
+                        </Box>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <div className="text-sm text-slate-800 font-semibold">{inv.total_interviews}</div>
                         <div className="text-xs text-slate-500">Avg: {inv.average_score?.toFixed(1) || '0.0'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button 
+                          onClick={() => handleOpenView(inv)}
+                          className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-2 rounded-lg transition-colors inline-flex items-center gap-1 mr-2"
+                        >
+                          <HiOutlineEye /> View
+                        </button>
                         <button 
                           onClick={() => handleOpenEdit(inv)}
                           className="text-teal-600 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 p-2 rounded-lg transition-colors inline-flex items-center gap-1"
@@ -555,6 +648,206 @@ const ManageInterviewers = () => {
             {toast.message}
           </Alert>
         </Snackbar>
+
+        {/* View Details Drawer */}
+        <Drawer
+          anchor="right"
+          open={viewDrawerOpen}
+          onClose={() => setViewDrawerOpen(false)}
+          PaperProps={{
+            sx: {
+              width: { xs: "100%", sm: 500 },
+              p: 0,
+              borderRadius: { xs: 0, sm: "20px 0 0 20px" },
+              boxShadow: "-10px 0 30px rgba(0,0,0,0.05)",
+            }
+          }}
+        >
+          <Box sx={{ p: 4, height: "100%", display: "flex", flexDirection: "column", bgcolor: "#fafafa" }}>
+            {selectedInterviewerForView && (
+              <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column", gap: 3 }}>
+                
+                {/* Header Profile Section */}
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                    <Box sx={{
+                      width: 54,
+                      height: 54,
+                      borderRadius: "50%",
+                      bgcolor: "#e0f2f1",
+                      color: "#008080",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 800,
+                      fontSize: "1.2rem",
+                      boxShadow: "0 4px 10px rgba(0, 128, 128, 0.1)"
+                    }}>
+                      {getTeacherFullName(selectedInterviewerForView.user).charAt(0).toUpperCase()}
+                    </Box>
+                    <Box>
+                      <Typography variant="h6" fontWeight={800} color="#1e293b" sx={{ lineHeight: 1.2 }}>
+                        {getTeacherFullName(selectedInterviewerForView.user)}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                        @{selectedInterviewerForView.username} • User ID: {selectedInterviewerForView.user}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <IconButton onClick={() => setViewDrawerOpen(false)} sx={{ bgcolor: "#f1f5f9", "&:hover": { bgcolor: "#e2e8f0" } }}>
+                    <FiX size={18} />
+                  </IconButton>
+                </Box>
+
+                {/* Quick Availability Toggle in Drawer */}
+                <Box sx={{
+                  p: 2,
+                  borderRadius: 3,
+                  bgcolor: selectedInterviewerForView.is_available ? "#f0fdf4" : "#fef2f2",
+                  border: "1px solid",
+                  borderColor: selectedInterviewerForView.is_available ? "#bbf7d0" : "#fecaca",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center"
+                }}>
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700} color="#0f172a">
+                      Availability Status
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {selectedInterviewerForView.is_available ? "Active & receiving interview requests" : "Inactive & offline"}
+                    </Typography>
+                  </Box>
+                  <Switch
+                    checked={selectedInterviewerForView.is_available}
+                    onChange={(e) => handleToggleAvailability(selectedInterviewerForView, e.target.checked)}
+                    color="success"
+                  />
+                </Box>
+
+                {/* Stats Grid */}
+                <Box display="grid" gridTemplateColumns="repeat(3, 1fr)" gap={2}>
+                  <Box sx={{ p: 2, bgcolor: "white", border: "1px solid #e2e8f0", borderRadius: 3, textAlign: "center" }}>
+                    <FiAward size={18} className="mx-auto mb-1 text-amber-500" />
+                    <Typography variant="caption" color="text.secondary" display="block">Interviewer Rank</Typography>
+                    <Typography variant="body2" fontWeight={800} color="#1e293b">#{selectedInterviewerForView.rank || "—"}</Typography>
+                  </Box>
+                  <Box sx={{ p: 2, bgcolor: "white", border: "1px solid #e2e8f0", borderRadius: 3, textAlign: "center" }}>
+                    <FiStar size={18} className="mx-auto mb-1 text-teal-600" />
+                    <Typography variant="caption" color="text.secondary" display="block">Average Score</Typography>
+                    <Typography variant="body2" fontWeight={800} color="#1e293b">{selectedInterviewerForView.average_score?.toFixed(1) || "0.0"}</Typography>
+                  </Box>
+                  <Box sx={{ p: 2, bgcolor: "white", border: "1px solid #e2e8f0", borderRadius: 3, textAlign: "center" }}>
+                    <FiCalendar size={18} className="mx-auto mb-1 text-purple-600" />
+                    <Typography variant="caption" color="text.secondary" display="block">Total Interviews</Typography>
+                    <Typography variant="body2" fontWeight={800} color="#1e293b">{selectedInterviewerForView.total_interviews}</Typography>
+                  </Box>
+                </Box>
+
+                <Divider />
+
+                {/* Assigned Categories */}
+                <Box>
+                  <Typography variant="subtitle2" fontWeight={800} color="#475569" sx={{ mb: 1.5, textTransform: "uppercase", fontSize: "0.75rem", tracking: 1.5 }}>
+                    Assigned Class Categories
+                  </Typography>
+                  <Box display="flex" flexWrap="wrap" gap={1}>
+                    {selectedInterviewerForView.class_category_names?.length > 0 ? (
+                      selectedInterviewerForView.class_category_names.map((cat, i) => (
+                        <Chip key={i} label={cat} size="small" sx={{ bgcolor: "#eff6ff", color: "#1d4ed8", fontWeight: 700, borderRadius: 2, border: "1px solid #dbeafe" }} />
+                      ))
+                    ) : (
+                      <Typography variant="caption" color="text.secondary">No categories assigned</Typography>
+                    )}
+                  </Box>
+                </Box>
+
+                {/* Assigned Subjects */}
+                <Box>
+                  <Typography variant="subtitle2" fontWeight={800} color="#475569" sx={{ mb: 1.5, textTransform: "uppercase", fontSize: "0.75rem", tracking: 1.5 }}>
+                    Assigned Subjects
+                  </Typography>
+                  <Box display="flex" flexWrap="wrap" gap={1}>
+                    {selectedInterviewerForView.subject_names?.length > 0 ? (
+                      selectedInterviewerForView.subject_names.map((sub, i) => (
+                        <Chip key={i} label={sub} size="small" sx={{ bgcolor: "#faf5ff", color: "#6b21a8", fontWeight: 700, borderRadius: 2, border: "1px solid #f3e8ff" }} />
+                      ))
+                    ) : (
+                      <Typography variant="caption" color="text.secondary">No subjects assigned</Typography>
+                    )}
+                  </Box>
+                </Box>
+
+                <Divider />
+
+                {/* Availability Slots */}
+                <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+                  <Typography variant="subtitle2" fontWeight={800} color="#475569" sx={{ mb: 1.5, textTransform: "uppercase", fontSize: "0.75rem", tracking: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+                    <FiCalendar /> Availability Schedule
+                  </Typography>
+                  
+                  {loadingSlots ? (
+                    <Box display="flex" justifyContent="center" py={4}>
+                      <CircularProgress size={24} sx={{ color: "#0d9488" }} />
+                    </Box>
+                  ) : viewInterviewerSlots.length > 0 ? (
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                      {[...viewInterviewerSlots].sort((a, b) => {
+                        if (a.day_of_week !== b.day_of_week) {
+                          return a.day_of_week - b.day_of_week;
+                        }
+                        return a.start_time.localeCompare(b.start_time);
+                      }).map((slot, i) => (
+                        <Box key={i} sx={{
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: "white",
+                          border: "1px solid #e2e8f0",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          "&:hover": { borderColor: "#cbd5e1" }
+                        }}>
+                          <Typography variant="body2" fontWeight={700} color="#334155">
+                            {dayNames[slot.day_of_week]}
+                          </Typography>
+                          <Typography variant="caption" fontWeight={600} sx={{ py: 0.5, px: 1.5, borderRadius: 1.5, bgcolor: "#f1f5f9", color: "#475569" }}>
+                            {formatTime12h(slot.start_time)} - {formatTime12h(slot.end_time)}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : (
+                    <Box sx={{ py: 4, bgcolor: "#f8fafc", borderRadius: 3, border: "1px dashed #cbd5e1", textAlign: "center" }}>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        No availability slots registered.
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={() => setViewDrawerOpen(false)}
+                  sx={{
+                    mt: "auto",
+                    borderRadius: 3,
+                    fontWeight: 700,
+                    borderColor: "#e2e8f0",
+                    color: "#475569",
+                    py: 1.2,
+                    textTransform: "none",
+                    "&:hover": { bgcolor: "#f1f5f9", borderColor: "#cbd5e1" }
+                  }}
+                >
+                  Close Profile Details
+                </Button>
+
+              </Box>
+            )}
+          </Box>
+        </Drawer>
       </div>
     </Layout>
   );
