@@ -163,6 +163,12 @@ export default function Sidebar({ isOpen, onToggle }) {
       section: "users",
     },
     {
+      text: "Interviewers",
+      icon: <FiUsers />,
+      link: "/admin/manage/interviewers",
+      section: "users",
+    },
+    {
       text: "System Backup",
       icon: <FiInbox />,
       link: "/admin/manage/backup",
