@@ -278,8 +278,6 @@ const Education = () => {
         const id = educationData[editingIndex].id;
         await dispatch(putEducationProfile({ payload, id })).unwrap();
         fetchProfile();
-        await dispatch(putEducationProfile({ payload, id })).unwrap();
-        fetchProfile();
         setSuccessMessage(
           "Education details updated successfully! / शिक्षा विवरण सफलतापूर्वक अपडेट किया गया!",
         );
@@ -367,8 +365,6 @@ const Education = () => {
       }
 
       const id = educationData[index].id;
-      await dispatch(delEducationProfile({ id: id })).unwrap();
-      fetchProfile();
       await dispatch(delEducationProfile({ id: id })).unwrap();
       fetchProfile();
       setSuccessMessage(
