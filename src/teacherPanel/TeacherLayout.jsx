@@ -11,11 +11,13 @@ import {
   HiX,
   HiChevronDown,
   HiOutlineClipboard,
+  HiOutlineBell,
 } from "react-icons/hi";
 import { HiMiniEye } from "react-icons/hi2";
 import { IoMdSettings } from "react-icons/io";
 import { BsPerson } from "react-icons/bs";
 import { getUserData } from "../features/authSlice";
+import { getProfilCompletion } from "../features/personalProfileSlice";
 import { handleLogout } from "../services/authUtils";
 
 const SidebarItem = ({ to, icon: Icon, label, onClick }) => (
@@ -43,11 +45,18 @@ const TeacherLayout = () => {
   const location = useLocation();
   const { userData } = useSelector((state) => state.auth);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const { completionData } = useSelector((state) => state.personalProfile);
   const profileRef = useRef(null);
+  const notificationsRef = useRef(null);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setIsProfileOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setIsNotificationsOpen(false);
       }
     };
 
@@ -61,6 +70,7 @@ const TeacherLayout = () => {
 
   useEffect(() => {
     dispatch(getUserData());
+    dispatch(getProfilCompletion());
   }, [dispatch]);
   useEffect(() => {
     setIsSidebarOpen(false);
@@ -197,8 +207,99 @@ const TeacherLayout = () => {
               </h2>
             </div>
 
-            <div className="flex items-center gap-4" ref={profileRef}>
-              <div className="relative">
+            <div className="flex items-center gap-4">
+              {/* Notification Bell */}
+              <div className="relative" ref={notificationsRef}>
+                <button
+                  onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                  className="relative p-2 rounded-full text-slate-500 hover:text-teal-600 hover:bg-slate-50 transition-all duration-200 border border-slate-100 shadow-sm active:scale-95"
+                >
+                  <HiOutlineBell className="text-xl" />
+                  {completionData?.profile_completed < 100 && completionData?.feedback?.length > 0 && (
+                    <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                    </span>
+                  )}
+                </button>
+
+                <AnimatePresence>
+                  {isNotificationsOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden z-50"
+                    >
+                      <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                        <div>
+                          <h3 className="font-bold text-slate-800 text-sm">Notifications</h3>
+                          <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                            {completionData?.profile_completed < 100 
+                              ? `${completionData.feedback?.length || 0} pending actions` 
+                              : "All caught up!"}
+                          </p>
+                        </div>
+                        {completionData?.profile_completed < 100 && (
+                          <span className="px-2.5 py-0.5 bg-amber-50 text-[10px] font-bold text-amber-700 rounded-full border border-amber-200">
+                            Profile {completionData?.profile_completed || 0}% Complete
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                        {completionData?.profile_completed < 100 && completionData?.feedback?.length > 0 ? (
+                          completionData.feedback.map((item, i) => (
+                            <div
+                              key={item.id || i}
+                              onClick={() => {
+                                navigate(item.link);
+                                setIsNotificationsOpen(false);
+                              }}
+                              className="p-4 hover:bg-slate-50/70 transition-colors cursor-pointer flex gap-3 group"
+                            >
+                              <div className="h-8 w-8 bg-amber-50 border border-amber-100 text-amber-600 rounded-full flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+                                <HiOutlineBell size={16} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5 mb-0.5">
+                                  <span className="text-[9px] font-bold text-amber-600 uppercase tracking-wider">
+                                    {item.step || "Action Required"}
+                                  </span>
+                                  <span className="text-[9px] text-slate-400 font-medium">•</span>
+                                  <span className="text-[9px] text-teal-600 font-semibold uppercase tracking-wider">
+                                    Next Step
+                                  </span>
+                                </div>
+                                <h4 className="font-bold text-slate-700 text-xs leading-snug group-hover:text-teal-600 transition-colors">
+                                  {item.label}
+                                </h4>
+                                <p className="text-[10px] text-slate-400 mt-1 font-medium italic">
+                                  Click to complete this section
+                                </p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-8 text-center flex flex-col items-center justify-center">
+                            <div className="h-12 w-12 bg-teal-50 border border-teal-100 text-teal-600 rounded-full flex items-center justify-center mb-3">
+                              <HiOutlineBell size={24} className="text-teal-600" />
+                            </div>
+                            <h4 className="font-bold text-slate-700 text-xs">All Caught Up!</h4>
+                            <p className="text-[10px] text-slate-500 mt-1 max-w-[220px] mx-auto leading-relaxed">
+                              Your profile is 100% complete and fully optimized for top recruiter visibility.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Profile Menu */}
+              <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center gap-3 p-1.5 rounded-full hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200"
@@ -218,7 +319,7 @@ const TeacherLayout = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-2 w-72 bg-white rounded-lg  shadow-xl border border-slate-200 overflow-hidden z-50"
+                      className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-slate-200 overflow-hidden z-50"
                     >
                       {/* Dropdown Header */}
                       <div className="p-4 bg-slate-50 border-b border-slate-100">
