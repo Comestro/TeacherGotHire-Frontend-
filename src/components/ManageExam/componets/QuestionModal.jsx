@@ -297,12 +297,8 @@ const QuestionModal = ({
 
         const pairedQuestion = findCorrespondingQuestion();
         
-        // If we have a pair, or it's not a language subject, we should allow "Both" mode
-        if (pairedQuestion || !isLanguageSubject()) {
-          setLanguageMode("both");
-        } else {
-          setLanguageMode(editingQuestion.language === "Hindi" ? "hindi" : "english");
-        }
+        // Default to the specific language of the question being edited
+        setLanguageMode(editingQuestion.language === "Hindi" ? "hindi" : "english");
 
         const englishPart = editingQuestion.language === "English" ? editingQuestion : pairedQuestion;
         const hindiPart = editingQuestion.language === "Hindi" ? editingQuestion : pairedQuestion;
@@ -1104,7 +1100,7 @@ const QuestionModal = ({
                   <span className="mr-2 text-xl">
                     {englishQuestion.language === "English" ? "🇺🇸" : "📝"}
                   </span>
-                  {getPrimaryLanguage()} Question{" "}
+                  {englishQuestion.language || "English"} Question{" "}
                   {!editingQuestion && (
                     <span className="text-red-500 ml-1">*</span>
                   )}
