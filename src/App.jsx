@@ -78,6 +78,7 @@ import InterviewerLayout from "./interviewerPanel/InterviewerLayout";
 import InterviewerDashboard from "./components/Dashboard/InterviewerDashboard";
 import InterviewerAvailability from "./interviewerPanel/InterviewerAvailability";
 import ManageInterviewers from "./admin/Manage-interviewers/ManageInterviewers";
+import ManageSystemErrors from "./admin/Manage-errors/ManageSystemErrors";
 const theme = createTheme({
   palette: {
     primary: {
@@ -407,6 +408,15 @@ function AppContent() {
           element={
             <RoleBasedRoute
               element={<ManageInterviewers />}
+              allowedRoles={["admin"]}
+            />
+          }
+        />
+        <Route
+          path="admin/manage/errors"
+          element={
+            <RoleBasedRoute
+              element={<ManageSystemErrors />}
               allowedRoles={["admin"]}
             />
           }
