@@ -8,7 +8,7 @@ const ExamCenterDashboard = () => {
     dispatch(getAllCenterUser());
   }, [dispatch]);
   
-  const { centerUser } = useSelector((state) => state.examQues);
+  const { centerUser, error } = useSelector((state) => state.examQues);
   const [users, setUsers] = useState([]);
   
   useEffect(() => {
@@ -90,7 +90,13 @@ const ExamCenterDashboard = () => {
       {/* User List */}
       <div className="bg-white p-4 rounded-lg shadow-md overflow-x-auto">
         <h2 className="text-lg font-medium text-gray-700 mb-4">Passkey Requests</h2>
-        {filteredUsers?.length > 0 ? (
+        {error ? (
+          <div className="text-center py-8">
+            <p className="text-red-500 font-bold bg-red-50 p-4 rounded-lg inline-block border border-red-200">
+              {typeof error === 'string' ? error : "An error occurred fetching requests."}
+            </p>
+          </div>
+        ) : filteredUsers?.length > 0 ? (
           <table className="w-full border-collapse border border-gray-300 min-w-max">
             <thead>
               <tr className="bg-gray-200 text-left">
