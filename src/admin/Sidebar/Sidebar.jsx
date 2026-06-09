@@ -25,6 +25,7 @@ import {
   FiChevronDown,
   FiChevronUp,
   FiInbox,
+  FiAlertCircle,
 } from "react-icons/fi";
 
 export default function Sidebar({ isOpen, onToggle }) {
@@ -172,6 +173,12 @@ export default function Sidebar({ isOpen, onToggle }) {
       text: "System Backup",
       icon: <FiInbox />,
       link: "/admin/manage/backup",
+      section: "main",
+    },
+    {
+      text: "System Errors",
+      icon: <FiAlertCircle />,
+      link: "/admin/manage/errors",
       section: "main",
     },
     {
