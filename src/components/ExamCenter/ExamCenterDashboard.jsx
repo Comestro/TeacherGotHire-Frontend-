@@ -82,34 +82,59 @@ const ExamCenterDashboard = () => {
       </div>
 
       {/* User List */}
-      <div className="bg-white p-4 rounded-lg shadow-md">
-        <h2 className="text-lg font-medium text-gray-700 mb-4">User Details</h2>
+      <div className="bg-white p-4 rounded-lg shadow-md overflow-x-auto">
+        <h2 className="text-lg font-medium text-gray-700 mb-4">Passkey Requests</h2>
         {centerUser?.length > 0 ? (
-          <table className="w-full border-collapse border border-gray-300">
+          <table className="w-full border-collapse border border-gray-300 min-w-max">
             <thead>
-              <tr className="bg-gray-200">
-                <th className="border border-gray-300 px-4 py-2">Code</th>
-                <th className="border border-gray-300 px-4 py-2">Created At</th>
-                <th className="border border-gray-300 px-4 py-2">Exam ID</th>
-                <th className="border border-gray-300 px-4 py-2">Approve</th>
+              <tr className="bg-gray-200 text-left">
+                <th className="border border-gray-300 px-4 py-2">Teacher Name</th>
+                <th className="border border-gray-300 px-4 py-2">Teacher Code</th>
+                <th className="border border-gray-300 px-4 py-2">Exam</th>
+                <th className="border border-gray-300 px-4 py-2 text-center">Passcode</th>
+                <th className="border border-gray-300 px-4 py-2">Requested At</th>
+                <th className="border border-gray-300 px-4 py-2 text-center">Action / Status</th>
               </tr>
             </thead>
             <tbody>
               {centerUser?.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-100">
-                  <td className="border border-gray-300 px-4 py-2">{user.code}</td>
-                  <td className="border border-gray-300 px-4 py-2">{user.created_at}</td>
-                  <td className="border border-gray-300 px-4 py-2">{user.exam.name}</td>
-                  <td className="border border-gray-300 px-4 py-2">
-                    {!user.status ? (
+                <tr key={user.id} className="hover:bg-gray-50">
+                  <td className="border border-gray-300 px-4 py-3">
+                    <span className="font-medium text-gray-800">{user.user?.Fname} {user.user?.Lname}</span>
+                  </td>
+                  <td className="border border-gray-300 px-4 py-3">
+                    <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold border border-gray-200">
+                      {user.user?.user_code || `T-${user.user?.id}`}
+                    </span>
+                  </td>
+                  <td className="border border-gray-300 px-4 py-3 text-gray-700">{user.exam?.name}</td>
+                  <td className="border border-gray-300 px-4 py-3 text-center">
+                    {user.status || user.status === 'fulfilled' ? (
+                      <span className="bg-green-100 text-green-800 font-mono font-bold px-3 py-1 rounded text-lg border border-green-200">
+                        {user.code}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 italic text-sm">Hidden</span>
+                    )}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-3 text-sm text-gray-500">
+                    {new Date(user.created_at).toLocaleString()}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-3 text-center">
+                    {!user.status && user.status !== 'fulfilled' ? (
                       <button
                         onClick={() => handleApprove({user_id:user.user.id,exam_id:user.exam.id})}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                        className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                       >
-                        Approve
+                        Approve Request
                       </button>
                     ) : (
-                      <span className="text-green-600 font-bold">Approved</span>
+                      <span className="inline-flex items-center gap-1 text-green-600 font-bold bg-green-50 px-3 py-1.5 rounded-lg border border-green-100">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Approved
+                      </span>
                     )}
                   </td>
                 </tr>
@@ -117,7 +142,9 @@ const ExamCenterDashboard = () => {
             </tbody>
           </table>
         ) : (
-          <p className="text-gray-500 text-center">No users match the selected filters.</p>
+          <div className="text-center py-8">
+            <p className="text-gray-500">No passkey requests match the selected filters.</p>
+          </div>
         )}
       </div>
     </div>

@@ -300,116 +300,198 @@ export default function ManagePasskey() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold tracking-wider">
-                    <th className="px-4 py-3">Teacher / Contact</th>
-                    <th className="px-4 py-3">Exam</th>
-                    <th className="px-4 py-3">Passkey</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Date</th>
-                    <th className="px-4 py-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 text-sm">
-                  {displayedData.map((row) => (
-                    <tr
-                      key={row.id}
-                      className="hover:bg-gray-50/80 transition-colors group"
-                    >
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-gray-900">
-                            {row.userName}{" "}
-                            <Link 
-                              to={`/admin/view/teacher/${row.user?.id}`}
-                              className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 hover:text-teal-600 hover:bg-teal-50 hover:border-teal-200 transition-all cursor-pointer"
-                              title="View Profile"
+            <div className="w-full">
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold tracking-wider">
+                      <th className="px-4 py-3">Teacher / Contact</th>
+                      <th className="px-4 py-3">Exam</th>
+                      <th className="px-4 py-3">Passkey</th>
+                      <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3">Date</th>
+                      <th className="px-4 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 text-sm">
+                    {displayedData.map((row) => (
+                      <tr
+                        key={row.id}
+                        className="hover:bg-gray-50/80 transition-colors group"
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-gray-900">
+                              {row.userName}{" "}
+                              <Link 
+                                to={`/admin/view/teacher/${row.user?.id}`}
+                                className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 hover:text-teal-600 hover:bg-teal-50 hover:border-teal-200 transition-all cursor-pointer"
+                                title="View Profile"
+                              >
+                                {row.userCode}
+                              </Link>
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {row.userEmail}
+                            </span>
+                            <span className="text-xs text-teal-600 font-medium">
+                              {row.userPhone}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">
+                          <div className="flex flex-col">
+                            <span>{row.examName}</span>
+                            <span className="text-xs text-gray-400">
+                              {row.centerName}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          {row.status === "fulfilled" ? (
+                            <span className="font-mono font-bold text-gray-800 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                              {row.code}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 italic text-xs">
+                              Hidden
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {getStatusBadge(row.status)}
+                        </td>
+                        <td className="px-4 py-3 text-gray-500 text-xs">
+                          {row.requestDate
+                            ? new Date(row.requestDate).toLocaleDateString()
+                            : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => setDetailsModal({ open: true, row })}
+                              className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:shadow-sm ring-1 ring-inset ring-indigo-100 transition-all"
+                              title="View Details"
                             >
-                              {row.userCode}
-                            </Link>
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {row.userEmail}
-                          </span>
-                          <span className="text-xs text-teal-600 font-medium">
-                            {row.userPhone}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        <div className="flex flex-col">
-                          <span>{row.examName}</span>
-                          <span className="text-xs text-gray-400">
-                            {row.centerName}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        {row.status === "fulfilled" ? (
-                          <span className="font-mono font-bold text-gray-800 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
-                            {row.code}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 italic text-xs">
-                            Hidden
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        {getStatusBadge(row.status)}
-                      </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">
-                        {row.requestDate
-                          ? new Date(row.requestDate).toLocaleDateString()
-                          : "—"}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => setDetailsModal({ open: true, row })}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:shadow-sm ring-1 ring-inset ring-indigo-100 transition-all"
-                            title="View Details"
+                              <FiEye size={16} />
+                            </button>
+                            {row.status === "requested" && (
+                              <>
+                                <button
+                                  onClick={() =>
+                                    setConfirm({
+                                      open: true,
+                                      type: "approve",
+                                      row,
+                                    })
+                                  }
+                                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600 hover:bg-green-100 hover:shadow-sm ring-1 ring-inset ring-green-100 transition-all"
+                                  title="Approve"
+                                >
+                                  <FiCheck size={16} />
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    setConfirm({
+                                      open: true,
+                                      type: "reject",
+                                      row,
+                                    })
+                                  }
+                                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:shadow-sm ring-1 ring-inset ring-red-100 transition-all"
+                                  title="Reject"
+                                >
+                                  <FiX size={16} />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Mobile Card View */}
+              <div className="md:hidden flex flex-col divide-y divide-gray-100">
+                {displayedData.map((row) => (
+                  <div key={row.id} className="p-4 flex flex-col gap-3 hover:bg-gray-50/50 transition-colors">
+                    <div className="flex justify-between items-start">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-gray-900 flex items-center gap-2">
+                          {row.userName}
+                          <Link 
+                            to={`/admin/view/teacher/${row.user?.id}`}
+                            className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 hover:text-teal-600 hover:bg-teal-50 transition-all"
                           >
-                            <FiEye size={16} />
-                          </button>
-                          {row.status === "requested" && (
-                            <>
-                              <button
-                                onClick={() =>
-                                  setConfirm({
-                                    open: true,
-                                    type: "approve",
-                                    row,
-                                  })
-                                }
-                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600 hover:bg-green-100 hover:shadow-sm ring-1 ring-inset ring-green-100 transition-all"
-                                title="Approve"
-                              >
-                                <FiCheck size={16} />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  setConfirm({
-                                    open: true,
-                                    type: "reject",
-                                    row,
-                                  })
-                                }
-                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:shadow-sm ring-1 ring-inset ring-red-100 transition-all"
-                                title="Reject"
-                              >
-                                <FiX size={16} />
-                              </button>
-                            </>
+                            {row.userCode}
+                          </Link>
+                        </span>
+                        <span className="text-xs text-gray-500">{row.userEmail}</span>
+                        <span className="text-xs text-teal-600 font-medium mt-0.5">{row.userPhone}</span>
+                      </div>
+                      <div>{getStatusBadge(row.status)}</div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase font-semibold text-gray-400">Exam</span>
+                        <span className="text-gray-800 font-medium truncate text-xs mt-0.5" title={row.examName}>{row.examName}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase font-semibold text-gray-400">Center</span>
+                        <span className="text-gray-800 font-medium truncate text-xs mt-0.5" title={row.centerName}>{row.centerName}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase font-semibold text-gray-400">Passkey</span>
+                        <div className="mt-0.5">
+                          {row.status === "fulfilled" ? (
+                            <span className="font-mono font-bold text-teal-700 bg-teal-100 px-1.5 py-0.5 rounded border border-teal-200 text-xs">
+                              {row.code}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 italic text-xs">Hidden</span>
                           )}
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase font-semibold text-gray-400">Date</span>
+                        <span className="text-gray-600 text-xs mt-0.5">
+                          {row.requestDate ? new Date(row.requestDate).toLocaleDateString() : "—"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 mt-1 pt-3 border-t border-gray-100">
+                      <button
+                        onClick={() => setDetailsModal({ open: true, row })}
+                        className="flex-1 h-9 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-medium text-sm transition-all"
+                      >
+                        <FiEye size={16} className="mr-1.5" /> Details
+                      </button>
+                      {row.status === "requested" && (
+                        <>
+                          <button
+                            onClick={() => setConfirm({ open: true, type: "approve", row })}
+                            className="flex-1 h-9 flex items-center justify-center rounded-lg bg-green-50 text-green-600 hover:bg-green-100 font-medium text-sm transition-all"
+                          >
+                            <FiCheck size={16} className="mr-1.5" /> Approve
+                          </button>
+                          <button
+                            onClick={() => setConfirm({ open: true, type: "reject", row })}
+                            className="w-10 h-9 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all"
+                            title="Reject"
+                          >
+                            <FiX size={16} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
