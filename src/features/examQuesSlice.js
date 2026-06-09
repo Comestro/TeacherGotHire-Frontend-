@@ -53,7 +53,7 @@ const initialState = {
 
 export const getLevels = createAsyncThunk(
   "getLevels",
-  async ({ rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const data = await fetchLevel();
 
@@ -288,7 +288,7 @@ export const getgeneratedPasskey = createAsyncThunk(
 export const getAllCenter = createAsyncThunk(
   "getAllCenter",
   
-  async ({ rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const data = await AllCenter();
       
@@ -354,7 +354,7 @@ export const approveCenterUser = createAsyncThunk(
 
 export const getAllCenterUser = createAsyncThunk(
   "getAllCenterUser",
-  async ({ rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const data = await fetchCenterUser();
       return data;
