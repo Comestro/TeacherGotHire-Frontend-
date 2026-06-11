@@ -112,20 +112,20 @@ const ExamCenterModal = ({
       ).unwrap();
 
       toast.success(
-        "Passkey generated successfully! Please enter the verification code.",
+        "Exam center requested successfully! Please wait for administrator approval.",
       );
-      setShowPasscodeStep(true);
       if (onPasskeyGenerated) {
         onPasskeyGenerated();
       }
+      onClose();
     } catch (error) {
       if (error?.message?.includes("already exists")) {
         toast.info(
-          "A passkey already exists. Please enter the verification code.",
+          "Your request has already been submitted. Please wait for administrator approval.",
         );
-        setShowPasscodeStep(true);
+        onClose();
       } else {
-        toast.error("Failed to generate passkey");
+        toast.error("Failed to request exam center");
       }
     } finally {
       setIsGenerating(false);

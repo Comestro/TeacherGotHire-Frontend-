@@ -1069,15 +1069,20 @@ const FilterdExamCard = forwardRef(
                                     </span>
                                   ) : (
                                     <button
-                                      onClick={() => handleLevelSelect(level)}
-                                      className={`w-full px-4 py-2 rounded-lg font-medium text-sm ${
+                                      disabled={passkeyStatus?.status === "requested"}
+                                      onClick={() => passkeyStatus?.status !== "requested" && handleLevelSelect(level)}
+                                      className={`w-full px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                                         passkeyStatus?.status === "requested"
-                                          ? "bg-teal-600 text-white"
-                                          : "bg-purple-600 text-white"
+                                          ? "bg-slate-200 text-slate-500 cursor-not-allowed"
+                                          : passkeyStatus?.status === "fulfilled"
+                                          ? "bg-teal-600 hover:bg-teal-700 text-white shadow-md hover:shadow-lg"
+                                          : "bg-purple-600 hover:bg-purple-700 text-white shadow-md hover:shadow-lg"
                                       }`}
                                     >
                                       {passkeyStatus?.status === "requested"
-                                        ? "View Assigned Center"
+                                        ? "Pending Approval"
+                                        : passkeyStatus?.status === "fulfilled"
+                                        ? "Verify Passcode"
                                         : "Select Center"}
                                     </button>
                                   )}
