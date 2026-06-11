@@ -127,20 +127,23 @@ export default function ManagePasskey() {
   const handleApprove = async (row) => {
     setProcessing(true);
     try {
-      await updatePasskey(row.id, {
+      const response = await updatePasskey(row.id, {
         user: row.user?.id,
         code: row.code,
         status: "fulfilled",
       });
+      
+      const newCode = response?.data?.code || response?.code || row.code;
+
       setData((prev) =>
-        prev.map((p) => (p.id === row.id ? { ...p, status: "fulfilled" } : p)),
+        prev.map((p) => (p.id === row.id ? { ...p, status: "fulfilled", code: newCode } : p)),
       );
       showNotification("Passkey approved successfully", "success");
       setConfirm({ open: false, type: null, row: null });
       if (detailsModal.open && detailsModal.row?.id === row.id) {
         setDetailsModal((prev) => ({
           ...prev,
-          row: { ...prev.row, status: "fulfilled" },
+          row: { ...prev.row, status: "fulfilled", code: newCode },
         }));
       }
     } catch (err) {

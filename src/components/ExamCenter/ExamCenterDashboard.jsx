@@ -32,10 +32,10 @@ const ExamCenterDashboard = () => {
   
   const handleApprove = async (userId) => {
     try {
-      dispatch(approveCenterUser(userId));
+      const result = await dispatch(approveCenterUser(userId)).unwrap();
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
-          user.user?.id === userId.user_id && user.exam?.id === userId.exam_id ? { ...user, status: 'fulfilled' } : user
+          user.user?.id === userId.user_id && user.exam?.id === userId.exam_id ? { ...user, status: 'fulfilled', code: result.code } : user
         )
       );
       alert("Request approved successfully!");
