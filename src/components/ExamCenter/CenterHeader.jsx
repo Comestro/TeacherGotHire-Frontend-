@@ -31,7 +31,7 @@ const CenterHeader = ({name = "Exam Center Dashboard"}) => {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link
           to="#"
-          className="text-2xl text-teal-600 transition pl-4"
+          className="text-xl md:text-2xl font-bold text-teal-600 transition md:pl-4"
         >
           {name}
         </Link>
@@ -50,11 +50,11 @@ const CenterHeader = ({name = "Exam Center Dashboard"}) => {
         {/* Profile Section */}
         <div className="relative flex items-center space-x-4">
           <button
-            className="flex items-center space-x-2 text-gray-700 hover:text-teal-600 focus:outline-none transition border border-gray-200 px-3 py-1 rounded-full"
+            className="flex items-center space-x-2 text-gray-700 hover:text-teal-600 focus:outline-none transition md:border md:border-gray-200 md:px-3 py-1 rounded-full"
             onClick={toggleProfileMenu}
           >
             <FaUserCircle className="w-8 h-8 text-teal-600" />
-            <div className="flex flex-col items-start">
+            <div className="hidden md:flex flex-col items-start">
                     <span className="text-sm font-medium text-teal-700">
                       {profile.Fname} {profile.Lname}
                     </span>
