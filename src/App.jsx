@@ -172,7 +172,15 @@ function AppContent() {
         </Route>
 
         {/* Recruiter Routes - Protected by role */}
-        <Route path="recruiter" element={<RecruiterLayout />}>
+        <Route
+          path="recruiter"
+          element={
+            <RoleBasedRoute
+              element={<RecruiterLayout />}
+              allowedRoles={["recruiter"]}
+            />
+          }
+        >
           <Route
             index
             element={<TeacherRecruiter />}

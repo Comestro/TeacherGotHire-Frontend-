@@ -61,13 +61,25 @@ const Navbar = ({ links }) => {
     setIsProfileOpen(false);
   };
 
+  const getDashboardLink = () => {
+    switch (role) {
+      case "teacher": return "/teacher";
+      case "recruiter": return "/recruiter";
+      case "centeruser": return "/examcenter";
+      case "questionuser": return "/manage-exam";
+      case "interviewer": return "/interviewer/dashboard";
+      case "admin": return "/admin/dashboard";
+      default: return "/admin/dashboard";
+    }
+  };
+
   const UserDropdown = ({ isMobile = false }) => (
     <div
       className={`${isMobile ? "w-full" : "absolute right-0 mt-3 w-48"
         } bg-white z-50 rounded-xl border border-slate-100 ${!isMobile && "shadow-sm"}`}
     >
       <Link
-        to={role === "teacher" ? "/teacher" : "/recruiter"}
+        to={getDashboardLink()}
         className="flex items-center px-4 py-3 hover:bg-slate-50 text-slate-700 transition-colors rounded-t-xl"
         onClick={() => setIsProfileOpen(false)}
       >
