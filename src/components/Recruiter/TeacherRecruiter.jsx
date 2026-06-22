@@ -34,7 +34,11 @@ const TeacherFilter = () => {
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { isOpen, setIsOpen } = useOutletContext();
+  const context = useOutletContext();
+  const { isOpen, setIsOpen } = context || { 
+    isOpen: false, 
+    setIsOpen: () => navigate("/get-preferred-teacher") 
+  };
 
   const { data, status, error } = useSelector((state) => state.teachers);
   useEffect(() => {
@@ -46,7 +50,9 @@ const TeacherFilter = () => {
     const subject = searchParams.get("subject");
 
     if (!jobType || !classCategory || !subject) {
-      navigate("/get-preferred-teacher");
+      if (window.location.pathname !== "/get-preferred-teacher") {
+        navigate("/get-preferred-teacher");
+      }
     }
   }, [searchParams, navigate]);
   

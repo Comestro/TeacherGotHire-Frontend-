@@ -15,7 +15,8 @@ import {
   FiCrosshair,
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import TeacherFilter from "../Recruiter/TeacherRecruiter";
 import { getTeacherjobType } from "../../features/jobProfileSlice";
 import EnquiryHeader from "./components/EnquiryHeader";
 import ErrorMessage from "../ErrorMessage";
@@ -25,6 +26,7 @@ import Skeleton from "../Skeleton";
 export const GetPreferredTeacher = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const apiClient = axios.create({
     baseURL: getApiUrl(),
     headers: {
@@ -275,7 +277,7 @@ export const GetPreferredTeacher = () => {
     // Additional parameters if needed
     if (selectedJobType) queryParams.append("job_type", selectedJobType);
 
-    navigate(`/recruiter?${queryParams.toString()}`);
+    navigate(`?${queryParams.toString()}`);
   };
 
   const getSelectedCategorySubjects = () => {
@@ -291,6 +293,14 @@ export const GetPreferredTeacher = () => {
     { title: "Subject", icon: FiSearch, desc: "Choose Subjects" },
     { title: "Location", icon: FiMapPin, desc: "Set Location" },
   ];
+
+  if (searchParams.get("class_category") && searchParams.get("subject")) {
+    return (
+      <div className="min-h-[calc(100vh-100px)]">
+        <TeacherFilter />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[calc(100vh-100px)] bg-white flex flex-col md:flex-row">
