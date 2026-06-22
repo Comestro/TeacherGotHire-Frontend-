@@ -967,14 +967,16 @@ const ViewTeacherAdmin = () => {
                                 ? app.preferred_locations.map(l => l.area || l.city).join(", ") 
                                 : "—"}
                             </td>
-                            <td className="p-3 text-gray-700 font-bold">₹{app.expected_salary || "—"}</td>
+                            <td className="p-3 text-gray-700 font-bold">
+                              ₹{app.expected_salary || "—"} {app.salary_type ? `/ ${app.salary_type}` : ""}
+                            </td>
                             <td className="p-3">
                               <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
                                 String(app.status).toLowerCase() === 'accepted' ? 'bg-green-100 text-green-700 border border-green-200' :
-                                String(app.status).toLowerCase() === 'rejected' ? 'bg-rose-100 text-rose-700 border border-rose-200' :
+                                String(app.status).toLowerCase() === 'rejected' || app.status === false ? 'bg-rose-100 text-rose-700 border border-rose-200' :
                                 'bg-orange-100 text-orange-700 border border-orange-200'
                               }`}>
-                                {app.status || "Pending"}
+                                {app.status === true ? "Pending" : app.status === false ? "Rejected" : app.status || "Pending"}
                               </span>
                             </td>
                             <td className="p-3 text-gray-500 italic whitespace-nowrap">{formatDate(app.created_at, { dateOnly: true })}</td>
