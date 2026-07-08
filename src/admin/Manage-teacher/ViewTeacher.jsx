@@ -406,7 +406,7 @@ const ViewTeacherAdmin = () => {
               examDuration: timeDisplay,
               examDate: attempt.created_at ? formatDate(attempt.created_at, { dateOnly: true }) : "-",
               interviewAttempt: levelPrimaryInterview.attempt || "-",
-              interviewResult: (levelPrimaryInterview.grade !== "N/A" && levelPrimaryInterview.grade !== undefined) ? `${levelPrimaryInterview.grade}` : "-",
+              interviewResult: (levelPrimaryInterview.grade !== "N/A" && levelPrimaryInterview.grade != null) ? `${Math.round(levelPrimaryInterview.grade * 10)}%` : "-",
               interviewDate: levelPrimaryInterview.created_at ? formatDate(levelPrimaryInterview.created_at, { dateOnly: true }) : "-",
               
               // Spans
