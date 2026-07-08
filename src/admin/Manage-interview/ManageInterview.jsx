@@ -715,7 +715,7 @@ export default function InterviewManagementRedesign() {
                       <td className="px-4 py-3">
                         {row.score !== "Not graded" ? (
                           <span className="font-bold text-gray-800">
-                            {row.score}/10
+                            {Math.round(row.score * 10)}%
                           </span>
                         ) : (
                           <span className="text-gray-400">—</span>
@@ -845,7 +845,7 @@ export default function InterviewManagementRedesign() {
                   )}
                   {row.score !== "Not graded" && (
                     <div className="flex justify-between text-teal-600 font-bold">
-                      <span>Score:</span> <span>{row.score}/10</span>
+                      <span>Score:</span> <span>{Math.round(row.score * 10)}%</span>
                     </div>
                   )}
                 </div>
@@ -965,7 +965,7 @@ export default function InterviewManagementRedesign() {
                     Interview Score
                   </label>
                   <p className="font-bold text-teal-700 text-lg">
-                    {detailsModal.data.score}/10
+                    {Math.round(detailsModal.data.score * 10)}%
                   </p>
                 </div>
               )}

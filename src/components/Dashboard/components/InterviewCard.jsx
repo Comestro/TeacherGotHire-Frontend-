@@ -301,7 +301,7 @@ const InterviewCard = ({ selectedSubject, selectedCategory }) => {
             <div>
               <h3 className="text-xl font-bold text-slate-900">Interview Passed! / साक्षात्कार उत्तीर्ण!</h3>
               <p className="text-slate-600 text-sm mt-2 max-w-md mx-auto">
-                Congratulations! You have successfully passed the interview with a grade of <span className="font-bold text-emerald-700">{passedInterview.grade}/10</span>. / बधाई हो! आपने साक्षात्कार सफलतापूर्वक उत्तीर्ण कर लिया है, ग्रेड: <span className="font-bold text-emerald-700">{passedInterview.grade}/10</span>.
+                Congratulations! You have successfully passed the interview with a grade of <span className="font-bold text-emerald-700">{Math.round(passedInterview.grade * 10)}%</span>. / बधाई हो! आपने साक्षात्कार सफलतापूर्वक उत्तीर्ण कर लिया है, ग्रेड: <span className="font-bold text-emerald-700">{Math.round(passedInterview.grade * 10)}%</span>.
               </p>
             </div>
             <div className="mt-2 px-4 py-2 bg-emerald-100 text-emerald-800 rounded-lg text-sm font-semibold">
