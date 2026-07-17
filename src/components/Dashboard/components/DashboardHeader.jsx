@@ -37,6 +37,20 @@ const DashboardHeader = ({ isOpen, setIsOpen }) => {
 
       {/* Right Section - Action Buttons */}
       <div className="flex items-center gap-4">
+        {localStorage.getItem("admin_access_token") && (
+          <button
+            onClick={() => {
+              localStorage.setItem("access_token", localStorage.getItem("admin_access_token"));
+              localStorage.setItem("role", localStorage.getItem("admin_role"));
+              localStorage.removeItem("admin_access_token");
+              localStorage.removeItem("admin_role");
+              window.location.href = "/admin";
+            }}
+            className="hidden md:inline-flex items-center gap-2 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full text-sm font-semibold shadow-sm transition"
+          >
+            Return to Admin
+          </button>
+        )}
         <Link
           to="/"
           className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white/50"

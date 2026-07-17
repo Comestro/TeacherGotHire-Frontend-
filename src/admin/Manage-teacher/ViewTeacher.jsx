@@ -340,6 +340,8 @@ const ViewTeacherAdmin = () => {
       const data = await apiService.create(`api/admin/impersonate/${id}`, {});
       if (data && data.status === 'success') {
         const userData = data.data;
+        localStorage.setItem("admin_access_token", localStorage.getItem("access_token"));
+        localStorage.setItem("admin_role", localStorage.getItem("role"));
         localStorage.setItem("access_token", userData.token);
         localStorage.setItem("role", userData.role);
         
