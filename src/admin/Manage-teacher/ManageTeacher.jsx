@@ -520,7 +520,7 @@ const ManageTeacher = () => {
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
-              placeholder="Search by name, email, ID or User Code..."
+              placeholder="Search by name, email, contact no, ID or User Code..."
             />
           </div>
 
