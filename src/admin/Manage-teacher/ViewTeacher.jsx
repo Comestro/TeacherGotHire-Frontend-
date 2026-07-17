@@ -323,11 +323,36 @@ const ViewTeacherAdmin = () => {
 
   const handleDeactivate = () => {
     setOpenDeactivateModal(false);
+    // Add logic here to deactivate
     setNotificationMessage({
       type: "success",
       text: "Account deactivated successfully",
     });
     setOpenSnackbar(true);
+  };
+
+  const handleImpersonate = async () => {
+    try {
+      const confirmImpersonate = window.confirm(`Are you sure you want to log in as ${teacherData?.Fname} ${teacherData?.Lname}?`);
+      if (!confirmImpersonate) return;
+      
+      setLoading(true);
+      const data = await apiService.create(`api/admin/impersonate/${id}`, {});
+      if (data && data.status === 'success') {
+        const userData = data.data;
+        localStorage.setItem("access_token", userData.token);
+        localStorage.setItem("role", userData.role);
+        
+        // Force reload and redirect to teacher dashboard
+        window.location.href = "/teacher";
+      } else {
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Failed to impersonate user.");
+      setLoading(false);
+    }
   };
 
   const handleBackClick = () => {
@@ -449,6 +474,13 @@ const ViewTeacherAdmin = () => {
                 className="inline-flex items-center gap-2 px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-semibold shadow-sm"
               >
                 <FiEdit /> Edit
+              </button>
+              <button
+                onClick={handleImpersonate}
+                disabled={loading || !teacherData}
+                className="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-sm disabled:opacity-50"
+              >
+                <FiUser /> Login as Teacher
               </button>
               <button
                 onClick={handleBackClick}
