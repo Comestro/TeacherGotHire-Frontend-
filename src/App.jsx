@@ -138,6 +138,10 @@ function AppContent() {
             path="get-preferred-teacher"
             element={<GetPreferredTeacher />}
           />
+          <Route
+            path="get-preferred-teacher/teacher/:id"
+            element={<TeacherViewPage />}
+          />
         </Route>
         <Route path="signup/teacher" element={<SignUpPage />} />
         <Route path="signin" element={<Login />} />
