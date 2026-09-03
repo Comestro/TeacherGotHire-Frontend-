@@ -174,7 +174,7 @@ const HeroSection = () => {
                   to="/signup/teacher"
                   className="w-full sm:w-auto px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-bold"
                 >
-                  Join as a Teacher
+                  Join as a New Teacher
                 </Link>
               </div>
             </div>
