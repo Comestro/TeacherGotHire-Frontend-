@@ -841,8 +841,8 @@ export default function TeacherViewPageFull() {
                   <div className="grid grid-cols-1 gap-5">
                     {attempts
                       .filter((a) => {
-                        const targetCategoryName = prefilledFilters.class_category?.[0]?.toLowerCase();
-                        const targetSubjectName = prefilledFilters.subject?.[0]?.toLowerCase();
+                        const targetCategoryName = prefilledFilters.class_category?.[0] ? String(prefilledFilters.class_category[0]).toLowerCase() : "";
+                        const targetSubjectName = prefilledFilters.subject?.[0] ? String(prefilledFilters.subject[0]).toLowerCase() : "";
                         
                         let aCategoryName = "";
                         let aSubjectName = "";
@@ -854,10 +854,10 @@ export default function TeacherViewPageFull() {
                           aSubjectName = a.subject?.subject_name || a.subject || "";
                         }
 
-                        if (targetCategoryName && aCategoryName && !aCategoryName.toLowerCase().includes(targetCategoryName)) {
+                        if (targetCategoryName && aCategoryName && !String(aCategoryName).toLowerCase().includes(targetCategoryName)) {
                           return false;
                         }
-                        if (targetSubjectName && aSubjectName && !aSubjectName.toLowerCase().includes(targetSubjectName)) {
+                        if (targetSubjectName && aSubjectName && !String(aSubjectName).toLowerCase().includes(targetSubjectName)) {
                           return false;
                         }
 
