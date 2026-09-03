@@ -392,18 +392,39 @@ export default function TeacherViewPageFull() {
       </div>
     );
 
-  const targetJobTypeName = prefilledFilters.job_type?.[0];
-  let targetJobTypeId = null;
-  if (targetJobTypeName && teacherjobRole?.length > 0) {
-    const foundJob = teacherjobRole.find(
-      (j) => j.name?.toLowerCase() === targetJobTypeName.toLowerCase() ||
-             j.id?.toString() === targetJobTypeName
-    );
-    if (foundJob) targetJobTypeId = foundJob.id;
+  const targetJobTypeNames = prefilledFilters.job_type || [];
+  let displayApplies = [];
+  
+  if (teacher.apply && teacher.apply.length > 0) {
+    if (targetJobTypeNames.length > 0) {
+      targetJobTypeNames.forEach((targetName) => {
+        const foundJob = teacherjobRole?.find(
+          (j) => j.name?.toLowerCase() === targetName.toLowerCase() ||
+                 j.id?.toString() === targetName
+        );
+        const targetId = foundJob ? foundJob.id : null;
+        
+        const matchingApply = teacher.apply.find(
+          (app) => app.teacher_job_type === targetId || app.teacher_job_type?.id === targetId ||
+                   app.job_type_name?.toLowerCase() === targetName.toLowerCase() ||
+                   app.teacher_job_type_name?.toLowerCase() === targetName.toLowerCase()
+        );
+        
+        if (matchingApply) {
+          if (!matchingApply.display_job_name) {
+            matchingApply.display_job_name = foundJob?.name || targetName;
+          }
+          if (!displayApplies.find(a => a.teacher_job_type === matchingApply.teacher_job_type)) {
+            displayApplies.push(matchingApply);
+          }
+        }
+      });
+    }
+    
+    if (displayApplies.length === 0) {
+      displayApplies = [teacher.apply[0]];
+    }
   }
-  const displayApply = (targetJobTypeId !== null && teacher.apply) 
-    ? teacher.apply.find((app) => app.teacher_job_type === targetJobTypeId || app.teacher_job_type?.id === targetJobTypeId) || teacher.apply[0]
-    : teacher.apply?.[0];
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-20">
@@ -483,24 +504,21 @@ export default function TeacherViewPageFull() {
                     </p>
                   </div>
 
-                  {/* Salary Badge (Desktop) */}
-                  <div className="hidden md:block flex-shrink-0">
-                    <div className="bg-emerald-50 text-emerald-700 px-5 py-3 rounded-xl border border-emerald-100 flex flex-col items-end">
-                      <span className="text-xs font-bold uppercase tracking-wider opacity-70">
-                        Expected Salary
-                      </span>
-                      <span className="text-xl font-extrabold">
-                        {displayApply
-                          ? displayApply.salary_expectation || displayApply.expected_salary
-                          : "N/A"}
-                        <span className="text-sm font-medium opacity-80 ml-1">
-                          /{" "}
-                          {displayApply
-                            ? displayApply.salary_type
-                            : "month"}
+                  {/* Salary Badges (Desktop) */}
+                  <div className="hidden md:flex flex-col gap-3 flex-shrink-0">
+                    {displayApplies.map((apply, idx) => (
+                      <div key={idx} className="bg-emerald-50 text-emerald-700 px-5 py-3 rounded-xl border border-emerald-100 flex flex-col items-end">
+                        <span className="text-xs font-bold uppercase tracking-wider opacity-70">
+                          Expected Salary {displayApplies.length > 1 && apply.display_job_name ? `(${apply.display_job_name})` : ""}
                         </span>
-                      </span>
-                    </div>
+                        <span className="text-xl font-extrabold">
+                          {apply.salary_expectation || apply.expected_salary || "N/A"}
+                          <span className="text-sm font-medium opacity-80 ml-1">
+                            / {apply.salary_type || "month"}
+                          </span>
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -598,20 +616,21 @@ export default function TeacherViewPageFull() {
                   </div>
                 </div>
 
-                {/* Mobile Salary Badge */}
-                <div className="mt-6 md:hidden">
-                  <div className="flex items-center justify-between bg-emerald-50 text-emerald-700 px-5 py-4 rounded-xl border border-emerald-100">
-                    <span className="font-bold text-sm uppercase tracking-wide">
-                      Expected Salary
-                    </span>
-                    <span className="font-bold text-lg">
-                      {displayApply
-                        ? displayApply.salary_expectation || displayApply.expected_salary
-                        : "N/A"}{" "}
-                      /{" "}
-                      {displayApply ? displayApply.salary_type : "month"}
-                    </span>
-                  </div>
+                {/* Mobile Salary Badges */}
+                <div className="mt-6 md:hidden flex flex-col gap-3">
+                  {displayApplies.map((apply, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-emerald-50 text-emerald-700 px-5 py-4 rounded-xl border border-emerald-100">
+                      <span className="font-bold text-sm uppercase tracking-wide">
+                        Expected Salary {displayApplies.length > 1 && apply.display_job_name ? `(${apply.display_job_name})` : ""}
+                      </span>
+                      <span className="font-bold text-lg">
+                        {apply.salary_expectation || apply.expected_salary || "N/A"}
+                        <span className="text-sm font-medium opacity-80 ml-1">
+                          / {apply.salary_type || "month"}
+                        </span>
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
