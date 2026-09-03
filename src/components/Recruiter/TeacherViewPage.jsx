@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   FaArrowLeft,
   FaGraduationCap,
@@ -26,6 +26,7 @@ import ErrorMessage from "../ErrorMessage";
 
 export default function TeacherViewPageFull() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   console.log("Fetched teacher data:", id);
   const [teacher, setTeacher] = useState({});
@@ -391,6 +392,19 @@ export default function TeacherViewPageFull() {
       </div>
     );
 
+  const targetJobTypeName = prefilledFilters.job_type?.[0];
+  let targetJobTypeId = null;
+  if (targetJobTypeName && teacherjobRole?.length > 0) {
+    const foundJob = teacherjobRole.find(
+      (j) => j.name?.toLowerCase() === targetJobTypeName.toLowerCase() ||
+             j.id?.toString() === targetJobTypeName
+    );
+    if (foundJob) targetJobTypeId = foundJob.id;
+  }
+  const displayApply = (targetJobTypeId !== null && teacher.apply) 
+    ? teacher.apply.find((app) => app.teacher_job_type === targetJobTypeId || app.teacher_job_type?.id === targetJobTypeId) || teacher.apply[0]
+    : teacher.apply?.[0];
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-20">
       <ToastContainer
@@ -476,13 +490,13 @@ export default function TeacherViewPageFull() {
                         Expected Salary
                       </span>
                       <span className="text-xl font-extrabold">
-                        {teacher.apply
-                          ? teacher.apply[0]?.salary_expectation
+                        {displayApply
+                          ? displayApply.salary_expectation || displayApply.expected_salary
                           : "N/A"}
                         <span className="text-sm font-medium opacity-80 ml-1">
                           /{" "}
-                          {teacher.apply
-                            ? teacher.apply[0]?.salary_type
+                          {displayApply
+                            ? displayApply.salary_type
                             : "month"}
                         </span>
                       </span>
@@ -591,11 +605,11 @@ export default function TeacherViewPageFull() {
                       Expected Salary
                     </span>
                     <span className="font-bold text-lg">
-                      {teacher.apply
-                        ? teacher.apply[0]?.salary_expectation
+                      {displayApply
+                        ? displayApply.salary_expectation || displayApply.expected_salary
                         : "N/A"}{" "}
                       /{" "}
-                      {teacher.apply ? teacher.apply[0]?.salary_type : "month"}
+                      {displayApply ? displayApply.salary_type : "month"}
                     </span>
                   </div>
                 </div>
@@ -827,6 +841,26 @@ export default function TeacherViewPageFull() {
                   <div className="grid grid-cols-1 gap-5">
                     {attempts
                       .filter((a) => {
+                        const targetCategoryName = prefilledFilters.class_category?.[0]?.toLowerCase();
+                        const targetSubjectName = prefilledFilters.subject?.[0]?.toLowerCase();
+                        
+                        let aCategoryName = "";
+                        let aSubjectName = "";
+                        if (a.interviews && a.interviews.length > 0) {
+                          aCategoryName = a.exam?.class_category_name || a.exam_class_category || "";
+                          aSubjectName = a.exam?.subject_name || a.subject || "";
+                        } else {
+                          aCategoryName = a.level?.class_category?.name || a.class_category || "";
+                          aSubjectName = a.subject?.subject_name || a.subject || "";
+                        }
+
+                        if (targetCategoryName && aCategoryName && !aCategoryName.toLowerCase().includes(targetCategoryName)) {
+                          return false;
+                        }
+                        if (targetSubjectName && aSubjectName && !aSubjectName.toLowerCase().includes(targetSubjectName)) {
+                          return false;
+                        }
+
                         const hasNestedInterview =
                           a.interviews &&
                           a.interviews.some((i) => i.status === "fulfilled");
