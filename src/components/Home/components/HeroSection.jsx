@@ -171,7 +171,7 @@ const HeroSection = () => {
                   Find Your Perfect Teacher
                 </Link>
                 <Link
-                  to="/teacher"
+                  to="/signup/teacher"
                   className="w-full sm:w-auto px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-bold"
                 >
                   Join as a Teacher
