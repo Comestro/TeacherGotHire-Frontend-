@@ -860,9 +860,25 @@ export default function TeacherViewPageFull() {
                   <div className="grid grid-cols-1 gap-5">
                     {attempts
                       .filter((a) => {
-                        const targetCategoryName = prefilledFilters.class_category?.[0] ? String(prefilledFilters.class_category[0]).toLowerCase() : "";
-                        const targetSubjectName = prefilledFilters.subject?.[0] ? String(prefilledFilters.subject[0]).toLowerCase() : "";
+                        const targetCategoryName = prefilledFilters.class_category?.[0] ? String(prefilledFilters.class_category[0]).toLowerCase().trim() : "";
+                        const targetSubjectName = prefilledFilters.subject?.[0] ? String(prefilledFilters.subject[0]).toLowerCase().trim() : "";
                         
+                        // Try to find Target IDs from global state if possible
+                        let targetCategoryId = null;
+                        if (targetCategoryName && globalClassCategories) {
+                           const cat = globalClassCategories.find(c => c.name.toLowerCase().includes(targetCategoryName.replace(/class\s+/i, '')) || targetCategoryName.includes(c.name.toLowerCase().replace(/class\s+/i, '')));
+                           if (cat) targetCategoryId = cat.id;
+                        }
+                        
+                        let targetSubjectId = null;
+                        if (targetSubjectName && allSubjects) {
+                           const sub = allSubjects.find(s => s.subject_name.toLowerCase().includes(targetSubjectName));
+                           if (sub) targetSubjectId = sub.id;
+                        }
+
+                        let aCategoryId = a.exam?.class_category || a.exam_class_category || a.level?.class_category?.id || a.class_category;
+                        let aSubjectId = a.exam?.subject || a.subject?.id || a.subject;
+
                         let aCategoryName = "";
                         let aSubjectName = "";
                         if (a.interviews && a.interviews.length > 0) {
@@ -873,10 +889,23 @@ export default function TeacherViewPageFull() {
                           aSubjectName = a.subject?.subject_name || a.subject || "";
                         }
 
-                        if (targetCategoryName && aCategoryName && !String(aCategoryName).toLowerCase().includes(targetCategoryName)) {
-                          return false;
+                        let matchCat = true;
+                        if (targetCategoryName) {
+                           matchCat = false;
+                           if (aCategoryId && targetCategoryId && String(aCategoryId) === String(targetCategoryId)) matchCat = true;
+                           if (aCategoryName && String(aCategoryName).toLowerCase().includes(targetCategoryName)) matchCat = true;
+                           if (aCategoryName && targetCategoryName.includes(String(aCategoryName).toLowerCase())) matchCat = true;
                         }
-                        if (targetSubjectName && aSubjectName && !String(aSubjectName).toLowerCase().includes(targetSubjectName)) {
+
+                        let matchSub = true;
+                        if (targetSubjectName) {
+                           matchSub = false;
+                           if (aSubjectId && targetSubjectId && String(aSubjectId) === String(targetSubjectId)) matchSub = true;
+                           if (aSubjectName && String(aSubjectName).toLowerCase().includes(targetSubjectName)) matchSub = true;
+                           if (aSubjectName && targetSubjectName.includes(String(aSubjectName).toLowerCase())) matchSub = true;
+                        }
+
+                        if (!matchCat || !matchSub) {
                           return false;
                         }
 
