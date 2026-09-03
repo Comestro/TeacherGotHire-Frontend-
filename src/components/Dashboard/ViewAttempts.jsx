@@ -97,6 +97,112 @@ function ViewAttempts() {
     );
   }, [apiOutput2]);
 
+  const formatDate = (value, { dateOnly } = { dateOnly: false }) => {
+    if (!value) return "";
+    try {
+      const d = new Date(value);
+      if (isNaN(d)) return String(value);
+      if (dateOnly)
+        return d.toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+      return d.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (e) {
+      return String(value);
+    }
+  };
+
+  const getAnalyticalRows = () => {
+    if (!filteredExamResults || filteredExamResults.length === 0) return [];
+
+    const groupedData = [];
+
+    filteredExamResults.forEach((attempt) => {
+      const exam = attempt.exam || {};
+      const classCat = exam.class_category_name || "Unknown";
+      const subject = exam.subject_name || exam.subjet_name || "Unknown";
+      const medium = attempt.language || exam.language || "Unknown";
+      const level = exam.level_name || "Unknown";
+
+      let classGroup = groupedData.find((g) => g.name === classCat);
+      if (!classGroup) {
+        classGroup = { name: classCat, subjects: [], rowCount: 0 };
+        groupedData.push(classGroup);
+      }
+
+      let subGroup = classGroup.subjects.find((s) => s.name === subject && s.medium === medium);
+      if (!subGroup) {
+        subGroup = { name: subject, medium: medium, levels: [], rowCount: 0 };
+        classGroup.subjects.push(subGroup);
+      }
+
+      let levelGroup = subGroup.levels.find((l) => l.name === level);
+      if (!levelGroup) {
+        levelGroup = { name: level, attempts: [], rowCount: 0 };
+        subGroup.levels.push(levelGroup);
+      }
+
+      levelGroup.attempts.push(attempt);
+      levelGroup.rowCount++;
+      subGroup.rowCount++;
+      classGroup.rowCount++;
+    });
+
+    const rows = [];
+    groupedData.forEach((classGroup, cIdx) => {
+      classGroup.subjects.forEach((subGroup, sIdx) => {
+        subGroup.levels.forEach((levelGroup, lIdx) => {
+          let levelPrimaryInterview = {};
+          for (const att of levelGroup.attempts) {
+            const ivs = (att.interviews || []).filter(iv => 
+              String(iv.status || "").toLowerCase() === "fulfilled" || iv.grade !== "N/A"
+            );
+            if (ivs.length > 0) {
+              levelPrimaryInterview = ivs[0];
+              break;
+            }
+          }
+
+          levelGroup.attempts.forEach((attempt, aIdx) => {
+            const resultVal = attempt.calculate_percentage;
+            const resultDisplay = (resultVal !== null && resultVal !== undefined) ? `${resultVal}%` : "-";
+            const timeVal = attempt.time_taken_seconds;
+            const timeDisplay = (timeVal !== null && timeVal !== undefined && timeVal > 0) ? formatAvgTime(timeVal) : "-";
+
+            rows.push({
+              classCat: classGroup.name,
+              subject: subGroup.name,
+              medium: subGroup.medium,
+              level: levelGroup.name,
+              attemptNumber: attempt.attempt || (aIdx + 1),
+              examResult: resultDisplay,
+              examDuration: timeDisplay,
+              examDate: attempt.created_at ? formatDate(attempt.created_at, { dateOnly: true }) : "-",
+              interviewAttempt: levelPrimaryInterview.attempt || "-",
+              interviewResult: (levelPrimaryInterview.grade !== "N/A" && levelPrimaryInterview.grade != null) ? `${Math.round(levelPrimaryInterview.grade * 10)}%` : "-",
+              interviewDate: levelPrimaryInterview.created_at ? formatDate(levelPrimaryInterview.created_at, { dateOnly: true }) : "-",
+              
+              classSpan: (sIdx === 0 && lIdx === 0 && aIdx === 0) ? classGroup.rowCount : 0,
+              subSpan: (lIdx === 0 && aIdx === 0) ? subGroup.rowCount : 0,
+              levelSpan: (aIdx === 0) ? levelGroup.rowCount : 0,
+            });
+          });
+        });
+      });
+    });
+    return rows;
+  };
+
+  const analyticalRows = getAnalyticalRows();
+
   return (
     <div className="w-full mx-auto">
       <div className="space-y-6">
@@ -181,7 +287,7 @@ function ViewAttempts() {
               </div>
             </div>
 
-            {subjects.length === 0 ? (
+            {filteredExamResults.length === 0 ? (
               <div className="text-center py-16 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                 <div className="p-4 bg-white rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center shadow-sm border border-slate-100">
                   <HiOutlineDocumentText className="h-8 w-8 text-slate-400" aria-hidden="true" />
@@ -190,245 +296,43 @@ function ViewAttempts() {
                 <p className="text-slate-500 text-sm">Try selecting a different category or take an exam to see your results here.</p>
               </div>
             ) : (
-              subjects.map((subject) => (
-                <SubjectResults
-                  key={subject}
-                  subject={subject}
-                  examResults={filteredExamResults}
-                  apiOutput1={apiOutput1}
-                  selectedCategory={selectedCategory}
-                />
-              ))
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mt-6">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        {["Category", "Subject", "Medium", "Level", "Exam Attempt", "Exam Result", "Exam Duration", "Exam Date", "Interview Atpt", "Interview Result", "Interview Date"].map((h) => (
+                          <th key={h} className="p-3 text-left font-bold text-gray-600 whitespace-nowrap border-r border-gray-200 last:border-r-0">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {analyticalRows.length > 0 ? analyticalRows.map((row, idx) => (
+                        <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                          {row.classSpan > 0 && <td rowSpan={row.classSpan} className="p-3 font-bold text-gray-800 border-r border-gray-200 align-top">{row.classCat}</td>}
+                          {row.subSpan > 0 && <td rowSpan={row.subSpan} className="p-3 font-semibold text-teal-700 border-r border-gray-200 align-top">{row.subject}</td>}
+                          {row.subSpan > 0 && <td rowSpan={row.subSpan} className="p-3 text-gray-600 border-r border-gray-200 align-top">{row.medium}</td>}
+                          {row.levelSpan > 0 && <td rowSpan={row.levelSpan} className="p-3 font-medium text-gray-700 border-r border-gray-200 align-top">{row.level}</td>}
+                          <td className="p-3 text-gray-600 border-r border-gray-200">{row.attemptNumber}</td>
+                          <td className="p-3 border-r border-gray-200">
+                            <span className={`font-bold ${parseFloat(row.examResult) >= 60 ? 'text-green-600' : 'text-rose-600'}`}>{row.examResult}</span>
+                          </td>
+                          <td className="p-3 text-gray-600 border-r border-gray-200 whitespace-nowrap">{row.examDuration}</td>
+                          <td className="p-3 text-gray-500 whitespace-nowrap italic border-r border-gray-200">{row.examDate}</td>
+                          {row.levelSpan > 0 && <td rowSpan={row.levelSpan} className="p-3 text-gray-600 text-center border-r border-gray-200 align-middle bg-gray-50/30">{row.interviewAttempt}</td>}
+                          {row.levelSpan > 0 && <td rowSpan={row.levelSpan} className="p-3 font-bold text-gray-800 text-center border-r border-gray-200 align-middle bg-gray-50/30">{row.interviewResult}</td>}
+                          {row.levelSpan > 0 && <td rowSpan={row.levelSpan} className="p-3 text-gray-500 whitespace-nowrap text-center italic align-middle bg-gray-50/30">{row.interviewDate}</td>}
+                        </tr>
+                      )) : (
+                        <tr><td colSpan={11} className="p-8 text-center text-gray-400 italic">No analytical records found.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             )}
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-function getLevelOrder(levelName) {
-  if (levelName.includes("1st")) return 1;
-  if (levelName.includes("Online")) return 2;
-  if (levelName.includes("Offline")) return 3;
-  if (levelName.includes("Interview")) return 5; // Interviews should be last
-  return 4; // Other levels
-}
-
-function SubjectResults({ subject, examResults, selectedCategory }) {
-  const subjectResults = examResults
-    ?.filter((result) => {
-      const subjectMatch = result?.exam?.subject_name === subject;
-      return result?.exam && subjectMatch;
-    }) || [];
-  const examRows = [];
-  const interviewRows = [];
-
-  subjectResults.forEach(result => {
-    const level_id = result?.exam?.level_id;
-    const levelKey = `level${level_id}`;
-    examRows.push({
-      levelOrder: getLevelOrder(result?.exam?.level_name),
-      levelName: result?.exam?.level_name,
-      type: "Exam",
-      classCategory: result?.exam?.class_category_name,
-      subject: result?.exam?.subject_name,
-      level: result?.exam?.level_name,
-      language: result?.language || 'N/A',
-      status: result?.isqualified ? "Passed" : "Failed",
-      score: `${result?.calculate_percentage}%`,
-      date: new Date(result?.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + new Date(result?.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-      attemptCount: result?.attempt || '1',
-    });
-    if (result?.interviews?.length) {
-      result.interviews
-        .filter(interview => interview?.status !== "pending")
-        .forEach(interview => {
-          if (interview?.subject === subject) { // Show all non-pending interviews for matching subject
-            const interviewLevel = `Interview - ${result?.exam?.level_name}`;
-
-            interviewRows.push({
-              levelOrder: 5, // Interview is always last
-              levelName: "Interview",
-              type: "Interview",
-              classCategory: interview?.class_category,
-              subject: interview?.subject,
-              level: interviewLevel, // Set the level based on parent exam level
-              language: '-',
-              status: interview?.status === "fulfilled" ? "Completed" :
-                interview?.status === "scheduled" ? "Scheduled" :
-                  interview?.status === "requested" ? "Requested" : interview?.status,
-              score: interview?.grade != null ? `${Math.round(interview.grade * 10)}%` : 'N/A',
-              attemptCount: interview?.attempt || '-',
-              date: interview?.time ? new Date(interview.time).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + new Date(interview.time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '-',
-              interviewDate: interview?.created_at ? new Date(interview.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + ' ' + new Date(interview.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '-',
-            });
-          }
-        });
-    }
-  });
-  const allRows = [...examRows, ...interviewRows].sort((a, b) => {
-    if (a.type === "Interview" && b.type !== "Interview") return 1;
-    if (a.type !== "Interview" && b.type === "Interview") return -1;
-    if (a.levelOrder !== b.levelOrder) {
-      return a.levelOrder - b.levelOrder;
-    }
-    return new Date(b.date) - new Date(a.date);
-  });
-  if (!allRows.length) return null;
-
-  return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden transition-all hover:border-teal-200">
-      <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
-        <div className="p-1.5 bg-white border border-slate-200 rounded-lg text-teal-600 shadow-sm">
-          <HiOutlineBookOpen className="h-5 w-5" aria-hidden="true" />
-        </div>
-        <h3 className="text-lg font-bold text-slate-800">
-          {subject}
-        </h3>
-      </div>
-
-      {/* Desktop Table View */}
-      <div className="hidden md:block overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-100">
-              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Record Type</th>
-              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Class Category</th>
-              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Subject</th>
-              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Level</th>
-              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Language</th>
-              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Result/Status</th>
-              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Score</th>
-              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Attempt</th>
-              <th className="py-3 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {allRows.map((row, index) => (
-              <DesktopRow key={index} row={row} />
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile Card View */}
-      <div className="md:hidden divide-y divide-slate-100">
-        {allRows.map((row, index) => (
-          <MobileCard key={index} row={row} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function getStatusBadge(row) {
-  if (row.type === "Interview") {
-    if (row.status === "Completed") {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md text-xs font-medium border border-emerald-100">
-          <HiOutlineCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
-          Completed
-        </span>
-      );
-    } else if (row.status === "Scheduled") {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium border border-blue-100">
-          <HiOutlineClock className="h-3.5 w-3.5" aria-hidden="true" />
-          Scheduled
-        </span>
-      );
-    } else if (row.status === "Requested") {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-md text-xs font-medium border border-amber-100">
-          <HiOutlineClock className="h-3.5 w-3.5" aria-hidden="true" />
-          Requested
-        </span>
-      );
-    } else {
-      return (
-        <span className="inline-flex items-center px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-xs font-medium border border-slate-200">
-          {row.status}
-        </span>
-      );
-    }
-  } else {
-    if (row.status === "Passed") {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-md text-xs font-medium border border-emerald-100">
-          <HiOutlineCheckCircle className="h-3.5 w-3.5" aria-hidden="true" />
-          Passed
-        </span>
-      );
-    } else {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 text-red-700 rounded-md text-xs font-medium border border-red-100">
-          <HiOutlineXCircle className="h-3.5 w-3.5" aria-hidden="true" />
-          Failed
-        </span>
-      );
-    }
-  }
-}
-
-function DesktopRow({ row }) {
-  return (
-    <tr className={`text-sm hover:bg-slate-50 transition-colors ${row.type === "Interview" ? "bg-slate-50/50" : "bg-white"}`}>
-      <td className="py-3 px-4">
-        <span className={`font-semibold ${row.type === "Interview" ? "text-indigo-600" : "text-teal-600"}`}>
-          {row.type}
-        </span>
-      </td>
-      <td className="py-3 px-4 text-slate-600">{row.classCategory}</td>
-      <td className="py-3 px-4 text-slate-600 font-medium">{row.subject}</td>
-      <td className="py-3 px-4 text-slate-600">{row.level}</td>
-      <td className="py-3 px-4 text-slate-600">{row.language}</td>
-      <td className="py-3 px-4">{getStatusBadge(row)}</td>
-      <td className="py-3 px-4">
-        <span className="font-semibold text-slate-700">{row.score}</span>
-      </td>
-      <td className="py-3 px-4 text-slate-600">{row.attemptCount}</td>
-      <td className="py-3 px-4 text-slate-500 text-xs">{row.date}</td>
-    </tr>
-  );
-}
-
-function MobileCard({ row }) {
-  return (
-    <div className={`p-4 ${row.type === "Interview" ? "bg-slate-50/50" : "bg-white"}`}>
-      <div className="flex justify-between items-start mb-3">
-        <div>
-          <span className={`text-xs font-bold uppercase tracking-wider ${row.type === "Interview" ? "text-indigo-600" : "text-teal-600"}`}>
-            {row.type}
-          </span>
-          <h4 className="font-bold text-slate-800 text-sm mt-0.5">{row.subject}</h4>
-          <p className="text-xs text-slate-500">{row.classCategory}</p>
-        </div>
-        {getStatusBadge(row)}
-      </div>
-
-      <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm mb-3">
-        <div>
-          <p className="text-xs text-slate-400">Level</p>
-          <p className="text-slate-700 font-medium">{row.level}</p>
-        </div>
-        <div>
-          <p className="text-xs text-slate-400">Score</p>
-          <p className="text-slate-700 font-bold">{row.score}</p>
-        </div>
-        <div>
-          <p className="text-xs text-slate-400">Language</p>
-          <p className="text-slate-700">{row.language}</p>
-        </div>
-        <div>
-          <p className="text-xs text-slate-400">Attempt</p>
-          <p className="text-slate-700">{row.attemptCount}</p>
-        </div>
-      </div>
-
-      <div className="pt-3 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-400">
-        <HiOutlineClock className="h-3.5 w-3.5" />
-        {row.date}
       </div>
     </div>
   );
