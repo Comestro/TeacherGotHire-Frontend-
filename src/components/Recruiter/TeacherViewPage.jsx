@@ -860,21 +860,8 @@ export default function TeacherViewPageFull() {
                   <div className="grid grid-cols-1 gap-5">
                     {attempts
                       .filter((a) => {
-                        const targetCategoryName = prefilledFilters.class_category?.[0] ? String(prefilledFilters.class_category[0]).toLowerCase().trim() : "";
-                        const targetSubjectName = prefilledFilters.subject?.[0] ? String(prefilledFilters.subject[0]).toLowerCase().trim() : "";
-                        
-                        // Try to find Target IDs from global state if possible
-                        let targetCategoryId = null;
-                        if (targetCategoryName && globalClassCategories) {
-                           const cat = globalClassCategories.find(c => c.name.toLowerCase().includes(targetCategoryName.replace(/class\s+/i, '')) || targetCategoryName.includes(c.name.toLowerCase().replace(/class\s+/i, '')));
-                           if (cat) targetCategoryId = cat.id;
-                        }
-                        
-                        let targetSubjectId = null;
-                        if (targetSubjectName && allSubjects) {
-                           const sub = allSubjects.find(s => s.subject_name.toLowerCase().includes(targetSubjectName));
-                           if (sub) targetSubjectId = sub.id;
-                        }
+                        const targetCategoryNames = (prefilledFilters.class_category || []).map(c => String(c).toLowerCase().trim());
+                        const targetSubjectNames = (prefilledFilters.subject || []).map(s => String(s).toLowerCase().trim());
 
                         let aCategoryId = a.exam?.class_category || a.exam_class_category || a.level?.class_category?.id || a.class_category?.id || a.class_category;
                         let aSubjectId = a.exam?.subject || a.subject?.id || a.subject;
@@ -890,19 +877,33 @@ export default function TeacherViewPageFull() {
                         }
 
                         let matchCat = true;
-                        if (targetCategoryName) {
-                           matchCat = false;
-                           if (aCategoryId && targetCategoryId && String(aCategoryId) === String(targetCategoryId)) matchCat = true;
-                           if (aCategoryName && String(aCategoryName).toLowerCase().includes(targetCategoryName)) matchCat = true;
-                           if (aCategoryName && targetCategoryName.includes(String(aCategoryName).toLowerCase())) matchCat = true;
+                        if (targetCategoryNames.length > 0) {
+                           matchCat = targetCategoryNames.some(targetName => {
+                             let targetId = null;
+                             if (globalClassCategories) {
+                               const cat = globalClassCategories.find(c => c.name.toLowerCase().includes(targetName.replace(/class\s+/i, '')) || targetName.includes(c.name.toLowerCase().replace(/class\s+/i, '')));
+                               if (cat) targetId = cat.id;
+                             }
+                             if (aCategoryId && targetId && String(aCategoryId) === String(targetId)) return true;
+                             if (aCategoryName && String(aCategoryName).toLowerCase().includes(targetName)) return true;
+                             if (aCategoryName && targetName.includes(String(aCategoryName).toLowerCase())) return true;
+                             return false;
+                           });
                         }
 
                         let matchSub = true;
-                        if (targetSubjectName) {
-                           matchSub = false;
-                           if (aSubjectId && targetSubjectId && String(aSubjectId) === String(targetSubjectId)) matchSub = true;
-                           if (aSubjectName && String(aSubjectName).toLowerCase().includes(targetSubjectName)) matchSub = true;
-                           if (aSubjectName && targetSubjectName.includes(String(aSubjectName).toLowerCase())) matchSub = true;
+                        if (targetSubjectNames.length > 0) {
+                           matchSub = targetSubjectNames.some(targetName => {
+                             let targetId = null;
+                             if (allSubjects) {
+                               const sub = allSubjects.find(s => s.subject_name.toLowerCase().includes(targetName));
+                               if (sub) targetId = sub.id;
+                             }
+                             if (aSubjectId && targetId && String(aSubjectId) === String(targetId)) return true;
+                             if (aSubjectName && String(aSubjectName).toLowerCase().includes(targetName)) return true;
+                             if (aSubjectName && targetName.includes(String(aSubjectName).toLowerCase())) return true;
+                             return false;
+                           });
                         }
 
                         if (!matchCat || !matchSub) {
