@@ -876,7 +876,7 @@ export default function TeacherViewPageFull() {
                            if (sub) targetSubjectId = sub.id;
                         }
 
-                        let aCategoryId = a.exam?.class_category || a.exam_class_category || a.level?.class_category?.id || a.class_category;
+                        let aCategoryId = a.exam?.class_category || a.exam_class_category || a.level?.class_category?.id || a.class_category?.id || a.class_category;
                         let aSubjectId = a.exam?.subject || a.subject?.id || a.subject;
 
                         let aCategoryName = "";
@@ -885,8 +885,8 @@ export default function TeacherViewPageFull() {
                           aCategoryName = a.exam?.class_category_name || a.exam_class_category || "";
                           aSubjectName = a.exam?.subject_name || a.subject || "";
                         } else {
-                          aCategoryName = a.level?.class_category?.name || a.class_category || "";
-                          aSubjectName = a.subject?.subject_name || a.subject || "";
+                          aCategoryName = a.level?.class_category?.name || a.class_category?.name || a.class_category || "";
+                          aSubjectName = a.subject?.subject_name || a.subject?.name || a.subject || "";
                         }
 
                         let matchCat = true;
