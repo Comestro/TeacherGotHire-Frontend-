@@ -230,8 +230,8 @@ export default function TeacherViewPageFull() {
       // Try to find matching ID by Name
       const foundCat = globalClassCategories.find((c) =>
         urlCategories.some((urlName) => {
-          const decoded = decodeURIComponent(urlName).trim().toLowerCase();
-          const catName = c.name.trim().toLowerCase();
+          const decoded = String(decodeURIComponent(urlName) || '').trim().toLowerCase();
+          const catName = String(c.name || '').trim().toLowerCase();
           return (
             decoded === catName || decoded === catName.replace(/class\s+/i, "")
           );
@@ -247,8 +247,8 @@ export default function TeacherViewPageFull() {
     if (urlSubjects.length > 0 && !selectedSubject && allSubjects?.length > 0) {
       const foundSub = allSubjects.find((s) =>
         urlSubjects.some((urlName) => {
-          const decoded = decodeURIComponent(urlName).trim().toLowerCase();
-          const subName = s.subject_name.trim().toLowerCase();
+          const decoded = String(decodeURIComponent(urlName) || '').trim().toLowerCase();
+          const subName = String(s.subject_name || '').trim().toLowerCase();
           return decoded === subName;
         }),
       );
@@ -277,16 +277,11 @@ export default function TeacherViewPageFull() {
       // Resolve Class Category ID
       let finalClassId = selectedClassCategory;
       if (!finalClassId && prefilledFilters.class_category?.length > 0) {
-        const urlName = decodeURIComponent(prefilledFilters.class_category[0])
-          .trim()
-          .toLowerCase();
+        const urlName = String(decodeURIComponent(prefilledFilters.class_category[0]) || '').trim().toLowerCase();
         const found = globalClassCategories?.find(
           (c) =>
-            c.name.trim().toLowerCase() === urlName ||
-            c.name
-              .trim()
-              .toLowerCase()
-              .replace(/class\s+/i, "") === urlName,
+            String(c.name || '').trim().toLowerCase() === urlName ||
+            String(c.name || '').trim().toLowerCase().replace(/class\s+/i, "") === urlName,
         );
         if (found) finalClassId = found.id;
       }
@@ -294,11 +289,9 @@ export default function TeacherViewPageFull() {
       // Resolve Subject ID
       let finalSubjectId = selectedSubject;
       if (!finalSubjectId && prefilledFilters.subject?.length > 0) {
-        const urlName = decodeURIComponent(prefilledFilters.subject[0])
-          .trim()
-          .toLowerCase();
+        const urlName = String(decodeURIComponent(prefilledFilters.subject[0]) || '').trim().toLowerCase();
         const found = allSubjects?.find((s) => {
-          return s.subject_name.trim().toLowerCase() == urlName;
+          return String(s.subject_name || '').trim().toLowerCase() == urlName;
         });
         if (found) finalSubjectId = found.id;
       }
@@ -312,7 +305,7 @@ export default function TeacherViewPageFull() {
             if (!isNaN(val)) return parseInt(val);
             // Try map name
             const foundJob = teacherjobRole?.find(
-              (r) => r.teacher_job_name.toLowerCase() === val.toLowerCase(),
+              (r) => String(r.teacher_job_name || '').toLowerCase() === String(val || '').toLowerCase(),
             );
             return foundJob;
           })
@@ -399,15 +392,15 @@ export default function TeacherViewPageFull() {
     if (targetJobTypeNames.length > 0) {
       targetJobTypeNames.forEach((targetName) => {
         const foundJob = teacherjobRole?.find(
-          (j) => j.name?.toLowerCase() === targetName.toLowerCase() ||
+          (j) => String(j.name || '').toLowerCase() === String(targetName || '').toLowerCase() ||
                  j.id?.toString() === targetName
         );
         const targetId = foundJob ? foundJob.id : null;
         
         const matchingApply = teacher.apply.find(
           (app) => app.teacher_job_type === targetId || app.teacher_job_type?.id === targetId ||
-                   app.job_type_name?.toLowerCase() === targetName.toLowerCase() ||
-                   app.teacher_job_type_name?.toLowerCase() === targetName.toLowerCase()
+                   String(app.job_type_name || '').toLowerCase() === String(targetName || '').toLowerCase() ||
+                   String(app.teacher_job_type_name || '').toLowerCase() === String(targetName || '').toLowerCase()
         );
         
         if (matchingApply) {
@@ -662,7 +655,6 @@ export default function TeacherViewPageFull() {
                     icon: <FaBriefcase />,
                   },
                   { key: "attempts", label: "Attempts", icon: <FaStar /> },
-                  { key: "skills", label: "Skills", icon: <FaLightbulb /> },
                 ].map((tab) => {
                   const isActive = activeTab === tab.key;
                   return (
@@ -881,7 +873,7 @@ export default function TeacherViewPageFull() {
                            matchCat = targetCategoryNames.some(targetName => {
                              let targetId = null;
                              if (globalClassCategories) {
-                               const cat = globalClassCategories.find(c => c.name.toLowerCase().includes(targetName.replace(/class\s+/i, '')) || targetName.includes(c.name.toLowerCase().replace(/class\s+/i, '')));
+                               const cat = globalClassCategories.find(c => String(c.name || '').toLowerCase().includes(targetName.replace(/class\s+/i, '')) || targetName.includes(String(c.name || '').toLowerCase().replace(/class\s+/i, '')));
                                if (cat) targetId = cat.id;
                              }
                              if (aCategoryId && targetId && String(aCategoryId) === String(targetId)) return true;
@@ -896,7 +888,7 @@ export default function TeacherViewPageFull() {
                            matchSub = targetSubjectNames.some(targetName => {
                              let targetId = null;
                              if (allSubjects) {
-                               const sub = allSubjects.find(s => s.subject_name.toLowerCase().includes(targetName));
+                               const sub = allSubjects.find(s => String(s.subject_name || '').toLowerCase().includes(targetName));
                                if (sub) targetId = sub.id;
                              }
                              if (aSubjectId && targetId && String(aSubjectId) === String(targetId)) return true;
@@ -910,12 +902,7 @@ export default function TeacherViewPageFull() {
                           return false;
                         }
 
-                        const hasNestedInterview =
-                          a.interviews &&
-                          a.interviews.some((i) => i.status === "fulfilled");
-                        const isDirectInterview =
-                          a.status === "fulfilled" && a.grade !== undefined;
-                        return hasNestedInterview || isDirectInterview;
+                        return true;
                       })
                       .map((a, idx) => {
                         // Normalize Data
@@ -943,7 +930,15 @@ export default function TeacherViewPageFull() {
                           subject = a.subject?.subject_name || "";
                         }
 
-                        if (!interview) return null;
+                        let score = 0;
+                        let isInterviewScore = false;
+                        
+                        if (interview && interview.grade !== undefined) {
+                          score = interview.grade ? (interview.grade * 10).toFixed(0) : 0;
+                          isInterviewScore = true;
+                        } else if (a.calculate_percentage !== undefined) {
+                          score = a.calculate_percentage;
+                        }
 
                         return (
                           <div
@@ -953,7 +948,7 @@ export default function TeacherViewPageFull() {
                             {/* Left Status Strip */}
                             <div
                               className={`w-full sm:w-2 ${
-                                interview.grade >= 6
+                                parseFloat(score) >= 60
                                   ? "bg-emerald-500"
                                   : "bg-amber-500"
                               }`}
@@ -972,14 +967,14 @@ export default function TeacherViewPageFull() {
                                   </span>
                                 </div>
                                 <h4 className="font-bold text-slate-800 text-lg">
-                                  Level 2 (Interview)
+                                  {title || "Assessment"}
                                 </h4>
                                 <div className="mt-2 flex items-center gap-2">
                                   <span className="text-sm text-slate-500">
-                                    Interview Status:
+                                    Status:
                                   </span>
                                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 capitalize">
-                                    {interview.status || "Completed"}
+                                    {interview?.status || "Completed"}
                                   </span>
                                 </div>
                               </div>
@@ -987,13 +982,10 @@ export default function TeacherViewPageFull() {
                               <div className="flex items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-100 self-stretch sm:self-auto justify-between sm:justify-start">
                                 <div className="text-right">
                                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                                    Score
+                                    {isInterviewScore ? "Interview Score" : "Exam Score"}
                                   </p>
                                   <p className="text-2xl font-bold text-teal-600">
-                                    {interview.grade
-                                      ? (interview.grade * 10).toFixed(0)
-                                      : 0}
-                                    %
+                                    {score}%
                                   </p>
                                 </div>
                               </div>
@@ -1004,10 +996,55 @@ export default function TeacherViewPageFull() {
 
                     {/* Empty State if filter returns nothing */}
                     {attempts.filter(
-                      (a) =>
-                        (a.interviews &&
-                          a.interviews.some((i) => i.status === "fulfilled")) ||
-                        (a.status === "fulfilled" && a.grade !== undefined),
+                      (a) => {
+                        const targetCategoryNames = (prefilledFilters.class_category || []).map(c => String(c).toLowerCase().trim());
+                        const targetSubjectNames = (prefilledFilters.subject || []).map(s => String(s).toLowerCase().trim());
+
+                        let aCategoryId = a.exam?.class_category || a.exam_class_category || a.level?.class_category?.id || a.class_category?.id || a.class_category;
+                        let aSubjectId = a.exam?.subject || a.subject?.id || a.subject;
+
+                        let aCategoryName = "";
+                        let aSubjectName = "";
+                        if (a.interviews && a.interviews.length > 0) {
+                          aCategoryName = a.exam?.class_category_name || a.exam_class_category || "";
+                          aSubjectName = a.exam?.subject_name || a.subject || "";
+                        } else {
+                          aCategoryName = a.level?.class_category?.name || a.class_category?.name || a.class_category || "";
+                          aSubjectName = a.subject?.subject_name || a.subject?.name || a.subject || "";
+                        }
+
+                        let matchCat = true;
+                        if (targetCategoryNames.length > 0) {
+                           matchCat = targetCategoryNames.some(targetName => {
+                             let targetId = null;
+                             if (globalClassCategories) {
+                               const cat = globalClassCategories.find(c => String(c.name || '').toLowerCase().includes(targetName.replace(/class\s+/i, '')) || targetName.includes(String(c.name || '').toLowerCase().replace(/class\s+/i, '')));
+                               if (cat) targetId = cat.id;
+                             }
+                             if (aCategoryId && targetId && String(aCategoryId) === String(targetId)) return true;
+                             if (aCategoryName && String(aCategoryName).toLowerCase().includes(targetName)) return true;
+                             if (aCategoryName && targetName.includes(String(aCategoryName).toLowerCase())) return true;
+                             return false;
+                           });
+                        }
+
+                        let matchSub = true;
+                        if (targetSubjectNames.length > 0) {
+                           matchSub = targetSubjectNames.some(targetName => {
+                             let targetId = null;
+                             if (allSubjects) {
+                               const sub = allSubjects.find(s => String(s.subject_name || '').toLowerCase().includes(targetName));
+                               if (sub) targetId = sub.id;
+                             }
+                             if (aSubjectId && targetId && String(aSubjectId) === String(targetId)) return true;
+                             if (aSubjectName && String(aSubjectName).toLowerCase().includes(targetName)) return true;
+                             if (aSubjectName && targetName.includes(String(aSubjectName).toLowerCase())) return true;
+                             return false;
+                           });
+                        }
+
+                        return matchCat && matchSub;
+                      }
                     ).length === 0 && (
                       <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
                         <FaStar className="mx-auto text-4xl text-slate-200 mb-3" />
@@ -1028,35 +1065,6 @@ export default function TeacherViewPageFull() {
               </div>
             )}
 
-            {/* Skills */}
-            {activeTab === "skills" && (
-              <div className="space-y-6 animate-fadeIn">
-                <div className="flex items-baseline justify-between border-b border-slate-200 pb-4">
-                  <h2 className="text-xl sm:text-2xl font-bold text-slate-800">
-                    Professional Skills
-                  </h2>
-                </div>
-
-                <div className="bg-white p-8 rounded-xl border border-slate-200 min-h-[200px]">
-                  {teacher.teacherskill?.length > 0 ? (
-                    <div className="flex flex-wrap gap-3">
-                      {teacher.teacherskill.map((s) => (
-                        <span
-                          key={s.skill.id}
-                          className="px-4 py-2 rounded-lg bg-white border border-slate-200 shadow-sm text-slate-700 text-sm font-semibold hover:border-teal-300 hover:text-teal-600 hover:shadow-md transition-all cursor-default select-none"
-                        >
-                          {s.skill.name}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center text-slate-500 italic">
-                      No skills listed for this profile.
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </main>

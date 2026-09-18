@@ -233,7 +233,8 @@ useEffect(() => {
   const handleExamSetModalSubmit = async (data) => {
     try {
       const payload = {
-        name: data.name,
+        name: examName,
+        set_name: examName,
         description: data.description,
         subject: parseInt(data.subject),
         level: parseInt(data.level),

@@ -32,6 +32,43 @@ const ExamSetterModal = ({
         value: "",
       },
     });
+    
+    // Auto-update set_name
+    const catId = parseInt(e.target.value);
+    const selectedCategory = classCategories.find(c => c.id === catId);
+    if (selectedCategory) {
+      onInputChange({
+        target: {
+          name: "set_name",
+          value: `${selectedCategory.name} - `,
+        },
+      });
+    } else {
+      onInputChange({
+        target: {
+          name: "set_name",
+          value: "",
+        },
+      });
+    }
+  };
+
+  const handleSubjectChange = (e) => {
+    onInputChange(e);
+    
+    // Auto-update set_name
+    const subId = parseInt(e.target.value);
+    const selectedCategory = classCategories.find(c => c.id === parseInt(formData.class_category));
+    const selectedSubject = filteredSubjects.find(s => s.id === subId);
+    
+    if (selectedCategory && selectedSubject) {
+      onInputChange({
+        target: {
+          name: "set_name",
+          value: `${selectedCategory.name} - ${selectedSubject.subject_name}`,
+        },
+      });
+    }
   };
   const handleLevelChange = (e) => {
     const selectedLevelId = parseInt(e.target.value);
@@ -188,7 +225,7 @@ const ExamSetterModal = ({
                 <select
                   name="subject"
                   value={formData.subject}
-                  onChange={onInputChange}
+                  onChange={handleSubjectChange}
                   className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 bg-white"
                   required
                   disabled={!formData.class_category}

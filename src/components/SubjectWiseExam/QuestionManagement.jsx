@@ -84,8 +84,15 @@ const QuestionManagement = () => {
 
   const onSubmit = async (data) => {
     try {
+      const categoryName =
+        categories.find((c) => c.id === parseInt(data.class_category))?.name || "";
+      const subjectName =
+        subjects.find((s) => s.id === parseInt(data.subject))?.subject_name || "";
+      const examName = `${categoryName} - ${subjectName}`;
+
       const payload = {
-        name: data.name,
+        name: examName,
+        set_name: examName,
         description: data.description,
         subject: parseInt(data.subject),
         level: parseInt(data.level),

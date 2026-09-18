@@ -5,13 +5,11 @@ import AddressProfileCard from "./AddressProfileCard";
 import PrefrenceProfile from "../JobProfile/PrefrenceProfile";
 import Experience from "../JobProfile/Exprience";
 import Education from "../JobProfile/Education";
-import Skills from "../JobProfile/Skills";
 import { 
   HiUser, 
   HiBriefcase, 
   HiLocationMarker, 
   HiAcademicCap, 
-  HiLightBulb,
   HiCheckCircle 
 } from "react-icons/hi";
 
@@ -58,13 +56,6 @@ const EditPersonalProfile = () => {
       color: "indigo",
       description: "Academic background"
     },
-    { 
-      id: "skills", 
-      label: "Skills", 
-      icon: HiLightBulb, 
-      color: "amber",
-      description: "Your expertise"
-    },
   ];
   useEffect(() => {
     if (tabParam) {
@@ -101,8 +92,6 @@ const EditPersonalProfile = () => {
         return <Experience />;
       case "education":
         return <Education />;
-      case "skills":
-        return <Skills />;
       default:
         return <BasicInformation />;
     }

@@ -750,31 +750,7 @@ const ViewTeacherAdmin = () => {
 
                 {/* Secondary Details Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Professional Skills */}
-                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden flex flex-col">
-                    <div className="bg-gray-50/80 px-4 py-2.5 border-b border-gray-200 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-1 h-4 bg-orange-500 rounded-full" />
-                        <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Professional Skills</h3>
-                      </div>
-                      <button onClick={() => openEditModal('skills')} className="p-1.5 hover:bg-gray-200 rounded text-teal-600 transition-colors">
-                        <FiEdit2 size={14} />
-                      </button>
-                    </div>
-                    <div className="p-4 flex-1">
-                      <div className="flex flex-wrap gap-2">
-                        {teacherData?.teacherskill?.length > 0 ? (
-                          teacherData.teacherskill.map((s, idx) => (
-                            <span key={idx} className="px-2.5 py-1 bg-orange-50 text-orange-700 text-[11px] font-bold rounded border border-orange-100 uppercase tracking-tight">
-                              {s.skill?.name || s.skill}
-                            </span>
-                          ))
-                        ) : (
-                          <p className="text-[11px] text-gray-400 italic">No skills listed.</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+
 
                   {/* Academic Preferences */}
                   <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden flex flex-col">
