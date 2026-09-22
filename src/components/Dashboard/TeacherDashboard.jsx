@@ -1,7 +1,7 @@
  import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { getSubjects } from "../../features/dashboardSlice";
 import { getProfilCompletion, getBasic } from "../../features/personalProfileSlice";
 import {
