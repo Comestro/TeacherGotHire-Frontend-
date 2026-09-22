@@ -445,8 +445,8 @@ const FilterdExamCard = forwardRef(
 
           {/* Introduction Screen */}
           {!hasStarted && (
-            <div className="mb-6 px-3">
-              <div className="bg-white rounded-xl p-8 sm:p-12 shadow-sm border border-slate-200 text-center max-w-3xl mx-auto flex flex-col items-center">
+            <div className="mb-6">
+              <div className="bg-white rounded-xl p-6 sm:p-12 shadow-sm border border-slate-200 text-center w-full flex flex-col items-center">
                 <div className="w-20 h-20 bg-teal-50 rounded-full flex items-center justify-center mb-6">
                   <FaGraduationCap className="text-4xl text-teal-600" />
                 </div>
@@ -468,7 +468,7 @@ const FilterdExamCard = forwardRef(
           {hasStarted && (
             <>
               {/* Exam Process Stepper */}
-              <div className="mb-6 px-3">
+              <div className="mb-6">
                 <div className="bg-white rounded-lg p-4 sm:p-5 shadow-sm border border-slate-200">
                   <h3 className="text-sm sm:text-base font-bold text-slate-800 mb-4 flex items-center">
                     <FaInfoCircle className="mr-2 text-teal-600" /> Assessment Process Flow
@@ -510,7 +510,7 @@ const FilterdExamCard = forwardRef(
               {showCategoryPanel && (
             <div
               key="categories"
-              className="rounded-lg overflow-hidden mb-6 sm:mb-8 px-3" // Use rounded-lg, remove shadow
+              className="rounded-lg overflow-hidden mb-6 sm:mb-8" // Use rounded-lg, remove shadow
             >
               <div className="bg-background text-text">
                 <h2 className="text-lg sm:text-xl font-bold flex items-center">
