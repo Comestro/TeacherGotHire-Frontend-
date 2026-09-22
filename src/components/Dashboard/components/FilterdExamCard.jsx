@@ -56,6 +56,7 @@ const FilterdExamCard = forwardRef(
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState(null);
     const [levels, setLevels] = useState([]);
+    const [hasStarted, setHasStarted] = useState(false);
     const [examReady, setExamReady] = useState(false);
     const [showCategoryPanel, setShowCategoryPanel] = useState(true);
     const [showSubjectPanel, setShowSubjectPanel] = useState(false);
@@ -442,47 +443,71 @@ const FilterdExamCard = forwardRef(
             />
           )}
 
-          {/* Exam Process Stepper */}
-          <div className="mb-6 px-3">
-            <div className="bg-white rounded-lg p-4 sm:p-5 shadow-sm border border-slate-200">
-              <h3 className="text-sm sm:text-base font-bold text-slate-800 mb-4 flex items-center">
-                <FaInfoCircle className="mr-2 text-teal-600" /> Assessment Process Flow
-              </h3>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between">
-                {/* Step 1 */}
-                <div className={`flex items-center gap-3 w-full sm:w-1/3 p-2 rounded-lg transition-all ${showCategoryPanel ? 'bg-teal-50 border border-teal-100 scale-105' : 'opacity-70'}`}>
-                  <div className={`w-8 h-8 rounded-full font-bold flex flex-shrink-0 items-center justify-center ${showCategoryPanel ? 'bg-teal-500 text-white shadow-sm' : 'bg-slate-100 text-slate-500'}`}>1</div>
-                  <div className="flex flex-col">
-                    <span className={`text-sm font-bold ${showCategoryPanel ? 'text-teal-700' : 'text-slate-600'}`}>Class Category</span>
-                    <span className="text-[10px] sm:text-xs text-slate-500">Select preferred class</span>
-                  </div>
+          {/* Introduction Screen */}
+          {!hasStarted && (
+            <div className="mb-6 px-3">
+              <div className="bg-white rounded-xl p-8 sm:p-12 shadow-sm border border-slate-200 text-center max-w-3xl mx-auto flex flex-col items-center">
+                <div className="w-20 h-20 bg-teal-50 rounded-full flex items-center justify-center mb-6">
+                  <FaGraduationCap className="text-4xl text-teal-600" />
                 </div>
-                <div className="hidden sm:block flex-shrink-0 text-slate-300"><FaAngleRight /></div>
-                
-                {/* Step 2 */}
-                <div className={`flex items-center gap-3 w-full sm:w-1/3 p-2 rounded-lg transition-all ${showSubjectPanel ? 'bg-teal-50 border border-teal-100 scale-105' : 'opacity-70'}`}>
-                  <div className={`w-8 h-8 rounded-full font-bold flex flex-shrink-0 items-center justify-center ${showSubjectPanel ? 'bg-teal-500 text-white shadow-sm' : 'bg-slate-100 text-slate-500'}`}>2</div>
-                  <div className="flex flex-col">
-                    <span className={`text-sm font-bold ${showSubjectPanel ? 'text-teal-700' : 'text-slate-600'}`}>Subject</span>
-                    <span className="text-[10px] sm:text-xs text-slate-500">Choose subject to assess</span>
-                  </div>
-                </div>
-                <div className="hidden sm:block flex-shrink-0 text-slate-300"><FaAngleRight /></div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-4">Welcome to Your Assessments</h2>
+                <p className="text-slate-600 mb-8 max-w-xl leading-relaxed text-sm sm:text-base">
+                  You are about to start the assessment process. This process consists of multiple steps including selecting your preferred class category, choosing a subject, and finally taking the exam or interview. Take your time and make sure you're ready before proceeding.
+                </p>
+                <button
+                  onClick={() => setHasStarted(true)}
+                  className="px-8 py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
+                >
+                  Start Assessment Process <FaArrowRight />
+                </button>
+              </div>
+            </div>
+          )}
 
-                {/* Step 3 */}
-                <div className={`flex items-center gap-3 w-full sm:w-1/3 p-2 rounded-lg transition-all ${(showLevelPanel || examReady || showInterviewPanel) ? 'bg-teal-50 border border-teal-100 scale-105' : 'opacity-70'}`}>
-                  <div className={`w-8 h-8 rounded-full font-bold flex flex-shrink-0 items-center justify-center ${(showLevelPanel || examReady || showInterviewPanel) ? 'bg-teal-500 text-white shadow-sm' : 'bg-slate-100 text-slate-500'}`}>3</div>
-                  <div className="flex flex-col">
-                    <span className={`text-sm font-bold ${(showLevelPanel || examReady || showInterviewPanel) ? 'text-teal-700' : 'text-slate-600'}`}>Assessment</span>
-                    <span className="text-[10px] sm:text-xs text-slate-500">Take test & interview</span>
+          {/* Exam Process Flow Container */}
+          {hasStarted && (
+            <>
+              {/* Exam Process Stepper */}
+              <div className="mb-6 px-3">
+                <div className="bg-white rounded-lg p-4 sm:p-5 shadow-sm border border-slate-200">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-800 mb-4 flex items-center">
+                    <FaInfoCircle className="mr-2 text-teal-600" /> Assessment Process Flow
+                  </h3>
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between">
+                    {/* Step 1 */}
+                    <div className={`flex items-center gap-3 w-full sm:w-1/3 p-2 rounded-lg transition-all ${showCategoryPanel ? 'bg-teal-50 border border-teal-100 scale-105' : 'opacity-70'}`}>
+                      <div className={`w-8 h-8 rounded-full font-bold flex flex-shrink-0 items-center justify-center ${showCategoryPanel ? 'bg-teal-500 text-white shadow-sm' : 'bg-slate-100 text-slate-500'}`}>1</div>
+                      <div className="flex flex-col">
+                        <span className={`text-sm font-bold ${showCategoryPanel ? 'text-teal-700' : 'text-slate-600'}`}>Class Category</span>
+                        <span className="text-[10px] sm:text-xs text-slate-500">Select preferred class</span>
+                      </div>
+                    </div>
+                    <div className="hidden sm:block flex-shrink-0 text-slate-300"><FaAngleRight /></div>
+                    
+                    {/* Step 2 */}
+                    <div className={`flex items-center gap-3 w-full sm:w-1/3 p-2 rounded-lg transition-all ${showSubjectPanel ? 'bg-teal-50 border border-teal-100 scale-105' : 'opacity-70'}`}>
+                      <div className={`w-8 h-8 rounded-full font-bold flex flex-shrink-0 items-center justify-center ${showSubjectPanel ? 'bg-teal-500 text-white shadow-sm' : 'bg-slate-100 text-slate-500'}`}>2</div>
+                      <div className="flex flex-col">
+                        <span className={`text-sm font-bold ${showSubjectPanel ? 'text-teal-700' : 'text-slate-600'}`}>Subject</span>
+                        <span className="text-[10px] sm:text-xs text-slate-500">Choose subject to assess</span>
+                      </div>
+                    </div>
+                    <div className="hidden sm:block flex-shrink-0 text-slate-300"><FaAngleRight /></div>
+
+                    {/* Step 3 */}
+                    <div className={`flex items-center gap-3 w-full sm:w-1/3 p-2 rounded-lg transition-all ${(showLevelPanel || examReady || showInterviewPanel) ? 'bg-teal-50 border border-teal-100 scale-105' : 'opacity-70'}`}>
+                      <div className={`w-8 h-8 rounded-full font-bold flex flex-shrink-0 items-center justify-center ${(showLevelPanel || examReady || showInterviewPanel) ? 'bg-teal-500 text-white shadow-sm' : 'bg-slate-100 text-slate-500'}`}>3</div>
+                      <div className="flex flex-col">
+                        <span className={`text-sm font-bold ${(showLevelPanel || examReady || showInterviewPanel) ? 'text-teal-700' : 'text-slate-600'}`}>Assessment</span>
+                        <span className="text-[10px] sm:text-xs text-slate-500">Take test & interview</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Category Panel */}
-          {showCategoryPanel && (
+              {/* Category Panel */}
+              {showCategoryPanel && (
             <div
               key="categories"
               className="rounded-lg overflow-hidden mb-6 sm:mb-8 px-3" // Use rounded-lg, remove shadow
@@ -1630,6 +1655,8 @@ const FilterdExamCard = forwardRef(
                 </div>
               </div>
             )}
+            </>
+          )}
         </div>
 
         {/* Exam Center Modal */}
@@ -1654,5 +1681,7 @@ const FilterdExamCard = forwardRef(
     );
   },
 );
+
+FilterdExamCard.displayName = "FilterdExamCard";
 
 export default FilterdExamCard;
