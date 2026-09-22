@@ -257,33 +257,34 @@ function TeacherDashboard() {
               onDismiss={() => setDashboardError(null)}
             />
 
-            {/* Mobile Profile Strength - Show on top in mobile */}
-            <div className="block md:hidden mb-6">
+             {/* Mobile Profile Strength - Show on top in mobile */}
+            <div className="block md:hidden mb-4 sm:mb-6">
               <ProfileStrength percentage={completionData?.profile_completed || 0} />
             </div>
 
             {(completionData?.profile_completed || 0) < 100 && (
-              <div className="space-y-4 mb-8">
+              <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-8">
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-4 bg-amber-50 border border-amber-100 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4"
+                  className="p-3 sm:p-4 bg-amber-50 border border-amber-100 rounded-xl flex flex-row items-center justify-between gap-2 sm:gap-4 flex-wrap sm:flex-nowrap"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center shrink-0">
-                      <FaRocket />
+                  <div className="flex items-center gap-2 sm:gap-3 flex-1">
+                    <div className="h-8 w-8 sm:h-10 sm:w-10 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center shrink-0">
+                      <FaRocket className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-800 text-sm">Boost your profile visibility!</h4>
-                      <p className="text-xs text-slate-600">Complete your profile to stand out to top recruiters.</p>
+                      <h4 className="font-bold text-slate-800 text-xs sm:text-sm leading-tight">Boost your profile visibility!</h4>
+                      <p className="text-[10px] sm:text-xs text-slate-600 hidden sm:block">Complete your profile to stand out to top recruiters.</p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => navigate("/teacher/personal-profile")}
-                    className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg whitespace-nowrap"
+                  
+                  <Link 
+                    to="/teacher/personal-profile" 
+                    className="px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-900 text-white text-[10px] sm:text-xs font-bold rounded-lg hover:bg-slate-800 transition-colors shrink-0"
                   >
                     Edit Profile
-                  </button>
+                  </Link>
                 </motion.div>
                 
                 {/* Specific Next Step Prompt moved here */}

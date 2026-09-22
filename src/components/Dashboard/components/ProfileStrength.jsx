@@ -9,15 +9,15 @@ const ProfileStrength = ({ percentage }) => {
       animate={{ opacity: 1, y: 0 }}
       className="bg-white rounded-2xl border border-slate-100 overflow-hidden"
     >
-      <div className="p-5">
-        <div className="flex justify-between items-center mb-5">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-teal-50 text-teal-600 rounded-xl">
-              <FaChartLine size={16} />
+      <div className="p-3 sm:p-5">
+        <div className="flex justify-between items-center mb-3 sm:mb-5">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-2 sm:p-2.5 bg-teal-50 text-teal-600 rounded-xl">
+              <FaChartLine className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-800 text-sm leading-tight">Profile Strength</h3>
-              <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Overall Completion</p>
+              <h3 className="font-bold text-slate-800 text-xs sm:text-sm leading-tight">Profile Strength</h3>
+              <p className="text-[9px] sm:text-[10px] text-slate-400 font-medium uppercase tracking-wider">Overall Completion</p>
             </div>
           </div>
           <div className="flex flex-col items-end">
