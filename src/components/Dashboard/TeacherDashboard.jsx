@@ -293,12 +293,24 @@ function TeacherDashboard() {
             )}
             {/* Show preference form if user doesn't have class categories */}
 
-            {/* Show preference form if user doesn't have class categories */}
-            {!hasClassCategories && (
-              <div className="">
-                <PrefrenceProfile forceEdit={true} />
+
+
+            {/* Start Test Prompt Section */}
+            <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-slate-200 text-center w-full flex flex-col items-center mt-6">
+              <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mb-5">
+                <FaRocket className="text-3xl text-teal-600" />
               </div>
-            )}
+              <h2 className="text-xl md:text-2xl font-bold text-slate-800 mb-2">Ready to Start Your Assessment?</h2>
+              <p className="text-slate-600 mb-6 max-w-md leading-relaxed text-sm">
+                Begin your tests to qualify for teaching opportunities. Make sure to complete your profile preferences first!
+              </p>
+              <Link
+                to="/teacher/start-test"
+                className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm md:text-base w-full sm:w-auto"
+              >
+                Go to Start Test <FaArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
           {/* Assessment Process column (3/12) */}
           <div className="w-full md:w-3/12 lg:w-3/12 mt-6 md:mt-0 border-l border-slate-150 pl-6 space-y-6 hidden md:block">
