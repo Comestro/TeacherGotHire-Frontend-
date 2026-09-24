@@ -14,6 +14,7 @@ import Login from "./components/SignIn";
 import { Provider } from "react-redux";
 import store from "./store/store";
 import TeacherDashboard from "./components/Dashboard/TeacherDashboard";
+import StartTest from "./components/Dashboard/StartTest";
 import EmailLogs from "./components/Dashboard/EmailLogs";
 import EditPersonalProfile from "./components/Profile/PersonalProfile/EditPersonalProfile";
 import AdminDashboard from "./admin/Dashboard/Dashboard";
@@ -463,6 +464,15 @@ function AppContent() {
             element={
               <RoleBasedRoute
                 element={<TeacherDashboard />}
+                allowedRoles={["teacher"]}
+              />
+            }
+          />
+          <Route
+            path="start-test"
+            element={
+              <RoleBasedRoute
+                element={<StartTest />}
                 allowedRoles={["teacher"]}
               />
             }

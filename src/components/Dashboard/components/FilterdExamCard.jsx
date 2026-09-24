@@ -450,15 +450,15 @@ const FilterdExamCard = forwardRef(
                 <div className="w-14 h-14 sm:w-20 sm:h-20 bg-teal-50 rounded-full flex items-center justify-center mb-4 sm:mb-6">
                   <FaGraduationCap className="text-2xl sm:text-4xl text-teal-600" />
                 </div>
-                <h2 className="text-xl sm:text-3xl font-bold text-slate-800 mb-2 sm:mb-4">Welcome to Your Assessments</h2>
+                <h2 className="text-xl sm:text-3xl font-bold text-slate-800 mb-2 sm:mb-4">Start Test</h2>
                 <p className="text-slate-600 mb-5 sm:mb-8 max-w-xl leading-relaxed text-xs sm:text-base">
-                  You are about to start the assessment process. This process consists of multiple steps including selecting your preferred class category, choosing a subject, and finally taking the exam or interview. Take your time and make sure you're ready before proceeding.
+                  Choose your class category and subject, then begin your test. Good luck!
                 </p>
                 <button
                   onClick={() => setHasStarted(true)}
                   className="px-5 py-2.5 sm:px-8 sm:py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto"
                 >
-                  Start Assessment Process <FaArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                  Start Test <FaArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
               </div>
             </div>

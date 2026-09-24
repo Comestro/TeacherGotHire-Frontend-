@@ -7,6 +7,7 @@ import {
   HiBriefcase,
   HiOutlineLogin,
   HiOutlineMail,
+  HiOutlineDocumentText,
 } from "react-icons/hi";
 import { HiMiniEye } from "react-icons/hi2";
 import { getUserData, userLogout } from "../../features/authSlice";
@@ -76,6 +77,21 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               >
                 <HiViewGrid className="size-5" />
                 Dashboard
+              </NavLink>
+              <NavLink
+                to="/teacher/start-test"
+                onClick={() => setIsOpen(false)}
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 mx-2 rounded-lg ${
+                    isActive
+                      ? "bg-primary text-white font-semibold"
+                      : "text-secondary"
+                  } hover:bg-primary hover:text-white transition flex items-center gap-2`
+                }
+              >
+                <HiOutlineDocumentText className="size-5" />
+                Start Test
               </NavLink>
               <NavLink
                 to="/teacher/personal-profile"
