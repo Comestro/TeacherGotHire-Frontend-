@@ -616,15 +616,24 @@ function Login() {
         </div>
 
         <div className="mt-8 text-center">
-          <p className="text-slate-500">
-            Don't have an account?{" "}
+          <p className="text-slate-500 mb-2">
+            Don't have an account?
+          </p>
+          <div className="flex items-center justify-center gap-4">
+            <Link
+              to="/signup/recruiter"
+              className="font-bold text-teal-600 hover:text-teal-700"
+            >
+              Create Recruiter Account
+            </Link>
+            <span className="text-slate-300">|</span>
             <Link
               to="/signup/teacher"
               className="font-bold text-teal-600 hover:text-teal-700"
             >
-              Create account
+              Create Teacher Account
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     );
