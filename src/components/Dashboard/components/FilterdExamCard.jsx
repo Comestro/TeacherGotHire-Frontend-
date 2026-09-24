@@ -629,7 +629,7 @@ const FilterdExamCard = forwardRef(
                     </p>
                     <button
                       type="button" // Add type
-                      onClick={() => navigate("/teacher/job-profile")}
+                      onClick={() => navigate("/teacher/personal-profile")}
                       className="px-4 sm:px-6 py-2 bg-primary text-white rounded-md hover:opacity-90 transition-colors border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                     >
                       Update Profile
