@@ -12,6 +12,7 @@ import {
   HiChevronDown,
   HiOutlineClipboard,
   HiOutlineBell,
+  HiOutlineDocumentText,
 } from "react-icons/hi";
 import { HiMiniEye } from "react-icons/hi2";
 import { IoMdSettings } from "react-icons/io";
@@ -120,6 +121,11 @@ const TeacherLayout = () => {
           Main Menu
         </div>
         <SidebarItem to="/teacher" icon={HiViewGrid} label="Dashboard" />
+        <SidebarItem
+          to="/teacher/start-test"
+          icon={HiOutlineDocumentText}
+          label="Start Test"
+        />
         <SidebarItem
           to="/teacher/personal-profile"
           icon={HiUser}
