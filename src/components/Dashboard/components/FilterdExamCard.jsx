@@ -520,7 +520,7 @@ const FilterdExamCard = forwardRef(
                     className="mr-2 sm:mr-3"
                     aria-hidden="true"
                   />
-                  Select Class Category / वर्ग चुनें
+                  Select Class Category for test / वर्ग चुनें 
                 </h2>
                 <p className="text-text mt-1 text-xs sm:text-base">
                   {" "}
@@ -652,7 +652,7 @@ const FilterdExamCard = forwardRef(
                     {" "}
                     {/* Adjust text size */}
                     <FaBookOpen className="mr-2 sm:mr-3" aria-hidden="true" />
-                    Select Subject
+                    Select Subject for test
                   </h2>
                   <button
                     type="button" // Add type
