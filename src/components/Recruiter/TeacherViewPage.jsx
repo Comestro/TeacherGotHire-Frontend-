@@ -508,7 +508,7 @@ export default function TeacherViewPageFull() {
                         : "bg-teal-600 text-white hover:bg-teal-700 hover:shadow-md"
                     }`}
                   >
-                    {success ? "Request Sent" : "Hire This Teacher"}
+                    {success ? "Request Sent" : "Send Hiring Request"}
                   </button>
                   {/* Rating Badge */}
                   {teacher.ratings && (
