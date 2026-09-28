@@ -386,6 +386,9 @@ export default function TeacherViewPageFull() {
     );
 
   const targetJobTypeNames = prefilledFilters.job_type || [];
+  const targetSubjectNames = (prefilledFilters.subject || []).map(s => String(decodeURIComponent(s)).toLowerCase().trim());
+  const targetCategoryNames = (prefilledFilters.class_category || []).map(c => String(decodeURIComponent(c)).toLowerCase().trim());
+
   let displayApplies = [];
   
   if (teacher.apply && teacher.apply.length > 0) {
@@ -397,13 +400,32 @@ export default function TeacherViewPageFull() {
         );
         const targetId = foundJob ? foundJob.id : null;
         
-        const matchingApply = teacher.apply.find(
+        let matchingApplies = teacher.apply.filter(
           (app) => app.teacher_job_type === targetId || app.teacher_job_type?.id === targetId ||
                    String(app.job_type_name || '').toLowerCase() === String(targetName || '').toLowerCase() ||
-                   String(app.teacher_job_type_name || '').toLowerCase() === String(targetName || '').toLowerCase()
+                   String(app.teacher_job_type_name || '').toLowerCase() === String(targetName || '').toLowerCase() ||
+                   String(app.teacher_job_type?.teacher_job_name || '').toLowerCase() === String(targetName || '').toLowerCase() ||
+                   String(app.teacher_job_type?.name || '').toLowerCase() === String(targetName || '').toLowerCase()
         );
+
+        if (matchingApplies.length > 1 && targetSubjectNames.length > 0) {
+          const subjectMatches = matchingApplies.filter(app => {
+            const appSub = String(app.subject?.name || app.subject?.subject_name || '').toLowerCase().trim();
+            return targetSubjectNames.includes(appSub);
+          });
+          if (subjectMatches.length > 0) matchingApplies = subjectMatches;
+        }
+
+        if (matchingApplies.length > 1 && targetCategoryNames.length > 0) {
+          const catMatches = matchingApplies.filter(app => {
+            const appCat = String(app.class_category?.name || '').toLowerCase().trim();
+            return targetCategoryNames.some(tc => appCat === tc || appCat.replace(/class\s+/i, "") === tc);
+          });
+          if (catMatches.length > 0) matchingApplies = catMatches;
+        }
         
-        if (matchingApply) {
+        if (matchingApplies.length > 0) {
+          const matchingApply = matchingApplies[0];
           if (!matchingApply.display_job_name) {
             matchingApply.display_job_name = foundJob?.name || targetName;
           }
@@ -415,7 +437,19 @@ export default function TeacherViewPageFull() {
     }
     
     if (displayApplies.length === 0) {
-      displayApplies = [teacher.apply[0]];
+      let matches = [...teacher.apply];
+      if (targetSubjectNames.length > 0) {
+         const subMatches = matches.filter(app => targetSubjectNames.includes(String(app.subject?.name || app.subject?.subject_name || '').toLowerCase().trim()));
+         if (subMatches.length > 0) matches = subMatches;
+      }
+      if (targetCategoryNames.length > 0) {
+         const catMatches = matches.filter(app => {
+            const appCat = String(app.class_category?.name || '').toLowerCase().trim();
+            return targetCategoryNames.some(tc => appCat === tc || appCat.replace(/class\s+/i, "") === tc);
+         });
+         if (catMatches.length > 0) matches = catMatches;
+      }
+      displayApplies = [matches[0]];
     }
   }
 
