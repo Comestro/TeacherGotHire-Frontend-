@@ -311,23 +311,20 @@ const TeacherFilter = () => {
                   key={teacher.id}
                   className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:border-teal-300 hover:shadow-xl transition-all duration-300 ease-in-out flex flex-col relative"
                 >
-                  {/* Top Background */}
-                  <div className="h-20 bg-gradient-to-r from-teal-500 to-emerald-400 relative">
-                     <div className="absolute inset-0 opacity-20 bg-white mix-blend-overlay"></div>
-                  </div>
-
                   {/* Profile Avatar */}
-                  <div className="relative px-6 flex justify-center -mt-10">
-                    <div className="w-20 h-20 rounded-full overflow-hidden shadow-md border-4 border-white bg-white z-10 group-hover:scale-105 transition-transform duration-300">
-                      <img
-                        className="w-full h-full object-cover"
-                        src={teacher.profile_picture || "/images/profile.jpg"}
-                        alt={teacher.Fname}
-                        loading="lazy"
-                      />
+                  <div className="pt-8 flex justify-center">
+                    <div className="relative">
+                      <div className="w-24 h-24 rounded-full overflow-hidden shadow-sm border-4 border-slate-50 bg-white z-10 group-hover:scale-105 group-hover:border-teal-100 transition-all duration-300">
+                        <img
+                          className="w-full h-full object-cover"
+                          src={teacher.profile_picture || "/images/profile.jpg"}
+                          alt={teacher.Fname}
+                          loading="lazy"
+                        />
+                      </div>
+                      {/* Status Indicator */}
+                      <div className="absolute bottom-1 right-1 w-4 h-4 bg-teal-500 border-2 border-white rounded-full z-20 shadow-sm group-hover:scale-105 transition-all"></div>
                     </div>
-                    {/* Status Indicator */}
-                    <div className="absolute top-14 right-1/4 w-4 h-4 bg-teal-500 border-2 border-white rounded-full z-20 shadow-sm translate-x-5"></div>
                   </div>
 
                   {/* Info Section */}
