@@ -333,7 +333,9 @@ const TeacherFilter = () => {
                       {teacher.Fname} {teacher.Lname}
                     </h3>
                     <p className="text-xs font-bold text-teal-600 mt-1 uppercase tracking-wider">
-                      {latestExperience?.role?.jobrole_name || "Available for Hire"}
+                      {searchParams.get("job_type") && isNaN(searchParams.get("job_type").split(",")[0])
+                        ? searchParams.get("job_type").split(",")[0]
+                        : (latestExperience?.role?.jobrole_name || "Available for Hire")}
                     </p>
 
                     {currentAddress.district && (
