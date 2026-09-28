@@ -936,6 +936,26 @@ export default function TeacherViewPageFull() {
                           return false;
                         }
 
+                        // Determine if it is passed
+                        let score = 0;
+                        let interviewForScore = null;
+                        if (a.interviews && a.interviews.length > 0) {
+                          interviewForScore = a.interviews.find((i) => i.status === "fulfilled") || a.interviews[0];
+                        } else {
+                          interviewForScore = a;
+                        }
+                        
+                        if (interviewForScore && interviewForScore.grade !== undefined) {
+                          score = interviewForScore.grade ? (interviewForScore.grade * 10).toFixed(0) : 0;
+                        } else if (a.calculate_percentage !== undefined) {
+                          score = a.calculate_percentage;
+                        }
+
+                        const isPassed = a.isqualified === true || parseFloat(score) >= 60;
+                        if (!isPassed) {
+                          return false;
+                        }
+
                         return true;
                       })
                       .map((a, idx) => {
