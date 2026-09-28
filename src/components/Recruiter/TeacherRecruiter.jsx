@@ -8,7 +8,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { BsBriefcase, BsGeoAlt, BsArrowClockwise } from "react-icons/bs";
-import { MdSchool, MdFilterAltOff, MdFilterAlt } from "react-icons/md";
+import { MdSchool, MdFilterAltOff, MdFilterAlt, MdLanguage } from "react-icons/md";
 import { FiArrowRight, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { IoReloadOutline } from "react-icons/io5";
 import {
@@ -403,10 +403,21 @@ const TeacherFilter = () => {
                             </p>
                           </div>
                         </div>
-                        <div className="hidden lg:block"></div>{" "}
-                        {/* Spacer for grid alignment if needed, or add Salary/etc */}
+                        {/* Medium */}
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center flex-shrink-0">
+                            <MdLanguage size={16} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                              Medium
+                            </p>
+                            <p className="text-sm font-medium text-slate-700 truncate">
+                              {teacher.medium || "Not Specified"}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
 
                     {/* Right: Action Button (Desktop) */}
                     <div className="hidden sm:flex flex-shrink-0 flex-col justify-center items-end self-center pl-4 border-l border-slate-100 h-24">
