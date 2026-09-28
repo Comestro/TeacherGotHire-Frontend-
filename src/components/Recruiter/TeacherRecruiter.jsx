@@ -300,131 +300,59 @@ const TeacherFilter = () => {
         </div>
       ) : teachers?.length > 0 ? (
         <>
-          {/* List View - Always Visible */}
-          <div className="space-y-3 mx-auto">
+          {/* Grid View */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto">
             {currentTeachers.map((teacher) => {
               const currentAddress = teacher.current_address || {};
               const latestExperience = teacher.last_experience;
-              const highestQualification = teacher.last_education;
 
               return (
                 <div
                   key={teacher.id}
-                  className="group bg-white rounded-xl border border-slate-200 p-5 hover:border-teal-300 hover:shadow-lg transition-all duration-300 ease-in-out"
+                  className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:border-teal-300 hover:shadow-xl transition-all duration-300 ease-in-out flex flex-col relative"
                 >
-                  <div className="flex gap-5 items-start">
-                    {/* Left: Profile Image */}
-                    <div className="flex-shrink-0  relative">
-                      <div className="w-20 h-20 rounded-xl overflow-hidden shadow-sm border-2 border-slate-100 group-hover:border-teal-100 transition-colors">
-                        <img
-                          className="w-full h-full object-cover"
-                          src={teacher.profile_picture || "/images/profile.jpg"}
-                          alt={teacher.Fname}
-                          loading="lazy"
-                        />
-                      </div>
-                      {/* Status Indicator (Optional) */}
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-teal-500 border-2 border-white rounded-full"></div>
+                  {/* Top Background */}
+                  <div className="h-20 bg-gradient-to-r from-teal-500 to-emerald-400 relative">
+                     <div className="absolute inset-0 opacity-20 bg-white mix-blend-overlay"></div>
+                  </div>
+
+                  {/* Profile Avatar */}
+                  <div className="relative px-6 flex justify-center -mt-10">
+                    <div className="w-20 h-20 rounded-full overflow-hidden shadow-md border-4 border-white bg-white z-10 group-hover:scale-105 transition-transform duration-300">
+                      <img
+                        className="w-full h-full object-cover"
+                        src={teacher.profile_picture || "/images/profile.jpg"}
+                        alt={teacher.Fname}
+                        loading="lazy"
+                      />
                     </div>
+                    {/* Status Indicator */}
+                    <div className="absolute top-14 right-1/4 w-4 h-4 bg-teal-500 border-2 border-white rounded-full z-20 shadow-sm translate-x-5"></div>
+                  </div>
 
-                    {/* Middle: Main Information */}
-                    <div className="flex-1 min-w-0 w-full">
-                      {/* Name and Role */}
-                      <div className="mb-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="text-xl font-bold text-slate-800 truncate group-hover:text-teal-700 transition-colors">
-                              {teacher.Fname} {teacher.Lname}
-                            </h3>
-                            <p className="text-sm font-semibold text-teal-600 mt-0.5">
-                              {latestExperience?.role?.jobrole_name ||
-                                "Available for Hire"}
-                            </p>
-                          </div>
+                  {/* Info Section */}
+                  <div className="px-5 pb-6 pt-3 flex-1 flex flex-col text-center">
+                    <h3 className="text-lg font-bold text-slate-800 truncate group-hover:text-teal-700 transition-colors">
+                      {teacher.Fname} {teacher.Lname}
+                    </h3>
+                    <p className="text-xs font-bold text-teal-600 mt-1 uppercase tracking-wider">
+                      {latestExperience?.role?.jobrole_name || "Available for Hire"}
+                    </p>
 
-                          {/* Mobile View Profile Button (Hidden on Desktop) */}
-                          <Link
-                            to={`teacher/${
-                              teacher.id
-                            }?${searchParams.toString()}`}
-                            className="sm:hidden inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-teal-50 hover:text-teal-600 transition-colors"
-                          >
-                            <FiArrowRight />
-                          </Link>
-                        </div>
+                    {currentAddress.district && (
+                      <p className="text-sm text-slate-500 flex items-center justify-center gap-1.5 mt-4">
+                        <HiOutlineLocationMarker className="text-slate-400 flex-shrink-0" size={16} />
+                        <span className="truncate">
+                          {currentAddress.area ? `${currentAddress.area}, ` : ""}
+                          {currentAddress.district}, {currentAddress.state}
+                        </span>
+                      </p>
+                    )}
 
-                        {currentAddress.district && (
-                          <p className="text-sm text-slate-500 flex items-center gap-1.5 mt-2">
-                            <HiOutlineLocationMarker
-                              className="text-slate-400"
-                              size={15}
-                            />
-                            {currentAddress.area
-                              ? `${currentAddress.area}, `
-                              : ""}
-                            {currentAddress.district}, {currentAddress.state}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Details Grid */}
-                      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-y-3 gap-x-6 pt-4 border-t border-slate-100">
-                        {/* Education */}
-                        <div className="flex items-start gap-3 min-w-0">
-                          <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
-                            <MdSchool size={16} />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                              Education
-                            </p>
-                            <p
-                              className="text-sm font-medium text-slate-700 truncate"
-                              title={highestQualification?.qualification?.name}
-                            >
-                              {highestQualification?.qualification?.name ||
-                                "Not Specified"}
-                            </p>
-                          </div>
-                        </div>
-                        {/* Experience (Duration or Institution) */}
-                        <div className="flex items-start gap-3 min-w-0">
-                          <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center flex-shrink-0">
-                            <BsBriefcase size={16} />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                              Experience
-                            </p>
-                            <p className="text-sm font-medium text-slate-700 truncate">
-                              {latestExperience
-                                ? `${latestExperience.institution}`
-                                : "Fresher"}
-                            </p>
-                          </div>
-                        </div>
-                        {/* Medium */}
-                        <div className="flex items-start gap-3 min-w-0">
-                          <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center flex-shrink-0">
-                            <MdLanguage size={16} />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                              Medium
-                            </p>
-                            <p className="text-sm font-medium text-slate-700 truncate">
-                              {teacher.medium || "Not Specified"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right: Action Button (Desktop) */}
-                    <div className="hidden sm:flex flex-shrink-0 flex-col justify-center items-end self-center pl-4 border-l border-slate-100 h-24">
+                    <div className="mt-auto pt-6 w-full">
                       <Link
                         to={`teacher/${teacher.id}?${searchParams.toString()}`}
-                        className="inline-flex items-center justify-center gap-2 text-sm bg-slate-900 hover:bg-teal-600 text-white px-5 py-2.5 rounded-lg transition-all font-semibold shadow-sm hover:shadow-teal-200 hover:-translate-y-0.5"
+                        className="flex items-center justify-center w-full gap-2 text-sm bg-slate-50 hover:bg-teal-600 text-slate-700 hover:text-white border border-slate-200 hover:border-teal-600 px-5 py-2.5 rounded-xl transition-all font-semibold shadow-sm group-hover:shadow-md"
                       >
                         View Profile
                         <FiArrowRight />
