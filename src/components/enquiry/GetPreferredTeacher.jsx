@@ -40,6 +40,7 @@ export const GetPreferredTeacher = () => {
   const [selectedJobType, setSelectedJobType] = useState("");
   const [selectedClassCategory, setSelectedClassCategory] = useState("");
   const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [selectedMedium, setSelectedMedium] = useState("");
   const [pincode, setPincode] = useState("");
   const [loadingPincode, setLoadingPincode] = useState(false);
   const [postOffices, setPostOffices] = useState([]);
@@ -274,6 +275,8 @@ export const GetPreferredTeacher = () => {
       else queryParams.append("class_category", selectedClassCategory);
     }
 
+    if (selectedMedium) queryParams.append("medium", selectedMedium);
+
     // Additional parameters if needed
     if (selectedJobType) queryParams.append("job_type", selectedJobType);
 
@@ -291,6 +294,7 @@ export const GetPreferredTeacher = () => {
     { title: "Job Type", icon: FiBriefcase, desc: "Select Role" },
     { title: "Class", icon: FiBook, desc: "Select Level" },
     { title: "Subject", icon: FiSearch, desc: "Choose Subjects" },
+    { title: "Medium", icon: FiCheck, desc: "Select Medium" },
     { title: "Location", icon: FiMapPin, desc: "Set Location" },
   ];
 
@@ -593,8 +597,54 @@ export const GetPreferredTeacher = () => {
             </div>
           )}
 
-          {/* Step 3: Location Details */}
+          {/* Step 3: Medium Selection */}
           {currentStep === 3 && (
+            <div className="animate-fade-in space-y-6">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
+                  Select Medium
+                </h2>
+                <p className="text-sm text-slate-500">
+                  In which language would you prefer the instruction?
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {["Hindi", "English", "Both"].map((mediumOption) => (
+                  <button
+                    key={mediumOption}
+                    onClick={() => {
+                      setSelectedMedium(mediumOption);
+                      setCurrentStep(4);
+                    }}
+                    className={`group p-4 rounded-xl border text-center transition-all duration-300 hover:shadow-md ${
+                      selectedMedium === mediumOption
+                        ? "border-teal-500 bg-white ring-2 ring-teal-500/10 shadow-sm"
+                        : "border-slate-200 bg-white hover:border-teal-200 shadow-sm"
+                    }`}
+                  >
+                    <div className="flex flex-col items-center gap-3">
+                      <div
+                        className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+                          selectedMedium === mediumOption
+                            ? "bg-teal-50 text-teal-600"
+                            : "bg-slate-50 text-slate-400 group-hover:bg-teal-50 group-hover:text-teal-500"
+                        }`}
+                      >
+                        <FiCheck size={20} />
+                      </div>
+                      <span className="font-bold text-sm text-slate-700 group-hover:text-teal-700 transition-colors">
+                        {mediumOption}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Location Details */}
+          {currentStep === 4 && (
             <div className="animate-fade-in space-y-4">
               <div>
                 <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
@@ -743,13 +793,14 @@ export const GetPreferredTeacher = () => {
             <FiArrowLeft size={18} /> Back
           </button>
 
-          {currentStep < 3 ? (
+          {currentStep < 4 ? (
             <button
               onClick={() => setCurrentStep((prev) => prev + 1)}
               disabled={
                 (currentStep === 0 && !selectedJobType) ||
                 (currentStep === 1 && !selectedClassCategory) ||
-                (currentStep === 2 && selectedSubjects.length === 0)
+                (currentStep === 2 && selectedSubjects.length === 0) ||
+                (currentStep === 3 && !selectedMedium)
               }
               className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2"
             >

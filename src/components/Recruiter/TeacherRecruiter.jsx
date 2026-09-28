@@ -141,6 +141,8 @@ const TeacherFilter = () => {
       filters.post_office = searchParams.get("post_office").split(",");
     if (searchParams.get("area"))
       filters.area = searchParams.get("area").split(",");
+    if (searchParams.get("medium"))
+      filters.medium = searchParams.get("medium").split(",");
 
     dispatch(fetchTeachers(filters));
   }, [dispatch, searchParams, missingFields, classCategories]);
