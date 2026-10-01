@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { baseURL } from "../../App";
+import { getApiUrl } from "../../store/configue";
 import useRazorpay from "react-razorpay";
 import { FaWallet, FaCoins, FaHistory } from "react-icons/fa";
 import { toast } from "react-toastify";
@@ -15,7 +15,7 @@ const WalletDashboard = () => {
   const fetchWallet = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`${baseURL}/api/wallet/`, {
+      const res = await axios.get(`${getApiUrl()}/api/wallet/`, {
         headers: { Authorization: `Token ${token}` },
       });
       setWallet(res.data.wallet);
@@ -43,7 +43,7 @@ const WalletDashboard = () => {
       
       // Create order
       const orderRes = await axios.post(
-        `${baseURL}/api/wallet/buy-points/`,
+        `${getApiUrl()}/api/wallet/create-order/`,
         { points: pointsToBuy },
         { headers: { Authorization: `Token ${token}` } }
       );
@@ -61,7 +61,7 @@ const WalletDashboard = () => {
         handler: async (response) => {
           try {
             const verifyRes = await axios.post(
-              `${baseURL}/api/wallet/verify-payment/`,
+              `${getApiUrl()}/api/wallet/verify-payment/`,
               {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
