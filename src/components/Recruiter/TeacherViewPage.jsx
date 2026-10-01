@@ -356,9 +356,11 @@ export default function TeacherViewPageFull() {
       }
     } catch (err) {
       console.error(err);
-      setSubmitError(
-        `Failed to request teacher: ${err?.message || "Unknown error"}`,
-      );
+      if (err?.message?.includes("Insufficient points")) {
+        setSubmitError(err.message);
+      } else {
+        setSubmitError(`Failed to request teacher: ${err?.message || "Unknown error"}`);
+      }
     } finally {
       setModalLoading(false);
     }
@@ -1251,7 +1253,18 @@ export default function TeacherViewPageFull() {
 
                   {/* Error Message Display */}
                   <ErrorMessage
-                    message={submitError}
+                    message={
+                      submitError.includes("Insufficient points") ? (
+                        <div className="flex flex-col gap-2">
+                          <span>{submitError}</span>
+                          <Link to="/recruiter/wallet" className="text-teal-600 underline font-bold self-start hover:text-teal-800">
+                            Go to Wallet to Recharge
+                          </Link>
+                        </div>
+                      ) : (
+                        submitError
+                      )
+                    }
                     type="error"
                     onDismiss={() => setSubmitError(null)}
                   />

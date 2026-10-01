@@ -13,6 +13,7 @@ import { HiMiniEye } from "react-icons/hi2";
 import { getUserData, userLogout } from "../../features/authSlice";
 import { IoMdSettings } from "react-icons/io";
 import { BsPerson } from "react-icons/bs";
+import { FaWallet } from "react-icons/fa";
 import { handleLogout } from "../../services/authUtils";
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -156,6 +157,21 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 Job Apply
               </NavLink>
               
+              <NavLink
+                to="wallet"
+                onClick={() => setIsOpen(false)}
+                end
+                className={({ isActive }) =>
+                  `block py-3 px-4 mx-2 rounded-lg ${
+                    isActive
+                      ? "bg-primary text-white font-semibold"
+                      : "text-secondary"
+                  } hover:bg-primary hover:text-white transition flex items-center gap-2`
+                }
+              >
+                <FaWallet className="size-5" />
+                My Wallet
+              </NavLink>
               
             </nav>
             <div className="flex flex-col">

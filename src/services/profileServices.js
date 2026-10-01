@@ -66,7 +66,7 @@ export const requestTeacher = async (payload) => {
     const response = await apiClient.post('/api/self/hirerequest/', payload);
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Failed to submit request');
+    throw new Error(error.response?.data?.error || error.response?.data?.message || 'Failed to submit request');
   }
 }
 

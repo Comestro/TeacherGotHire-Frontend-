@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaWallet } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { handleLogout } from "../../../services/authUtils";
 import { getUserData } from "../../../features/authSlice";
@@ -133,6 +133,15 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
 
                     {/* Menu Items */}
                     <div className="py-1">
+                      <Link
+                        to="/recruiter/wallet"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                        className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-text hover:bg-background hover:text-primary transition-colors font-medium"
+                      >
+                        <FaWallet className="w-4 h-4" />
+                        My Wallet
+                      </Link>
+                      
                       <button
                         onClick={() => handleLogout(dispatch, navigate)}
                         className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-text hover:bg-background hover:text-primary transition-colors font-medium"

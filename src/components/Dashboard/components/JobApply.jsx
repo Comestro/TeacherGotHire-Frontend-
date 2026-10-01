@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { postJobApply } from "../../../features/examQuesSlice";
 import { getTeacherjobType } from "../../../features/jobProfileSlice";
@@ -167,155 +168,91 @@ const ApplicationForm = ({
           {jobTypesStatus === "loading" ? (
             <p className="text-sm text-gray-500">Loading...</p>
           ) : (
-            <div>
-              <div className="flex space-x-2 border-b border-gray-200 overflow-x-auto pb-1 mb-4 no-scrollbar">
-                {jobTypes &&
-                  jobTypes.map((jobType) => {
-                    const isSelected = selectedJobTypes.includes(jobType.id);
-                    const isActive = activeTab === jobType.id;
-                    return (
-                      <button
-                        key={jobType.id}
-                        type="button"
-                        onClick={() => setActiveTab(jobType.id)}
-                        className={`
-                       whitespace-nowrap px-4 py-2 text-sm font-medium rounded-t-lg transition-all relative
-                       ${
-                         isActive
-                           ? "text-primary bg-primary/5 border-b-2 border-primary z-10"
-                           : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                       }
-                     `}
-                      >
-                        <div className="flex items-center gap-2">
-                          {isSelected && (
-                            <HiOutlineCheckCircle className="text-success h-4 w-4" />
-                          )}
-                          {jobType.teacher_job_name}
+            <div className="space-y-4">
+              {jobTypes && jobTypes.map((currentJob) => {
+                const isApplying = selectedJobTypes.includes(currentJob.id);
+                
+                return (
+                  <div key={currentJob.id} className={`rounded-xl border transition-all duration-200 ${isApplying ? 'border-teal-500 shadow-md bg-white' : 'border-gray-200 bg-gray-50'}`}>
+                    {/* Checkbox Toggle Header */}
+                    <div className="flex md:flex-row flex-col md:items-center items-start justify-between p-4 cursor-pointer hover:bg-slate-50 transition-colors rounded-t-xl" onClick={() => handleJobTypeToggle(currentJob.id)}>
+                      <div className="flex items-center gap-3">
+                        <div className={`flex items-center justify-center w-6 h-6 rounded border ${isApplying ? 'bg-teal-600 border-teal-600 text-white' : 'border-gray-400 bg-white'}`}>
+                           {isApplying && <HiOutlineCheckCircle className="w-5 h-5" />}
                         </div>
-                      </button>
-                    );
-                  })}
-              </div>
+                        <div>
+                          <h4 className={`font-bold text-base ${isApplying ? 'text-teal-700' : 'text-gray-700'}`}>
+                            {currentJob.teacher_job_name}
+                          </h4>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {isApplying ? "You are applying for this position." : "Click to apply for this position."}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-2 md:mt-0">
+                         <label className="relative inline-flex items-center cursor-pointer pointer-events-none">
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={isApplying}
+                            readOnly
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+                        </label>
+                      </div>
+                    </div>
 
-              {/* Tab Content */}
-              {activeTab && (
-                <div className="bg-gray-50 rounded-xl p-5 border border-gray-200 min-h-[300px] animate-in fade-in duration-200">
-                  {(() => {
-                    const currentJob = jobTypes?.find(
-                      (j) => j.id === activeTab,
-                    );
-                    const isApplying = selectedJobTypes.includes(activeTab);
-
-                    if (!currentJob) return null;
-
-                    return (
-                      <div className="space-y-6">
-                        {/* Checkbox Toggle for Tab */}
-                        <div className="flex md:flex-row flex-col md:items-center items-start justify-between bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    {/* Expandable Content */}
+                    {isApplying && (
+                      <div className="p-5 border-t border-gray-100 bg-white/50 animate-in slide-in-from-top-2 duration-200 space-y-6 rounded-b-xl">
+                        {/* Salary Inputs */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
-                            <h4 className="font-semibold text-gray-900 text-base">
-                              {currentJob.teacher_job_name}
-                            </h4>
-                            <p className="text-sm text-gray-500">
-                              Do you want to apply for this job type?
-                            </p>
-                          </div>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              className="sr-only peer"
-                              checked={isApplying}
-                              onChange={() => handleJobTypeToggle(activeTab)}
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                            <span className="ml-3 text-sm font-medium text-gray-900">
-                              {isApplying ? "Yes, Apply" : "No"}
-                            </span>
-                          </label>
-                        </div>
-
-                        {isApplying ? (
-                          <div className="block animate-in slide-in-from-top-2 duration-200 space-y-6">
-                            {/* Salary Inputs */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">
-                                  Expected Amount{" "}
-                                  <span className="text-error">*</span>
-                                </label>
-                                <div className="relative">
-                                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
-                                    ₹
-                                  </span>
-                                  <input
-                                    type="number"
-                                    placeholder="25000"
-                                    value={
-                                      salaryDetails[activeTab]?.amount || ""
-                                    }
-                                    onChange={(e) =>
-                                      handleSalaryChange(
-                                        activeTab,
-                                        "amount",
-                                        e.target.value,
-                                      )
-                                    }
-                                    className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    required
-                                    min="1"
-                                  />
-                                </div>
-                              </div>
-                              <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">
-                                  Payment Type{" "}
-                                  <span className="text-error">*</span>
-                                </label>
-                                <select
-                                  value={
-                                    salaryDetails[activeTab]?.type || "monthly"
-                                  }
-                                  onChange={(e) =>
-                                    handleSalaryChange(
-                                      activeTab,
-                                      "type",
-                                      e.target.value,
-                                    )
-                                  }
-                                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                                >
-                                  <option value="monthly">Monthly</option>
-                                  <option value="daily">Daily</option>
-                                  <option value="hourly">Hourly</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            {/* Location Selector */}
-                            <div className="border-t border-gray-200/60 pt-4">
-                              <JobLocationSelector
-                                jobType={currentJob.teacher_job_name}
-                                locations={jobTypeLocations[activeTab] || []}
-                                onChange={(newLocations) =>
-                                  handleLocationChange(activeTab, newLocations)
-                                }
+                            <label className="block text-xs font-bold text-gray-700 mb-1">
+                              Expected Amount <span className="text-red-500">*</span>
+                            </label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">₹</span>
+                              <input
+                                type="number"
+                                placeholder="25000"
+                                value={salaryDetails[currentJob.id]?.amount || ""}
+                                onChange={(e) => handleSalaryChange(currentJob.id, "amount", e.target.value)}
+                                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white shadow-sm"
+                                required
+                                min="1"
                               />
                             </div>
                           </div>
-                        ) : (
-                          <div className="text-center py-12 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
-                            <span className="block text-sm">
-                              Toggle "Yes" above to configure preferences for{" "}
-                              {currentJob.teacher_job_name}
-                            </span>
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">
+                              Payment Type <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                              value={salaryDetails[currentJob.id]?.type || "monthly"}
+                              onChange={(e) => handleSalaryChange(currentJob.id, "type", e.target.value)}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white shadow-sm"
+                            >
+                              <option value="monthly">Monthly</option>
+                              <option value="daily">Daily</option>
+                              <option value="hourly">Hourly</option>
+                            </select>
                           </div>
-                        )}
+                        </div>
+
+                        {/* Location Selector */}
+                        <div className="border-t border-gray-200/60 pt-4">
+                          <JobLocationSelector
+                            jobType={currentJob.teacher_job_name}
+                            locations={jobTypeLocations[currentJob.id] || []}
+                            onChange={(newLocations) => handleLocationChange(currentJob.id, newLocations)}
+                          />
+                        </div>
                       </div>
-                    );
-                  })()}
-                </div>
-              )}
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -726,6 +663,16 @@ const JobApply = () => {
       if (errorMessage.includes("job preference location")) {
         toast.error(
           "Please set your job preference location in the application form.",
+        );
+      } else if (errorMessage.includes("Insufficient points")) {
+        toast.error(
+          <div>
+            <div>{errorMessage}</div>
+            <Link to="/teacher/wallet" className="text-teal-600 underline font-bold mt-2 inline-block hover:text-teal-800">
+              Go to Wallet to Recharge
+            </Link>
+          </div>,
+          { autoClose: 10000 }
         );
       } else {
         toast.error(errorMessage);

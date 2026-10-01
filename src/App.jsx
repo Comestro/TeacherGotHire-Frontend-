@@ -58,6 +58,7 @@ import Unauthorized from "./components/Unauthorized";
 import RoleBasedRoute from "./components/RoleBasedRoute";
 import ManageHiringRequests from "./admin/Manage-hiring/ManageHiring";
 import TeacherViewPage from "./components/Recruiter/TeacherViewPage";
+import WalletDashboard from "./components/Wallet/WalletDashboard";
 import InterviewManagement from "./admin/Manage-interview/ManageInterview";
 import JobApply from "./components/Dashboard/components/JobApply";
 import Test from "./admin/test/Test";
@@ -193,6 +194,10 @@ function AppContent() {
           <Route
             path="teacher/:id"
             element={<TeacherViewPage />}
+          />
+          <Route
+            path="wallet"
+            element={<WalletDashboard />}
           />
         </Route>
 
@@ -528,6 +533,15 @@ function AppContent() {
             element={
               <RoleBasedRoute
                 element={<EmailLogs />}
+                allowedRoles={["teacher"]}
+              />
+            }
+          />
+          <Route
+            path="wallet"
+            element={
+              <RoleBasedRoute
+                element={<WalletDashboard />}
                 allowedRoles={["teacher"]}
               />
             }
