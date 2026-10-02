@@ -87,7 +87,7 @@ const RecruiterHireRequests = () => {
                 </div>
                 
                 <h3 className="font-bold text-lg text-slate-800 mb-1 line-clamp-1">
-                  Hire Request Sent
+                  Teacher: {req.teacher_name || "Unknown"}
                 </h3>
                 <p className="text-slate-500 text-sm mb-4">
                   You have requested this teacher for an interview.
@@ -108,16 +108,10 @@ const RecruiterHireRequests = () => {
               {req.status === 'requested' && (
                 <div className="p-4 border-t border-slate-100 bg-slate-50 flex gap-3">
                   <button
-                    onClick={() => handleStatusUpdate(req.id, "rejected")}
-                    className="flex-1 py-2 bg-white border border-rose-200 text-rose-600 font-medium rounded-lg hover:bg-rose-50 transition-colors text-sm"
+                    onClick={() => handleWithdraw(req.id)}
+                    className="flex-1 py-2 bg-white border border-rose-200 text-rose-600 font-medium rounded-lg hover:bg-rose-50 transition-colors text-sm shadow-sm"
                   >
-                    Reject
-                  </button>
-                  <button
-                    onClick={() => handleStatusUpdate(req.id, "fulfilled")}
-                    className="flex-1 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm text-sm"
-                  >
-                    Accept
+                    Withdraw & Refund Points
                   </button>
                 </div>
               )}

@@ -156,7 +156,7 @@ const TeacherHireRequests = () => {
                 </div>
                 
                 <h3 className="font-bold text-lg text-slate-800 mb-1 line-clamp-1">
-                  Recruiter Request
+                  Recruiter: {req.recruiter_name || "Unknown"}
                 </h3>
                 <p className="text-slate-500 text-sm mb-4">
                   A recruiter is interested in your profile.
