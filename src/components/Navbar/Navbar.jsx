@@ -13,7 +13,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { userLogout, getUserData } from "../../features/authSlice";
 import { TeacherEnquiry } from "../enquiry/TeacherEnquiry";
-import { FaSignInAlt } from "react-icons/fa";
+import { FaSignInAlt, FaListAlt } from "react-icons/fa";
 import axios from "axios";
 import { getApiUrl } from "../../store/configue";
 
@@ -116,6 +116,16 @@ const Navbar = ({ links }) => {
           onClick={() => setIsProfileOpen(false)}
         >
           <FiSettings className="mr-3" /> Settings
+        </Link>
+      )}
+      
+      {role === "recruiter" && (
+        <Link
+          to="/recruiter/hire-requests"
+          className="flex items-center px-4 py-3 hover:bg-slate-50 text-slate-700 transition-colors"
+          onClick={() => setIsProfileOpen(false)}
+        >
+          <FaListAlt className="mr-3" /> Hire Requests
         </Link>
       )}
       <button
