@@ -96,11 +96,15 @@ const RecruiterHireRequests = () => {
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-2 text-sm text-slate-600">
                     <HiOutlineBriefcase className="text-slate-400 shrink-0" />
-                    <span className="truncate">Job Types: {req.teacher_job_type?.length || 0}</span>
+                    <span className="truncate" title={req.job_type_names?.join(", ") || "None"}>
+                      Job Types: {req.job_type_names?.length > 0 ? req.job_type_names.join(", ") : "None"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-slate-600">
                     <HiOutlineClock className="text-slate-400 shrink-0" />
-                    <span className="truncate">Subjects: {req.subject?.length || 0}</span>
+                    <span className="truncate" title={req.subject_names?.join(", ") || "None"}>
+                      Subjects: {req.subject_names?.length > 0 ? req.subject_names.join(", ") : "None"}
+                    </span>
                   </div>
                 </div>
               </div>

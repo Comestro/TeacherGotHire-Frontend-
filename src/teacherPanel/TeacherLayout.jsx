@@ -70,6 +70,8 @@ const TeacherLayout = () => {
       }
     };
     fetchWallet();
+    window.addEventListener("walletUpdated", fetchWallet);
+    return () => window.removeEventListener("walletUpdated", fetchWallet);
   }, [location.pathname]);
 
   useEffect(() => {
