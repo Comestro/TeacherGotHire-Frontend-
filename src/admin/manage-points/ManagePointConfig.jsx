@@ -22,6 +22,35 @@ const ManagePointConfig = () => {
   // New Rule Forms
   const [newTeacherRule, setNewTeacherRule] = useState({ job_type: "", state: "", district: "", points_required: 0 });
   const [newRecruiterRule, setNewRecruiterRule] = useState({ class_category: "", subject: "", points_required: 0 });
+  const [pincode, setPincode] = useState("");
+  const [fetchingPincode, setFetchingPincode] = useState(false);
+
+  const handlePincodeChange = async (e) => {
+    const code = e.target.value;
+    setPincode(code);
+
+    if (code.length === 6) {
+      setFetchingPincode(true);
+      try {
+        const response = await axios.get(`https://api.postalpincode.in/pincode/${code}`);
+        if (response.data[0].Status === "Success") {
+          const postOffice = response.data[0].PostOffice[0];
+          setNewTeacherRule({
+            ...newTeacherRule,
+            district: postOffice.District,
+            state: postOffice.State
+          });
+          toast.success("Location auto-detected!");
+        } else {
+          toast.error("Invalid Pincode");
+        }
+      } catch (error) {
+        console.error("Pincode fetch error", error);
+      } finally {
+        setFetchingPincode(false);
+      }
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -187,13 +216,20 @@ const ManagePointConfig = () => {
         <div className="bg-white p-6 rounded-lg shadow-md border">
           <h3 className="text-lg font-semibold mb-4 border-b pb-2 text-blue-700">Teacher Rules (Point Deductions for Job Application)</h3>
           
-          <form onSubmit={handleAddTeacherRule} className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200 items-end">
+          <form onSubmit={handleAddTeacherRule} className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6 bg-gray-50 p-4 rounded-md border border-gray-200 items-end">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Job Type (Required)</label>
               <select required className="w-full px-2 py-2 border rounded text-sm bg-white" value={newTeacherRule.job_type} onChange={e=>setNewTeacherRule({...newTeacherRule, job_type: e.target.value})}>
                 <option value="">Select Job Type</option>
                 {jobTypes.map(jt => <option key={jt.id} value={jt.id}>{jt.teacher_job_name || jt.jobrole_name || jt.name}</option>)}
               </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Pincode (Auto-fill)</label>
+              <div className="relative">
+                <input type="text" maxLength="6" placeholder="e.g. 110001" className="w-full px-2 py-2 border rounded text-sm bg-white" value={pincode} onChange={handlePincodeChange} />
+                {fetchingPincode && <span className="absolute right-2 top-2 text-xs text-blue-500">...</span>}
+              </div>
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">State (Optional)</label>
