@@ -1,16 +1,28 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getApiUrl } from "../../store/configue";
-import useRazorpay from "react-razorpay";
 import { FaWallet, FaCoins, FaHistory } from "react-icons/fa";
 import { toast } from "react-toastify";
+
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => {
+      resolve(true);
+    };
+    script.onerror = () => {
+      resolve(false);
+    };
+    document.body.appendChild(script);
+  });
+};
 
 const WalletDashboard = () => {
   const [wallet, setWallet] = useState(null);
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [pointsToBuy, setPointsToBuy] = useState("");
-  const [Razorpay] = useRazorpay();
 
   const fetchWallet = async () => {
     try {
@@ -51,6 +63,13 @@ const WalletDashboard = () => {
       const { order_id, amount, currency, key_id } = orderRes.data;
 
       // Initialize Razorpay
+      const res = await loadRazorpayScript();
+
+      if (!res) {
+        toast.error("Razorpay SDK failed to load. Are you online?");
+        return;
+      }
+
       const options = {
         key: key_id,
         amount: amount,
@@ -85,7 +104,10 @@ const WalletDashboard = () => {
         },
       };
 
-      const rzp = new Razorpay(options);
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", function (response) {
+        toast.error("Payment Failed! Please try again.");
+      });
       rzp.open();
     } catch (error) {
       console.error("Payment error", error);
