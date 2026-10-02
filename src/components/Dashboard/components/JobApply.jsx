@@ -60,6 +60,7 @@ const ApplicationForm = ({
     e && e.preventDefault();
     if (!selectedJobType) { toast.error("Select a job type"); return; }
     if (!salaryAmount || parseFloat(salaryAmount) <= 0) { toast.error("Enter valid salary"); return; }
+    if (locations.length === 0) { toast.error("Please add at least one location preference."); return; }
 
     const existingJobTypes = applicationData?.filter(app => app.status === true).map(app => getJobTypeId(app.teacher_job_type)) || [];
     const allSelectedTypes = [...existingJobTypes, parseInt(selectedJobType)];
@@ -141,13 +142,12 @@ const ApplicationForm = ({
         </div>
       </form>
       <div className="mt-4 pt-4 border-t border-slate-100">
-        <label className="block text-xs font-semibold text-slate-600 mb-2">Specific Locations (Optional)</label>
+        <label className="block text-xs font-semibold text-slate-600 mb-2">Specific Locations (Required)</label>
         <JobLocationSelector
           jobType={getJobTypeName(jobTypes, selectedJobType)}
           locations={locations}
           onChange={setLocations}
         />
-        <p className="text-[10px] text-slate-400 mt-2">* If no location is selected, it will automatically use the default locations saved in your profile.</p>
       </div>
     </div>
   );
