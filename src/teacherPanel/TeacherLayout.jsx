@@ -21,6 +21,8 @@ import { FaWallet } from "react-icons/fa";
 import { getUserData } from "../features/authSlice";
 import { getProfilCompletion } from "../features/personalProfileSlice";
 import { handleLogout } from "../services/authUtils";
+import axios from "axios";
+import { getApiUrl } from "../store/configue";
 
 const SidebarItem = ({ to, icon: Icon, label, onClick }) => (
   <NavLink
@@ -49,8 +51,26 @@ const TeacherLayout = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const { completionData } = useSelector((state) => state.personalProfile);
+  const [walletBalance, setWalletBalance] = useState(null);
   const profileRef = useRef(null);
   const notificationsRef = useRef(null);
+
+  useEffect(() => {
+    const fetchWallet = async () => {
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        try {
+          const res = await axios.get(`${getApiUrl()}/api/wallet/`, {
+            headers: { Authorization: `Token ${token}` }
+          });
+          setWalletBalance(res.data.balance);
+        } catch (e) {
+          console.error("Failed to fetch wallet in dashboard", e);
+        }
+      }
+    };
+    fetchWallet();
+  }, [location.pathname]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -220,6 +240,18 @@ const TeacherLayout = () => {
             </div>
 
             <div className="flex items-center gap-4">
+              {walletBalance !== null && (
+                <div className="group relative hidden sm:block">
+                  <NavLink to="/teacher/wallet" className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-full transition-all hover:bg-indigo-100 hover:shadow-sm cursor-pointer">
+                    <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold font-serif">P</div>
+                    <span className="text-indigo-800 font-bold text-sm">{walletBalance}</span>
+                  </NavLink>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-3 py-1.5 bg-indigo-800 text-white text-xs font-medium rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap shadow-lg z-50">
+                    Add Fund
+                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-indigo-800 rotate-45"></div>
+                  </div>
+                </div>
+              )}
               {/* Notification Bell */}
               <div className="relative" ref={notificationsRef}>
                 <button
