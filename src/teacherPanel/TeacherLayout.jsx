@@ -156,11 +156,7 @@ const TeacherLayout = () => {
           Main Menu
         </div>
         <SidebarItem to="/teacher" icon={HiViewGrid} label="Dashboard" />
-        <SidebarItem
-          to="/teacher/hire-requests"
-          icon={HiBriefcase}
-          label="Hire Requests"
-        />
+
         <SidebarItem
           to="/teacher/start-test"
           icon={HiOutlineDocumentText}
@@ -185,6 +181,12 @@ const TeacherLayout = () => {
           to="wallet"
           icon={FaWallet}
           label="My Wallet"
+        />
+
+        <SidebarItem
+          to="/teacher/hire-requests"
+          icon={HiBriefcase}
+          label="Hire Requests"
         />
 
         <div className="px-4 py-2 mt-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">
