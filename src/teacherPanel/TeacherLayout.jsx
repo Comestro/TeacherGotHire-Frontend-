@@ -17,6 +17,7 @@ import {
 import { HiMiniEye } from "react-icons/hi2";
 import { IoMdSettings } from "react-icons/io";
 import { BsPerson } from "react-icons/bs";
+import { FaWallet } from "react-icons/fa";
 import { getUserData } from "../features/authSlice";
 import { getProfilCompletion } from "../features/personalProfileSlice";
 import { handleLogout } from "../services/authUtils";
@@ -140,6 +141,11 @@ const TeacherLayout = () => {
           to="job-apply"
           icon={HiBriefcase}
           label="Job Applications"
+        />
+        <SidebarItem
+          to="wallet"
+          icon={FaWallet}
+          label="My Wallet"
         />
 
         <div className="px-4 py-2 mt-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">
