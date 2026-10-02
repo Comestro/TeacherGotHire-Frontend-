@@ -50,7 +50,7 @@ const Navbar = ({ links }) => {
           const res = await axios.get(`${getApiUrl()}/api/wallet/`, {
             headers: { Authorization: `Token ${token}` }
           });
-          setWalletBalance(res.data.balance);
+          setWalletBalance(res.data?.wallet?.balance || 0);
         } catch (e) {
           console.error("Failed to fetch wallet", e);
         }
