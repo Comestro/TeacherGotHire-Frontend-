@@ -394,11 +394,20 @@ const ApplicationSummary = ({ applications, jobTypes, onRevoke, onUpdateSubmit }
             <div className="p-4 max-h-[60vh] overflow-y-auto">
               <ul className="space-y-2">
                 {viewingLocationsApp.locations.map((loc, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                    <span className="text-teal-600 mt-0.5">📍</span>
-                    <div>
-                      <span className="font-medium text-slate-700">{loc.district || "All Districts"}</span>
-                      <span className="text-slate-400">, {loc.state}</span>
+                  <li key={idx} className="flex items-start gap-3 text-sm text-slate-600 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                    <span className="text-teal-600 mt-0.5 text-lg">📍</span>
+                    <div className="flex flex-col gap-1">
+                      <div>
+                        <span className="font-bold text-slate-800">{loc.district || "All Districts"}</span>
+                        <span className="text-slate-500 font-medium">, {loc.state}</span>
+                      </div>
+                      {(loc.area || loc.post_office || loc.pincode) && (
+                        <div className="text-xs text-slate-500 flex flex-wrap gap-x-3 gap-y-1 mt-0.5">
+                          {loc.area && <span><span className="font-medium text-slate-400">Area:</span> {loc.area}</span>}
+                          {loc.post_office && <span><span className="font-medium text-slate-400">PO:</span> {loc.post_office}</span>}
+                          {loc.pincode && <span><span className="font-medium text-slate-400">PIN:</span> {loc.pincode}</span>}
+                        </div>
+                      )}
                     </div>
                   </li>
                 ))}
