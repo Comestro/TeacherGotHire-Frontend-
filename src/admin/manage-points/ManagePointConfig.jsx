@@ -295,7 +295,9 @@ const ManagePointConfig = () => {
               <label className="block text-xs font-medium text-gray-700 mb-1">Subject (Optional)</label>
               <select className="w-full px-2 py-2 border rounded text-sm bg-white" value={newRecruiterRule.subject} onChange={e=>setNewRecruiterRule({...newRecruiterRule, subject: e.target.value})}>
                 <option value="">Any Subject</option>
-                {subjects.map(sub => <option key={sub.id} value={sub.id}>{sub.subject_name}</option>)}
+                {subjects
+                  .filter(sub => !newRecruiterRule.class_category || sub.class_category == newRecruiterRule.class_category)
+                  .map(sub => <option key={sub.id} value={sub.id}>{sub.subject_name}</option>)}
               </select>
             </div>
             <div>
