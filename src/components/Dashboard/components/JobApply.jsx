@@ -655,7 +655,8 @@ const JobApply = () => {
       console.error("❌ Application error:", error);
 
       let errorMessage = "Please try again";
-      if (error?.error) errorMessage = error.error;
+      if (typeof error === "string") errorMessage = error;
+      else if (error?.error) errorMessage = error.error;
       else if (error?.response?.data?.error)
         errorMessage = error.response.data.error;
       else if (error?.message) errorMessage = error.message;
