@@ -44,11 +44,11 @@ const ManagePointConfig = () => {
         setConfig(createRes.data);
       }
       
-      setTeacherRules(trRes.data);
-      setRecruiterRules(rrRes.data);
-      setJobTypes(jtRes.data);
-      setCategories(catRes.data);
-      setSubjects(subRes.data);
+      setTeacherRules(trRes.data.results || trRes.data || []);
+      setRecruiterRules(rrRes.data.results || rrRes.data || []);
+      setJobTypes(jtRes.data.results || jtRes.data || []);
+      setCategories(catRes.data.results || catRes.data || []);
+      setSubjects(subRes.data.results || subRes.data || []);
     } catch (error) {
       console.error(error);
       toast.error("Failed to load point configuration");
@@ -76,7 +76,6 @@ const ManagePointConfig = () => {
       setSaving(false);
     }
   };
-
   const handleAddTeacherRule = async (e) => {
     e.preventDefault();
     try {
@@ -292,3 +291,4 @@ const ManagePointConfig = () => {
 };
 
 export default ManagePointConfig;
+
