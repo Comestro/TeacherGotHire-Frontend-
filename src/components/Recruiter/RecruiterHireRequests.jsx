@@ -3,7 +3,7 @@ import axios from "axios";
 import { getApiUrl } from "../../store/configue";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { HiOutlineBriefcase, HiOutlineLocationMarker, HiOutlineClock } from "react-icons/hi";
+import { HiOutlineBriefcase, HiOutlineLocationMarker, HiOutlineClock, HiOutlineDocumentText } from "react-icons/hi";
 
 const RecruiterHireRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -102,6 +102,12 @@ const RecruiterHireRequests = () => {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-slate-600">
                     <HiOutlineClock className="text-slate-400 shrink-0" />
+                    <span className="truncate" title={req.class_category_names?.join(", ") || "None"}>
+                      Classes: {req.class_category_names?.length > 0 ? req.class_category_names.join(", ") : "None"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <HiOutlineDocumentText className="text-slate-400 shrink-0" />
                     <span className="truncate" title={req.subject_names?.join(", ") || "None"}>
                       Subjects: {req.subject_names?.length > 0 ? req.subject_names.join(", ") : "None"}
                     </span>
