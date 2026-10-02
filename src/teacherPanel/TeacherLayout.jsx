@@ -134,6 +134,20 @@ const TeacherLayout = () => {
             </p>
           </div>
         </div>
+        
+        {/* Wallet Balance Card (Mobile Only since Desktop has it in header) */}
+        {walletBalance !== null && (
+          <NavLink to="/teacher/wallet" className="mt-3 bg-indigo-50 border border-indigo-100 rounded-lg p-3 flex items-center justify-between hover:bg-indigo-100 transition-colors sm:hidden">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold font-serif">P</div>
+              <span className="font-medium text-sm text-indigo-900">Wallet</span>
+            </div>
+            <div className="flex flex-col items-end">
+              <span className="font-bold text-indigo-700">{walletBalance}</span>
+              <span className="text-[10px] text-indigo-500 font-medium">Add Fund</span>
+            </div>
+          </NavLink>
+        )}
       </div>
 
       {/* Navigation */}
