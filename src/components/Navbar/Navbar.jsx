@@ -202,7 +202,7 @@ const Navbar = ({ links }) => {
                   <div className="group relative ml-4 hidden sm:block">
                     <Link to="/teacher/wallet" className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-full transition-all hover:bg-indigo-100 hover:shadow-sm cursor-pointer">
                       <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold font-serif">P</div>
-                      <span className="text-indigo-800 font-bold text-sm">{walletBalance}</span>
+                      <span className="text-indigo-800 font-bold text-sm">{walletBalance} <span className="font-medium text-xs opacity-80">Points</span></span>
                     </Link>
                     <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-3 py-1.5 bg-indigo-800 text-white text-xs font-medium rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap shadow-lg">
                       Add Fund
@@ -298,7 +298,7 @@ const Navbar = ({ links }) => {
                       <span className="font-medium text-indigo-900">Wallet Balance</span>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="text-lg font-bold text-indigo-700">{walletBalance}</span>
+                      <span className="text-lg font-bold text-indigo-700">{walletBalance} <span className="text-xs font-medium opacity-80">Pts</span></span>
                       <span className="text-xs text-indigo-500 font-medium hover:underline cursor-pointer">Add Fund</span>
                     </div>
                   </Link>

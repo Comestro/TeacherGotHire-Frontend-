@@ -26,7 +26,7 @@ const WalletDashboard = () => {
 
   const fetchWallet = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       const res = await axios.get(`${getApiUrl()}/api/wallet/`, {
         headers: { Authorization: `Token ${token}` },
       });
@@ -51,7 +51,7 @@ const WalletDashboard = () => {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       
       // Create order
       const orderRes = await axios.post(
