@@ -41,354 +41,141 @@ const ApplicationForm = ({
   jobTypes,
   jobTypesStatus,
 }) => {
-  const [selectedJobTypes, setSelectedJobTypes] = useState([]);
-  const [salaryDetails, setSalaryDetails] = useState({});
-  const [jobTypeLocations, setJobTypeLocations] = useState({});
-  const [activeTab, setActiveTab] = useState(null);
+  const [selectedJobType, setSelectedJobType] = useState("");
+  const [salaryAmount, setSalaryAmount] = useState("");
+  const [salaryType, setSalaryType] = useState("monthly");
+
+  const availableJobTypes = jobTypes?.filter(jt => 
+    !applicationData?.some(app => getJobTypeId(app.teacher_job_type) === jt.id && app.status === true)
+  ) || [];
+
   useEffect(() => {
-    if (
-      isEdit &&
-      Array.isArray(applicationData) &&
-      applicationData.length > 0
-    ) {
-      let initialJobTypes = [];
-      let initialSalaryDetails = {};
-      let initialLocations = {};
-
-      applicationData.forEach((app) => {
-        const jobId = getJobTypeId(app.teacher_job_type);
-        if (jobId) {
-          initialJobTypes.push(jobId);
-          initialSalaryDetails[jobId] = {
-            amount: app.salary_expectation,
-            type: app.salary_type || "monthly",
-          };
-          initialLocations[jobId] = app.preferred_locations || [];
-        }
-      });
-
-      setSelectedJobTypes(initialJobTypes);
-      setSalaryDetails(initialSalaryDetails);
-      setJobTypeLocations(initialLocations);
-
-      if (initialJobTypes.length > 0 && !activeTab) {
-        setActiveTab(initialJobTypes[0]);
-      }
-    } else {
-      if (jobTypes && jobTypes.length > 0 && !activeTab) {
-        setActiveTab(jobTypes[0].id);
-      }
+    if (availableJobTypes.length > 0 && !selectedJobType) {
+      setSelectedJobType(availableJobTypes[0].id.toString());
     }
-  }, [isEdit, applicationData, jobTypes, activeTab]);
-
-  const handleJobTypeToggle = (jobTypeId) => {
-    setSelectedJobTypes((prev) => {
-      if (prev.includes(jobTypeId)) {
-        const newTypes = prev.filter((id) => id !== jobTypeId);
-
-        return newTypes;
-      } else {
-        return [...prev, jobTypeId];
-      }
-    });
-  };
-
-  const handleLocationChange = (jobTypeId, locations) => {
-    setJobTypeLocations((prev) => ({
-      ...prev,
-      [jobTypeId]: locations,
-    }));
-  };
-
-  const handleSalaryChange = (jobId, field, value) => {
-    setSalaryDetails((prev) => ({
-      ...prev,
-      [jobId]: {
-        ...(prev[jobId] || { type: "monthly" }), // Ensure object exists
-        [field]: value,
-      },
-    }));
-  };
+  }, [availableJobTypes, selectedJobType]);
 
   const handleSubmit = (e) => {
-    e && e.preventDefault(); // Handle if e is missing for button click
+    e && e.preventDefault();
+    if (!selectedJobType) { toast.error("Select a job type"); return; }
+    if (!salaryAmount || parseFloat(salaryAmount) <= 0) { toast.error("Enter valid salary"); return; }
 
-    if (selectedJobTypes.length === 0) {
-      toast.error("Please select at least one job type to apply for.");
-      return;
-    }
-    for (const jobId of selectedJobTypes) {
-      if (
-        !salaryDetails[jobId]?.amount ||
-        parseFloat(salaryDetails[jobId].amount) <= 0
-      ) {
-        const jobName = getJobTypeName(jobTypes, jobId);
-        toast.error(`Please enter a valid salary for ${jobName}`);
-        setActiveTab(jobId);
-        return;
+    const existingJobTypes = applicationData?.filter(app => app.status === true).map(app => getJobTypeId(app.teacher_job_type)) || [];
+    const allSelectedTypes = [...existingJobTypes, parseInt(selectedJobType)];
+    
+    const salaryDetails = {};
+    applicationData?.forEach(app => {
+      const jId = getJobTypeId(app.teacher_job_type);
+      if(app.status === true) {
+        salaryDetails[jId] = { amount: app.salary_expectation, type: app.salary_type || "monthly" };
       }
-      const locations = jobTypeLocations[jobId] || [];
-      if (locations.length === 0) {
-        const jobName = getJobTypeName(jobTypes, jobId);
-        toast.warning(
-          `You haven't selected any location preference for ${jobName}. Defaulting to state/district if any.`,
-        );
-      }
-    }
+    });
+    salaryDetails[selectedJobType] = { amount: salaryAmount, type: salaryType };
+
     const salaryData = {
-      teacher_job_type: selectedJobTypes,
+      teacher_job_type: allSelectedTypes,
       salary_details: salaryDetails,
-      job_type_locations: jobTypeLocations,
+      job_type_locations: {} 
     };
 
     onConfirm(salaryData);
   };
 
-  return (
-    <div className="mt-4 border-t border-gray-100 pt-6 animate-fadeIn">
-      <div className="flex items-center mb-4">
-        <div className="p-2 rounded-full bg-primary/10">
-          <HiOutlineCurrencyDollar className="h-5 w-5 text-primary" />
-        </div>
-        <h3 className="ml-3 text-base font-semibold text-text">
-          {isEdit ? "Update Application Details" : "Application Details"}
-        </h3>
+  if (availableJobTypes.length === 0) {
+    return (
+      <div className="mt-4 pt-4 border-t border-slate-100">
+        <p className="text-sm text-slate-500">You have already applied for all available job types for this subject.</p>
+        <button type="button" onClick={onCancel} className="mt-3 px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg">Close</button>
       </div>
+    );
+  }
 
-      <p className="text-sm text-secondary mb-6 ml-1">
-        {isEdit
-          ? "Update your preferences for"
-          : "Select job types and set preferences for"}{" "}
-        <strong>{subjectName}</strong>.
-      </p>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-6">
-          {/* Job Tabs */}
-          {jobTypesStatus === "loading" ? (
-            <p className="text-sm text-gray-500">Loading...</p>
-          ) : (
-            <div className="space-y-4">
-              {jobTypes && jobTypes.map((currentJob) => {
-                const isApplying = selectedJobTypes.includes(currentJob.id);
-                
-                return (
-                  <div key={currentJob.id} className={`rounded-xl border transition-all duration-200 ${isApplying ? 'border-teal-500 shadow-md bg-white' : 'border-gray-200 bg-gray-50'}`}>
-                    {/* Checkbox Toggle Header */}
-                    <div className="flex md:flex-row flex-col md:items-center items-start justify-between p-4 cursor-pointer hover:bg-slate-50 transition-colors rounded-t-xl" onClick={() => handleJobTypeToggle(currentJob.id)}>
-                      <div className="flex items-center gap-3">
-                        <div className={`flex items-center justify-center w-6 h-6 rounded border ${isApplying ? 'bg-teal-600 border-teal-600 text-white' : 'border-gray-400 bg-white'}`}>
-                           {isApplying && <HiOutlineCheckCircle className="w-5 h-5" />}
-                        </div>
-                        <div>
-                          <h4 className={`font-bold text-base ${isApplying ? 'text-teal-700' : 'text-gray-700'}`}>
-                            {currentJob.teacher_job_name}
-                          </h4>
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            {isApplying ? "You are applying for this position." : "Click to apply for this position."}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-2 md:mt-0">
-                         <label className="relative inline-flex items-center cursor-pointer pointer-events-none">
-                          <input
-                            type="checkbox"
-                            className="sr-only peer"
-                            checked={isApplying}
-                            readOnly
-                          />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Expandable Content */}
-                    {isApplying && (
-                      <div className="p-5 border-t border-gray-100 bg-white/50 animate-in slide-in-from-top-2 duration-200 space-y-6 rounded-b-xl">
-                        {/* Salary Inputs */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1">
-                              Expected Amount <span className="text-red-500">*</span>
-                            </label>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">₹</span>
-                              <input
-                                type="number"
-                                placeholder="25000"
-                                value={salaryDetails[currentJob.id]?.amount || ""}
-                                onChange={(e) => handleSalaryChange(currentJob.id, "amount", e.target.value)}
-                                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white shadow-sm"
-                                required
-                                min="1"
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1">
-                              Payment Type <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                              value={salaryDetails[currentJob.id]?.type || "monthly"}
-                              onChange={(e) => handleSalaryChange(currentJob.id, "type", e.target.value)}
-                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white shadow-sm"
-                            >
-                              <option value="monthly">Monthly</option>
-                              <option value="daily">Daily</option>
-                              <option value="hourly">Hourly</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        {/* Location Selector */}
-                        <div className="border-t border-gray-200/60 pt-4">
-                          <JobLocationSelector
-                            jobType={currentJob.teacher_job_name}
-                            locations={jobTypeLocations[currentJob.id] || []}
-                            onChange={(newLocations) => handleLocationChange(currentJob.id, newLocations)}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+  return (
+    <div className="mt-4 pt-4 border-t border-slate-100 animate-in fade-in duration-200">
+      <h3 className="text-sm font-bold text-slate-800 mb-3">
+        Apply for a new Job Type in {subjectName}
+      </h3>
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 items-end">
+        <div className="w-full sm:w-1/3">
+           <label className="block text-xs font-semibold text-slate-600 mb-1">Job Type</label>
+           <select 
+             className="w-full text-sm border-slate-200 rounded-lg py-2 bg-slate-50 focus:ring-teal-500 focus:border-teal-500"
+             value={selectedJobType}
+             onChange={(e) => setSelectedJobType(e.target.value)}
+           >
+             {availableJobTypes.map(jt => (
+               <option key={jt.id} value={jt.id}>{jt.teacher_job_name}</option>
+             ))}
+           </select>
         </div>
-
-        <div className="flex gap-3 flex-col md:flex-row pt-4 border-t border-gray-100">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={jobTypesStatus === "loading"}
-            className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isEdit ? "Update details & Apply" : "Submit Application"}
-          </button>
+        <div className="w-full sm:w-1/3">
+           <label className="block text-xs font-semibold text-slate-600 mb-1">Expected Salary (₹)</label>
+           <input 
+             type="number"
+             className="w-full text-sm border-slate-200 rounded-lg py-2 bg-slate-50 focus:ring-teal-500 focus:border-teal-500"
+             value={salaryAmount}
+             onChange={(e) => setSalaryAmount(e.target.value)}
+             placeholder="e.g. 5000"
+             required min="1"
+           />
+        </div>
+        <div className="w-full sm:w-1/4">
+           <label className="block text-xs font-semibold text-slate-600 mb-1">Per</label>
+           <select 
+             className="w-full text-sm border-slate-200 rounded-lg py-2 bg-slate-50 focus:ring-teal-500 focus:border-teal-500"
+             value={salaryType}
+             onChange={(e) => setSalaryType(e.target.value)}
+           >
+             <option value="hourly">Hour</option>
+             <option value="daily">Day</option>
+             <option value="monthly">Month</option>
+             <option value="yearly">Year</option>
+           </select>
+        </div>
+        <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+          <button type="button" onClick={onCancel} className="px-3 py-2 text-sm font-medium text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Cancel</button>
+          <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-lg hover:bg-teal-700 shadow-sm whitespace-nowrap">Apply</button>
         </div>
       </form>
+      <p className="text-[10px] text-slate-400 mt-2">* Location preferences will automatically use the default locations saved in your profile.</p>
     </div>
   );
 };
-const ApplicationSummary = ({ applications, jobTypes }) => {
-  const [activeTab, setActiveTab] = useState(null);
 
-  useEffect(() => {
-    if (applications && applications.length > 0 && !activeTab) {
-      setActiveTab(getJobTypeId(applications[0].teacher_job_type));
-    }
-  }, [applications]);
-
+const ApplicationSummary = ({ applications, jobTypes, onRevoke }) => {
   if (!applications || applications.length === 0) return null;
 
   return (
-    <div className="mb-6 bg-gray-50/50 rounded-xl overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-        <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wide">
+    <div className="bg-slate-50 rounded-lg overflow-hidden border border-slate-100">
+      <div className="px-4 py-2 border-b border-slate-100 bg-slate-100/50">
+        <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">
           Current Applications
         </h4>
       </div>
-
-      {/* Tabs */}
-      <div className="flex border-b border-gray-100 overflow-x-auto no-scrollbar">
+      <div className="divide-y divide-slate-100">
         {applications.map((app) => {
           const jobId = getJobTypeId(app.teacher_job_type);
           const jobName = getJobTypeName(jobTypes, jobId);
-          const isActive = activeTab === jobId;
-
+          
           return (
-            <button
-              key={jobId}
-              onClick={() => setActiveTab(jobId)}
-              className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                isActive
-                  ? "border-primary text-primary bg-primary/5"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              {jobName}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Content */}
-      <div className="p-5">
-        {applications.map((app) => {
-          const jobId = getJobTypeId(app.teacher_job_type);
-          if (activeTab !== jobId) return null;
-
-          return (
-            <div key={app.id} className="animate-in fade-in duration-200">
-              <div className="flex flex-wrap gap-6 mb-6">
-                <div>
-                  <span className="text-xs font-semibold text-gray-400 uppercase block mb-1">
-                    Expected Salary
-                  </span>
-                  <span className="text-lg font-bold text-gray-900">
-                    ₹{app.salary_expectation}
-                  </span>
-                  <span className="text-sm text-gray-500 ml-1">
-                    / {app.salary_type}
-                  </span>
+            <div key={jobId} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-xs">
+                  {jobName.charAt(0)}
                 </div>
-
                 <div>
-                  <span className="text-xs font-semibold text-gray-400 uppercase block mb-1">
-                    Status
-                  </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Active
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <span className="text-xs font-semibold text-gray-400 uppercase block mb-3">
-                  Preferred Locations
-                </span>
-                {app.preferred_locations &&
-                app.preferred_locations.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {app.preferred_locations.map((loc, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm"
-                      >
-                        <div className="font-medium text-gray-900 mb-0.5">
-                          {loc.state ? (
-                            <span className="text-gray-600 font-normal">
-                              {loc.state},{" "}
-                            </span>
-                          ) : (
-                            ""
-                          )}
-                          {loc.district}
-                        </div>
-                        <div className="text-gray-500 text-xs">
-                          {loc.post_office} {loc.pincode && `- ${loc.pincode}`}
-                        </div>
-                        {loc.area && (
-                          <div className="text-gray-400 text-xs mt-0.5">
-                            {loc.area}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 italic">
-                    No specific locations set (Anywhere in state)
+                  <h5 className="text-sm font-bold text-slate-800">{jobName}</h5>
+                  <p className="text-xs text-slate-500">
+                    <span className="font-semibold text-slate-700">₹{app.salary_expectation}</span> / {app.salary_type || "monthly"}
                   </p>
-                )}
+                </div>
               </div>
+              <button 
+                onClick={() => onRevoke(jobId)} 
+                className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors whitespace-nowrap"
+              >
+                Withdraw
+              </button>
             </div>
           );
         })}
@@ -469,6 +256,33 @@ const JobApply = () => {
     );
     handleCollapseForm();
   };
+  const handleRevokeSingle = async (subjectId, classCategoryId, subjectName, jobIdToRevoke) => {
+    if (window.confirm(`Are you sure you want to withdraw this application?`)) {
+      const app = jobApply?.find(a => 
+        (a.subject === subjectId || a.subject_id === subjectId || a.subject?.id === subjectId) &&
+        (a.class_category === classCategoryId || a.class_category_id === classCategoryId || a.class_category?.id === classCategoryId) &&
+        getJobTypeId(a.teacher_job_type) === jobIdToRevoke &&
+        a.status === true
+      );
+      if (app) {
+        try {
+          await updateJobApply(app.id, {
+            class_category: classCategoryId,
+            subject: subjectId,
+            teacher_job_type: jobIdToRevoke,
+            salary_expectation: app.salary_expectation,
+            salary_type: app.salary_type || "monthly",
+            status: false,
+          });
+          toast.success("Application withdrawn successfully!");
+          refetchJobApply();
+        } catch (e) {
+          toast.error("Failed to withdraw application");
+        }
+      }
+    }
+  };
+
   const handleRevoke = async (subjectId, classCategoryId, subjectName) => {
     if (
       window.confirm(
@@ -861,12 +675,13 @@ const JobApply = () => {
                           <ApplicationSummary
                             applications={activeApplications}
                             jobTypes={jobTypes}
+                            onRevoke={(jobId) => handleRevokeSingle(subjectId, classCategoryId, subjectName, jobId)}
                           />
                         )}
 
                       {/* Form or Buttons */}
                       {expandedForm.subjectId === subjectId &&
-                      expandedForm.classCategoryId === classCategoryId ? (
+                      expandedForm.classCategoryId === classCategoryId && (
                         <ApplicationForm
                           isEdit={expandedForm.isEdit}
                           applicationData={expandedForm.applicationData}
@@ -876,41 +691,6 @@ const JobApply = () => {
                           jobTypes={jobTypes}
                           jobTypesStatus={jobTypesStatus}
                         />
-                      ) : (
-                        /* Only show Update/Withdraw buttons if applied and form is NOT expanded */
-                        isApplied && (
-                          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-100">
-                            <button
-                              onClick={() =>
-                                handleExpandForm(
-                                  subjectId,
-                                  classCategoryId,
-                                  true,
-                                  activeApplications,
-                                  subjectName,
-                                )
-                              }
-                              className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
-                            >
-                              <HiOutlinePencilSquare className="h-4 w-4 mr-2" />
-                              Update Application
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleRevoke(
-                                  subjectId,
-                                  classCategoryId,
-                                  subjectName,
-                                )
-                              }
-                              className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-                            >
-                              <HiOutlineXCircle className="h-4 w-4 mr-2" />
-                              {/* in hindi also */}
-                              Cancel Application / आवेदन रद्द करें
-                            </button>
-                          </div>
-                        )
                       )}
 
                       {/* Mobile Apply Button when form not expanded and not applied */}
