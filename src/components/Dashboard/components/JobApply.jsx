@@ -165,9 +165,20 @@ const ApplicationSummary = ({ applications, jobTypes, onRevoke }) => {
                 </div>
                 <div>
                   <h5 className="text-sm font-bold text-slate-800">{jobName}</h5>
-                  <p className="text-xs text-slate-500">
-                    <span className="font-semibold text-slate-700">₹{app.salary_expectation}</span> / {app.salary_type || "monthly"}
-                  </p>
+                  <div className="flex flex-col gap-0.5 mt-0.5">
+                    <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                      <span className="font-semibold text-slate-700">₹{app.salary_expectation}</span> / {app.salary_type || "monthly"}
+                    </p>
+                    {app.preferred_locations && app.preferred_locations.length > 0 ? (
+                      <p className="text-[11px] text-slate-400 flex items-center gap-1">
+                        📍 {app.preferred_locations.map(loc => loc.district ? `${loc.district}, ${loc.state}` : loc.state).join(" | ")}
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-slate-400 flex items-center gap-1">
+                        📍 Default Profile Location
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
               <button 
