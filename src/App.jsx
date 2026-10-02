@@ -43,6 +43,7 @@ import ExamManagement from "./admin/Manage-exam/ManageExam";
 import ExamLayout from "./components/Exam/ExamLayout";
 import ExamMode from "./components/Exam/ExamMode";
 import TeacherLayout from "./teacherPanel/TeacherLayout";
+import TeacherHireRequests from "./teacherPanel/components/TeacherHireRequests";
 import ExamCenterLayout from "./components/ExamCenter/ExamCenterLayout";
 import ExamCenterDashboard from "./components/ExamCenter/ExamCenterDashboard";
 import ForgotPassword from "./components/ForgotPassword";
@@ -552,6 +553,15 @@ function AppContent() {
             element={
               <RoleBasedRoute
                 element={<WalletDashboard />}
+                allowedRoles={["teacher"]}
+              />
+            }
+          />
+          <Route
+            path="hire-requests"
+            element={
+              <RoleBasedRoute
+                element={<TeacherHireRequests />}
                 allowedRoles={["teacher"]}
               />
             }

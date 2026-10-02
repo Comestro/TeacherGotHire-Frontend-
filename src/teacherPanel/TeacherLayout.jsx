@@ -157,6 +157,11 @@ const TeacherLayout = () => {
         </div>
         <SidebarItem to="/teacher" icon={HiViewGrid} label="Dashboard" />
         <SidebarItem
+          to="/teacher/hire-requests"
+          icon={HiBriefcase}
+          label="Hire Requests"
+        />
+        <SidebarItem
           to="/teacher/start-test"
           icon={HiOutlineDocumentText}
           label="Start Test"
