@@ -45,6 +45,7 @@ const ApplicationForm = ({
   const [salaryAmount, setSalaryAmount] = useState("");
   const [salaryType, setSalaryType] = useState("monthly");
   const [locations, setLocations] = useState([]);
+  const [locationError, setLocationError] = useState(false);
 
   const availableJobTypes = jobTypes?.filter(jt => 
     !applicationData?.some(app => getJobTypeId(app.teacher_job_type) === jt.id && app.status === true)
@@ -60,7 +61,11 @@ const ApplicationForm = ({
     e && e.preventDefault();
     if (!selectedJobType) { toast.error("Select a job type"); return; }
     if (!salaryAmount || parseFloat(salaryAmount) <= 0) { toast.error("Enter valid salary"); return; }
-    if (locations.length === 0) { toast.error("Please add at least one location preference."); return; }
+    if (locations.length === 0) { 
+      setLocationError(true);
+      toast.error("Please add at least one location preference."); 
+      return; 
+    }
 
     const existingJobTypes = applicationData?.filter(app => app.status === true).map(app => getJobTypeId(app.teacher_job_type)) || [];
     const allSelectedTypes = [...existingJobTypes, parseInt(selectedJobType)];
@@ -141,13 +146,26 @@ const ApplicationForm = ({
           <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-lg hover:bg-teal-700 shadow-sm whitespace-nowrap">Apply</button>
         </div>
       </form>
-      <div className="mt-4 pt-4 border-t border-slate-100">
-        <label className="block text-xs font-semibold text-slate-600 mb-2">Specific Locations (Required)</label>
-        <JobLocationSelector
-          jobType={getJobTypeName(jobTypes, selectedJobType)}
-          locations={locations}
-          onChange={setLocations}
-        />
+      <div className={`mt-4 pt-4 border-t border-slate-100 ${locationError ? 'bg-red-50/50 p-3 rounded-lg border border-red-100 -mx-3 px-3' : ''}`}>
+        <label className={`block text-xs font-semibold mb-2 ${locationError ? 'text-red-600' : 'text-slate-600'}`}>Specific Locations (Required)</label>
+        <div className={locationError ? 'ring-1 ring-red-300 rounded-lg overflow-hidden bg-white' : ''}>
+          <JobLocationSelector
+            jobType={getJobTypeName(jobTypes, selectedJobType)}
+            locations={locations}
+            onChange={(locs) => {
+              setLocations(locs);
+              if (locs.length > 0) setLocationError(false);
+            }}
+          />
+        </div>
+        {locationError && (
+          <p className="text-xs text-red-600 mt-2 font-semibold flex items-center gap-1.5 animate-in slide-in-from-top-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+            </svg>
+            Location preference is required to apply for this job.
+          </p>
+        )}
       </div>
     </div>
   );
