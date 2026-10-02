@@ -139,7 +139,7 @@ const WalletDashboard = () => {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full p-6 md:p-8 max-w-7xl mx-auto">
       {/* Header */}
       <header className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
