@@ -52,6 +52,7 @@ import SettingsPage from "./components/Pages/SettingsPage";
 import ManageCenter from "./admin/Manage-center/ManageCenter";
 import PasskeyManagement from "./admin/manage-passkey/ManagePasskey";
 import ManageQuestionManager from "./admin/Manage-question-manager/ManageQuestionManager";
+import ManagePointConfig from "./admin/manage-points/ManagePointConfig";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import Error404 from "./components/Pages/ErrorPage";
 import Unauthorized from "./components/Unauthorized";
@@ -435,6 +436,15 @@ function AppContent() {
           element={
             <RoleBasedRoute
               element={<ManageSystemErrors />}
+              allowedRoles={["admin"]}
+            />
+          }
+        />
+        <Route
+          path="admin/manage/points"
+          element={
+            <RoleBasedRoute
+              element={<ManagePointConfig />}
               allowedRoles={["admin"]}
             />
           }

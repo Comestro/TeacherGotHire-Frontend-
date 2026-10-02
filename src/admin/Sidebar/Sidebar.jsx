@@ -182,6 +182,12 @@ export default function Sidebar({ isOpen, onToggle }) {
       section: "main",
     },
     {
+      text: "Point Config",
+      icon: <FiSettings />,
+      link: "/admin/manage/points",
+      section: "main",
+    },
+    {
       text: "Email Templates",
       icon: <FiInbox />,
       link: "/admin/manage/email-templates",
