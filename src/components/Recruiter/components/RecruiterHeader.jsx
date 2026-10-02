@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import { getApiUrl } from "../../../store/configue";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUserCircle, FaWallet } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
@@ -22,6 +24,26 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
 
   const profile = useSelector((state) => state.auth.userData || {});
   const menuRef = useRef(null);
+
+  const [walletBalance, setWalletBalance] = useState(null);
+
+  useEffect(() => {
+    const fetchWallet = async () => {
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        try {
+          const res = await axios.get(`${getApiUrl()}/api/wallet/`, {
+            headers: { Authorization: `Token ${token}` }
+          });
+          setWalletBalance(res.data?.wallet?.balance || 0);
+        } catch (e) {
+          console.error("Failed to fetch wallet", e);
+        }
+      }
+    };
+    fetchWallet();
+  }, []);
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -90,6 +112,20 @@ const TeacherRecruiterHeader = ({ isOpen, setIsOpen }) => {
             </Link>
 
             {/* Profile Dropdown or Login Button */}
+            
+            {walletBalance !== null && (
+              <div className="group relative hidden sm:block mr-2">
+                <Link to="/recruiter/wallet" className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-full transition-all hover:bg-indigo-100 hover:shadow-sm cursor-pointer">
+                  <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold font-serif">P</div>
+                  <span className="text-indigo-800 font-bold text-sm">{walletBalance} <span className="font-medium text-xs opacity-80">Points</span></span>
+                </Link>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-3 py-1.5 bg-indigo-800 text-white text-xs font-medium rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap shadow-lg">
+                  Add Fund
+                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-indigo-800 rotate-45"></div>
+                </div>
+              </div>
+            )}
+
             {profile && profile.id ? (
               <div className="relative" ref={menuRef}>
                 <button

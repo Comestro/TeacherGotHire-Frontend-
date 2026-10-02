@@ -45,7 +45,7 @@ const Navbar = ({ links }) => {
   useEffect(() => {
     const fetchWallet = async () => {
       const token = localStorage.getItem("access_token");
-      if (token && role === "teacher") {
+      if (token && (role === "teacher" || role === "recruiter")) {
         try {
           const res = await axios.get(`${getApiUrl()}/api/wallet/`, {
             headers: { Authorization: `Token ${token}` }
@@ -198,9 +198,9 @@ const Navbar = ({ links }) => {
 
             {profile.email ? (
               <div className="flex items-center gap-2 z-10">
-                {role === "teacher" && walletBalance !== null && (
+                {(role === "teacher" || role === "recruiter") && walletBalance !== null && (
                   <div className="group relative ml-4 hidden sm:block">
-                    <Link to="/teacher/wallet" className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-full transition-all hover:bg-indigo-100 hover:shadow-sm cursor-pointer">
+                    <Link to={role === "teacher" ? "/teacher/wallet" : "/recruiter/wallet"} className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-full transition-all hover:bg-indigo-100 hover:shadow-sm cursor-pointer">
                       <div className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold font-serif">P</div>
                       <span className="text-indigo-800 font-bold text-sm">{walletBalance} <span className="font-medium text-xs opacity-80">Points</span></span>
                     </Link>
@@ -291,8 +291,8 @@ const Navbar = ({ links }) => {
                     <p className="text-sm text-slate-600">{profile.email}</p>
                   </div>
                 </div>
-                {role === "teacher" && walletBalance !== null && (
-                  <Link to="/teacher/wallet" className="flex items-center justify-between px-4 py-3 mb-4 bg-indigo-50 rounded-xl border border-indigo-100" onClick={() => setIsMobileOpen(false)}>
+                {(role === "teacher" || role === "recruiter") && walletBalance !== null && (
+                  <Link to={role === "teacher" ? "/teacher/wallet" : "/recruiter/wallet"} className="flex items-center justify-between px-4 py-3 mb-4 bg-indigo-50 rounded-xl border border-indigo-100" onClick={() => setIsMobileOpen(false)}>
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold font-serif">P</div>
                       <span className="font-medium text-indigo-900">Wallet Balance</span>
