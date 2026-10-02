@@ -1252,22 +1252,24 @@ export default function TeacherViewPageFull() {
                   )}
 
                   {/* Error Message Display */}
-                  <ErrorMessage
-                    message={
-                      submitError.includes("Insufficient points") ? (
-                        <div className="flex flex-col gap-2">
-                          <span>{submitError}</span>
-                          <Link to="/recruiter/wallet" className="text-teal-600 underline font-bold self-start hover:text-teal-800">
-                            Go to Wallet to Recharge
-                          </Link>
-                        </div>
-                      ) : (
-                        submitError
-                      )
-                    }
-                    type="error"
-                    onDismiss={() => setSubmitError(null)}
-                  />
+                  {submitError && (
+                    <ErrorMessage
+                      message={
+                        submitError.includes("Insufficient points") ? (
+                          <div className="flex flex-col gap-2">
+                            <span>{submitError}</span>
+                            <Link to="/recruiter/wallet" className="text-teal-600 underline font-bold self-start hover:text-teal-800">
+                              Go to Wallet to Recharge
+                            </Link>
+                          </div>
+                        ) : (
+                          submitError
+                        )
+                      }
+                      type="error"
+                      onDismiss={() => setSubmitError(null)}
+                    />
+                  )}
                 </>
               )}
             </div>

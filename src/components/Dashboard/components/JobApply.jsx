@@ -650,11 +650,11 @@ const JobApply = () => {
         errorMessage = error.response.data.error;
       else if (error?.message) errorMessage = error.message;
 
-      if (errorMessage.includes("job preference location")) {
+      if (typeof errorMessage === 'string' && errorMessage.includes("job preference location")) {
         toast.error(
           "Please set your job preference location in the application form.",
         );
-      } else if (errorMessage.includes("Insufficient points")) {
+      } else if (typeof errorMessage === 'string' && errorMessage.includes("Insufficient points")) {
         setWalletErrorMsg(errorMessage);
         setShowWalletModal(true);
       } else {
