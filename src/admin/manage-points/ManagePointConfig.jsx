@@ -192,7 +192,7 @@ const ManagePointConfig = () => {
               <label className="block text-xs font-medium text-gray-700 mb-1">Job Type (Required)</label>
               <select required className="w-full px-2 py-2 border rounded text-sm bg-white" value={newTeacherRule.job_type} onChange={e=>setNewTeacherRule({...newTeacherRule, job_type: e.target.value})}>
                 <option value="">Select Job Type</option>
-                {jobTypes.map(jt => <option key={jt.id} value={jt.id}>{jt.jobrole_name}</option>)}
+                {jobTypes.map(jt => <option key={jt.id} value={jt.id}>{jt.teacher_job_name || jt.jobrole_name || jt.name}</option>)}
               </select>
             </div>
             <div>
@@ -229,7 +229,7 @@ const ManagePointConfig = () => {
                   const jt = jobTypes.find(j => j.id === rule.job_type);
                   return (
                     <tr key={rule.id} className="border-b">
-                      <td className="px-4 py-2 font-medium">{jt ? jt.jobrole_name : rule.job_type}</td>
+                      <td className="px-4 py-2 font-medium">{jt ? (jt.teacher_job_name || jt.jobrole_name) : rule.job_type}</td>
                       <td className="px-4 py-2">{rule.district || "Any"}, {rule.state || "Any State"}</td>
                       <td className="px-4 py-2 text-red-600 font-bold">-{rule.points_required}</td>
                       <td className="px-4 py-2">
