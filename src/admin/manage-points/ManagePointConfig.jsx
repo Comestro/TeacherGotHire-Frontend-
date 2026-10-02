@@ -241,7 +241,7 @@ const ManagePointConfig = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Points Deducted</label>
-              <input type="number" required className="w-full px-2 py-2 border rounded text-sm bg-white" value={newTeacherRule.points_required} onChange={e=>setNewTeacherRule({...newTeacherRule, points_required: e.target.value})} />
+              <input type="number" min="0" required className="w-full px-2 py-2 border rounded text-sm bg-white" value={newTeacherRule.points_required} onChange={e=>setNewTeacherRule({...newTeacherRule, points_required: Math.abs(e.target.value)})} />
             </div>
             <div>
               <button type="submit" className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
@@ -302,7 +302,7 @@ const ManagePointConfig = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Points Deducted</label>
-              <input type="number" required className="w-full px-2 py-2 border rounded text-sm bg-white" value={newRecruiterRule.points_required} onChange={e=>setNewRecruiterRule({...newRecruiterRule, points_required: e.target.value})} />
+              <input type="number" min="0" required className="w-full px-2 py-2 border rounded text-sm bg-white" value={newRecruiterRule.points_required} onChange={e=>setNewRecruiterRule({...newRecruiterRule, points_required: Math.abs(e.target.value)})} />
             </div>
             <div>
               <button type="submit" className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm">
