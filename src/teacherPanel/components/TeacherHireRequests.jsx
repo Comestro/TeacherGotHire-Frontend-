@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { getApiUrl } from "../../../services/apiService";
+import { getApiUrl } from "../../store/configue";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { HiOutlineBriefcase, HiOutlineLocationMarker, HiOutlineClock } from "react-icons/hi";
