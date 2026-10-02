@@ -25,7 +25,7 @@ const ManagePointConfig = () => {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       const headers = { Authorization: `Token ${token}` };
 
       const [confRes, trRes, rrRes, jtRes, catRes, subRes] = await Promise.all([
@@ -65,7 +65,7 @@ const ManagePointConfig = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       if (config.id) {
         await axios.put(`${getApiUrl()}/api/admin/pointconfig/${config.id}/`, config, { headers: { Authorization: `Token ${token}` } });
         toast.success("Global point configuration updated!");
@@ -79,7 +79,7 @@ const ManagePointConfig = () => {
   const handleAddTeacherRule = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       const payload = { ...newTeacherRule };
       if (!payload.state) payload.state = null;
       if (!payload.district) payload.district = null;
@@ -96,7 +96,7 @@ const ManagePointConfig = () => {
   const handleAddRecruiterRule = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       const payload = { ...newRecruiterRule };
       if (!payload.class_category) payload.class_category = null;
       if (!payload.subject) payload.subject = null;
@@ -112,7 +112,7 @@ const ManagePointConfig = () => {
 
   const handleDeleteTeacherRule = async (id) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       await axios.delete(`${getApiUrl()}/api/admin/teacherpointrule/${id}/`, { headers: { Authorization: `Token ${token}` } });
       toast.success("Rule Deleted!");
       fetchData();
@@ -123,7 +123,7 @@ const ManagePointConfig = () => {
   
   const handleDeleteRecruiterRule = async (id) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       await axios.delete(`${getApiUrl()}/api/admin/recruiterpointrule/${id}/`, { headers: { Authorization: `Token ${token}` } });
       toast.success("Rule Deleted!");
       fetchData();
