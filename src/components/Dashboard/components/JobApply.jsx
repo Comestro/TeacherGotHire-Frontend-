@@ -415,6 +415,8 @@ const JobApply = () => {
     isEdit: false,
     applicationData: null,
   });
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [walletErrorMsg, setWalletErrorMsg] = useState("");
   const {
     data: eligibilityData,
     isLoading: isEligibilityLoading,
@@ -666,15 +668,8 @@ const JobApply = () => {
           "Please set your job preference location in the application form.",
         );
       } else if (errorMessage.includes("Insufficient points")) {
-        toast.error(
-          <div>
-            <div>{errorMessage}</div>
-            <Link to="/teacher/wallet" className="text-teal-600 underline font-bold mt-2 inline-block hover:text-teal-800">
-              Go to Wallet to Recharge
-            </Link>
-          </div>,
-          { autoClose: 10000 }
-        );
+        setWalletErrorMsg(errorMessage);
+        setShowWalletModal(true);
       } else {
         toast.error(errorMessage);
       }
@@ -972,6 +967,39 @@ const JobApply = () => {
           </div>
         )}
       </div>
+
+      {/* Wallet Recharge Modal */}
+      {showWalletModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900 bg-opacity-75 backdrop-blur-sm transition-opacity">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 transform transition-all relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-red-500"></div>
+            <div className="flex justify-center mb-6">
+              <div className="p-4 bg-red-100 rounded-full">
+                <HiOutlineExclamationTriangle className="h-10 w-10 text-red-600" />
+              </div>
+            </div>
+            <h3 className="text-2xl font-extrabold text-gray-900 text-center mb-2">Insufficient Points</h3>
+            <p className="text-slate-600 text-center mb-6 leading-relaxed">
+              {walletErrorMsg || "You don't have enough points to apply for this job. Please recharge your wallet to continue."}
+            </p>
+            <div className="flex flex-col gap-3">
+              <Link
+                to="/teacher/wallet"
+                className="w-full flex items-center justify-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-red-600 hover:bg-red-700 transition-colors"
+              >
+                Go to Wallet to Recharge
+              </Link>
+              <button
+                onClick={() => setShowWalletModal(false)}
+                className="w-full flex items-center justify-center px-6 py-3 border border-slate-300 rounded-lg shadow-sm text-base font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
