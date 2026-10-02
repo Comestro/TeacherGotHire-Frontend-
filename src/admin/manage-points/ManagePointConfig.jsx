@@ -28,30 +28,48 @@ const ManagePointConfig = () => {
       const token = localStorage.getItem("access_token");
       const headers = { Authorization: `Token ${token}` };
 
-      const [confRes, trRes, rrRes, jtRes, catRes, subRes] = await Promise.all([
-        axios.get(`${getApiUrl()}/api/admin/pointconfig/`, { headers }),
-        axios.get(`${getApiUrl()}/api/admin/teacherpointrule/`, { headers }),
-        axios.get(`${getApiUrl()}/api/admin/recruiterpointrule/`, { headers }),
-        axios.get(`${getApiUrl()}/api/admin/teacherjobtype/`, { headers }),
-        axios.get(`${getApiUrl()}/api/admin/classcategory/`, { headers }),
-        axios.get(`${getApiUrl()}/api/admin/subject/`, { headers }),
+      // Catch each promise individually so one failure doesn't break the whole page
+      const fetchSafe = async (url) => {
+        try {
+          const res = await axios.get(url, { headers });
+          return res.data?.results || res.data || [];
+        } catch (e) {
+          console.error("Failed to fetch", url, e);
+          return [];
+        }
+      };
+
+      const [trData, rrData, jtData, catData, subData] = await Promise.all([
+        fetchSafe(`${getApiUrl()}/api/admin/teacherpointrule/`),
+        fetchSafe(`${getApiUrl()}/api/admin/recruiterpointrule/`),
+        fetchSafe(`${getApiUrl()}/api/admin/teacherjobtype/`),
+        fetchSafe(`${getApiUrl()}/api/admin/classcategory/`),
+        fetchSafe(`${getApiUrl()}/api/admin/subject/`),
       ]);
 
-      if (confRes.data && confRes.data.length > 0) {
-        setConfig(confRes.data[0]);
-      } else {
-        const createRes = await axios.post(`${getApiUrl()}/api/admin/pointconfig/`, { point_price_in_inr: 1.0, welcome_points: 0 }, { headers });
-        setConfig(createRes.data);
+      // Point config is special
+      try {
+        const confRes = await axios.get(`${getApiUrl()}/api/admin/pointconfig/`, { headers });
+        const confData = confRes.data?.results || confRes.data || [];
+        if (confData.length > 0) {
+          setConfig(confData[0]);
+        } else {
+          const createRes = await axios.post(`${getApiUrl()}/api/admin/pointconfig/`, { point_price_in_inr: 1.0, welcome_points: 0 }, { headers });
+          setConfig(createRes.data);
+        }
+      } catch (e) {
+        console.error("Config fetch error", e);
       }
       
-      setTeacherRules(trRes.data.results || trRes.data || []);
-      setRecruiterRules(rrRes.data.results || rrRes.data || []);
-      setJobTypes(jtRes.data.results || jtRes.data || []);
-      setCategories(catRes.data.results || catRes.data || []);
-      setSubjects(subRes.data.results || subRes.data || []);
+      setTeacherRules(Array.isArray(trData) ? trData : []);
+      setRecruiterRules(Array.isArray(rrData) ? rrData : []);
+      setJobTypes(Array.isArray(jtData) ? jtData : []);
+      setCategories(Array.isArray(catData) ? catData : []);
+      setSubjects(Array.isArray(subData) ? subData : []);
+      
     } catch (error) {
       console.error(error);
-      toast.error("Failed to load point configuration");
+      toast.error("Failed to load some point configuration data");
     } finally {
       setLoading(false);
     }
