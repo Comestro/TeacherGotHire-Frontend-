@@ -96,6 +96,7 @@ const WalletDashboard = () => {
             toast.success("Points successfully added to your wallet!");
             setPointsToBuy("");
             fetchWallet(); // Refresh balance
+            window.dispatchEvent(new Event("walletUpdated"));
           } catch (verifyError) {
             toast.error("Payment verification failed.");
             console.error(verifyError);

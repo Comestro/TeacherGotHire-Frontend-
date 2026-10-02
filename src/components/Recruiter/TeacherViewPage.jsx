@@ -352,6 +352,7 @@ export default function TeacherViewPageFull() {
       if (res) {
         setSuccess(true);
         setSubmitSuccessMsg("Teacher request sent successfully!");
+        window.dispatchEvent(new Event("walletUpdated"));
         // Keep modal open to show success message
       }
     } catch (err) {

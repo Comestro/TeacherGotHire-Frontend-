@@ -57,6 +57,8 @@ const Navbar = ({ links }) => {
       }
     };
     fetchWallet();
+    window.addEventListener("walletUpdated", fetchWallet);
+    return () => window.removeEventListener("walletUpdated", fetchWallet);
   }, [role, location.pathname]);
 
   useEffect(() => {
