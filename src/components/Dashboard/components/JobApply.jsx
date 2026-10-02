@@ -171,7 +171,91 @@ const ApplicationForm = ({
   );
 };
 
-const ApplicationSummary = ({ applications, jobTypes, onRevoke }) => {
+
+const UpdateApplicationForm = ({ app, jobName, onCancel, onUpdate }) => {
+  const [salaryAmount, setSalaryAmount] = useState(app.salary_expectation || "");
+  const [salaryType, setSalaryType] = useState(app.salary_type || "monthly");
+  const [locations, setLocations] = useState(app.preferred_locations || []);
+  const [locationError, setLocationError] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!salaryAmount || parseFloat(salaryAmount) <= 0) { toast.error("Enter valid salary"); return; }
+    if (locations.length === 0) { 
+      setLocationError(true);
+      toast.error("Please add at least one location preference."); 
+      return; 
+    }
+    
+    onUpdate(app, {
+      salary_expectation: salaryAmount,
+      salary_type: salaryType,
+      preferred_locations: locations
+    });
+  };
+
+  return (
+    <div className="p-4 bg-white border border-teal-200 rounded-lg m-2 shadow-sm relative">
+      <h5 className="text-sm font-bold text-teal-800 mb-3 flex items-center gap-2">
+        Updating {jobName}
+      </h5>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="w-full sm:w-1/2">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">Expected Salary (₹)</label>
+            <input 
+              type="number"
+              className="w-full text-sm border-slate-200 rounded-lg py-2 bg-slate-50 focus:ring-teal-500 focus:border-teal-500"
+              value={salaryAmount}
+              onChange={(e) => setSalaryAmount(e.target.value)}
+              placeholder="e.g. 5000"
+              required min="1"
+            />
+          </div>
+          <div className="w-full sm:w-1/2">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">Per</label>
+            <select 
+              className="w-full text-sm border-slate-200 rounded-lg py-2 bg-slate-50 focus:ring-teal-500 focus:border-teal-500"
+              value={salaryType}
+              onChange={(e) => setSalaryType(e.target.value)}
+            >
+              <option value="hourly">Hour</option>
+              <option value="daily">Day</option>
+              <option value="monthly">Month</option>
+              <option value="yearly">Year</option>
+            </select>
+          </div>
+        </div>
+        
+        <div className={`mt-2 ${locationError ? 'bg-red-50/50 p-2 rounded-lg border border-red-100' : ''}`}>
+          <label className={`block text-xs font-semibold mb-2 ${locationError ? 'text-red-600' : 'text-slate-600'}`}>Specific Locations (Required)</label>
+          <div className={locationError ? 'ring-1 ring-red-300 rounded-lg overflow-hidden bg-white' : ''}>
+            <JobLocationSelector
+              jobType={jobName}
+              locations={locations}
+              onChange={(locs) => {
+                setLocations(locs);
+                if (locs.length > 0) setLocationError(false);
+              }}
+            />
+          </div>
+          {locationError && (
+            <p className="text-xs text-red-600 mt-2 font-semibold">⚠️ Location preference is required to apply for this job.</p>
+          )}
+        </div>
+
+        <div className="flex gap-2 justify-end mt-2">
+          <button type="button" onClick={onCancel} className="px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Cancel</button>
+          <button type="submit" className="px-4 py-1.5 text-xs font-medium text-white bg-teal-600 rounded-lg hover:bg-teal-700 shadow-sm">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+const ApplicationSummary = ({ applications, jobTypes, onRevoke, onUpdateSubmit }) => {
+  const [editingJobId, setEditingJobId] = useState(null);
+
   if (!applications || applications.length === 0) return null;
 
   return (
@@ -186,6 +270,21 @@ const ApplicationSummary = ({ applications, jobTypes, onRevoke }) => {
           const jobId = getJobTypeId(app.teacher_job_type);
           const jobName = getJobTypeName(jobTypes, jobId);
           
+          if (editingJobId === jobId) {
+            return (
+              <UpdateApplicationForm 
+                key={jobId}
+                app={app} 
+                jobName={jobName} 
+                onCancel={() => setEditingJobId(null)}
+                onUpdate={(app, updatedData) => {
+                  onUpdateSubmit(app, updatedData);
+                  setEditingJobId(null);
+                }}
+              />
+            );
+          }
+
           return (
             <div key={jobId} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 transition-colors">
               <div className="flex items-center gap-3">
@@ -210,12 +309,20 @@ const ApplicationSummary = ({ applications, jobTypes, onRevoke }) => {
                   </div>
                 </div>
               </div>
-              <button 
-                onClick={() => onRevoke(jobId)} 
-                className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors whitespace-nowrap"
-              >
-                Withdraw
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setEditingJobId(jobId)} 
+                  className="px-3 py-1.5 text-xs font-medium text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-md transition-colors whitespace-nowrap border border-teal-100"
+                >
+                  Edit
+                </button>
+                <button 
+                  onClick={() => onRevoke(jobId)} 
+                  className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors whitespace-nowrap"
+                >
+                  Withdraw
+                </button>
+              </div>
             </div>
           );
         })}
@@ -296,7 +403,33 @@ const JobApply = () => {
     );
     handleCollapseForm();
   };
+  
+  const handleUpdateSingle = async (app, updatedData) => {
+    try {
+      await updateJobApply(app.id, {
+        class_category: app.class_category?.id || app.class_category || app.class_category_id,
+        subject: app.subject?.id || app.subject || app.subject_id,
+        teacher_job_type: getJobTypeId(app.teacher_job_type),
+        salary_expectation: updatedData.salary_expectation,
+        salary_type: updatedData.salary_type,
+        status: true,
+        preferred_locations: updatedData.preferred_locations.map((loc) => ({
+          state: loc.state,
+          district: loc.district,
+          pincode: loc.pincode,
+          post_office: loc.post_office,
+          area: loc.area || "",
+        })),
+      });
+      toast.success("Application updated successfully!");
+      refetchJobApply();
+    } catch (e) {
+      toast.error("Failed to update application");
+    }
+  };
+
   const handleRevokeSingle = async (subjectId, classCategoryId, subjectName, jobIdToRevoke) => {
+
     if (window.confirm(`Are you sure you want to withdraw this application?`)) {
       const app = jobApply?.find(a => 
         (a.subject === subjectId || a.subject_id === subjectId || a.subject?.id === subjectId) &&
@@ -716,6 +849,7 @@ const JobApply = () => {
                             applications={activeApplications}
                             jobTypes={jobTypes}
                             onRevoke={(jobId) => handleRevokeSingle(subjectId, classCategoryId, subjectName, jobId)}
+                            onUpdateSubmit={handleUpdateSingle}
                           />
                         )}
 
