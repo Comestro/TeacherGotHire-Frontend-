@@ -168,45 +168,6 @@ const ApplicationForm = ({
           </p>
         )}
       </div>
-
-      {viewingLocationsApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
-            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-slate-800 text-sm">
-                Locations for {viewingLocationsApp.jobName}
-              </h3>
-              <button 
-                onClick={() => setViewingLocationsApp(null)}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                <HiX />
-              </button>
-            </div>
-            <div className="p-4 max-h-[60vh] overflow-y-auto">
-              <ul className="space-y-2">
-                {viewingLocationsApp.locations.map((loc, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                    <span className="text-teal-600 mt-0.5">📍</span>
-                    <div>
-                      <span className="font-medium text-slate-700">{loc.district || "All Districts"}</span>
-                      <span className="text-slate-400">, {loc.state}</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="p-3 border-t border-slate-100 bg-slate-50 flex justify-end">
-              <button
-                onClick={() => setViewingLocationsApp(null)}
-                className="px-4 py-1.5 bg-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-300 transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
