@@ -6,7 +6,7 @@ import { FaCog, FaTrash, FaPlus } from "react-icons/fa";
 import Layout from "../Admin/Layout";
 
 const ManagePointConfig = () => {
-  const [config, setConfig] = useState({ id: null, point_price_in_inr: 1.0, welcome_points: 0 });
+  const [config, setConfig] = useState({ id: null, point_price_in_inr: 1.0, welcome_points: 0, hire_fee_percentage: 10.0, min_wallet_recharge: 100 });
   
   const [teacherRules, setTeacherRules] = useState([]);
   const [recruiterRules, setRecruiterRules] = useState([]);
@@ -83,7 +83,7 @@ const ManagePointConfig = () => {
         if (confData.length > 0) {
           setConfig(confData[0]);
         } else {
-          const createRes = await axios.post(`${getApiUrl()}/api/admin/pointconfig/`, { point_price_in_inr: 1.0, welcome_points: 0 }, { headers });
+          const createRes = await axios.post(`${getApiUrl()}/api/admin/pointconfig/`, { point_price_in_inr: 1.0, welcome_points: 0, hire_fee_percentage: 10.0, min_wallet_recharge: 100 }, { headers });
           setConfig(createRes.data);
         }
       } catch (e) {

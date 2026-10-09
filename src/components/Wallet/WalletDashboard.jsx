@@ -52,6 +52,11 @@ const WalletDashboard = () => {
       toast.error("Please enter a valid number of points.");
       return;
     }
+    
+    if (config?.min_wallet_recharge && parseInt(pointsToBuy) * parseFloat(config.point_price_in_inr || 1) < config.min_wallet_recharge) {
+      toast.error(`Minimum recharge amount is ₹${config.min_wallet_recharge}`);
+      return;
+    }
 
     setIsProcessing(true);
     try {
