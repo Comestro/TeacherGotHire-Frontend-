@@ -232,8 +232,8 @@ const ExamDetails = () => {
       );
       if (targetQ) {
         setSelectedLanguage(targetQ.language);
-        
-        // Wait for tab rendering to complete in DOM
+
+        // Wait for tab rendering to complete in DOM and scroll
         const timer = setTimeout(() => {
           const element = document.getElementById(`question-card-${findQuestionId}`);
           if (element) {

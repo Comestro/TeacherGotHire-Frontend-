@@ -34,6 +34,7 @@ import {
   GetApp as GetAppIcon,
   Visibility as VisibilityIcon,
   Check as CheckIcon,
+  Edit as EditIcon,
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import moment from "moment";
@@ -444,6 +445,20 @@ export default function ManageQuestionReport() {
                       </td>
                       <td style={{ padding: "12px 16px", textAlign: "right" }}>
                         <Stack direction="row" spacing={1} justifyContent="flex-end">
+                          {report.exam_id && (
+                            <Tooltip title="Direct Edit Question">
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/admin/exam/${report.exam_id}?findQuestion=${report.question?.id || ""}`);
+                                }}
+                                sx={{ color: "#ea580c", bgcolor: alpha("#ea580c", 0.08), "&:hover": { bgcolor: alpha("#ea580c", 0.15) } }}
+                              >
+                                <EditIcon sx={{ fontSize: 18 }} />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                           <Tooltip title="View Details">
                             <IconButton size="small" onClick={() => openReportDetails(report)} sx={{ color: "#008080", bgcolor: alpha("#008080", 0.05) }}>
                               <VisibilityIcon sx={{ fontSize: 18 }} />
@@ -504,6 +519,7 @@ export default function ManageQuestionReport() {
                     <Button
                       variant="contained"
                       size="small"
+                      startIcon={<EditIcon sx={{ fontSize: "14px !important" }} />}
                       onClick={() => navigate(`/admin/exam/${selectedReport.exam_id}?findQuestion=${selectedReport.question?.id || ""}`)}
                       sx={{
                         py: 0.5,
@@ -517,7 +533,7 @@ export default function ManageQuestionReport() {
                         "&:hover": { bgcolor: "#c2410c" }
                       }}
                     >
-                      Locate in Exam
+                      Edit Question
                     </Button>
                   )}
                 </Box>
